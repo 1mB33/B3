@@ -1,0 +1,104 @@
+#include "B33App.h"
+
+#include "AppResources.hpp"
+
+namespace B33::App
+{
+
+using namespace ::std;
+using namespace ::B33::Core;
+using namespace ::B33::Core::Debug;
+
+// ---------------------------------------------------------------------------------------------------------------------
+AppResources::AppResources()
+  : m_wstrExePathW( InternalGetExecutablePathW() )
+  , m_strExePathA( InternalGetExecutablePathA( m_wstrExePathW ) )
+{
+}
+
+// Public // ----------------------------------------------------------------------------------------------------------
+const ::std::wstring &AppResources::GetExecutablePathW() const
+{
+    return m_wstrExePathW;
+}
+
+const ::std::string &AppResources::GetExecutablePathA() const
+{
+    return m_strExePathA;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+AppResources &AppResources::Get()
+{
+    static AppResources instance;
+    return instance;
+}
+
+// Private // ---------------------------------------------------------------------------------------------------------
+#if defined( __linux__ )
+wstring AppResources::InternalGetExecutablePathW()
+{
+    char    sPath[ B33_LONG_STRING ];
+    ssize_t uLen = readlink( "/proc/self/exe", sPath, sizeof( sPath ) - 1 );
+
+    if ( uLen == -1 )
+    {
+        B33_LOG( Error, L"Couldn't get path to executable!!! Falling back to `./`" );
+        return wstring( L"./" );
+    }
+
+    sPath[ uLen ] = '\0';
+
+    wstring wstrPath( uLen + 1, {} );
+    mbstowcs( wstrPath.data(), sPath, uLen );
+
+    return wstrPath.substr( 0, wstrPath.find_last_of( '/' ) );
+}
+
+#elif defined( __APPLE__ )
+// ---------------------------------------------------------------------------------------------------------------------
+wstring AppResources::InternalGetExecutablePathW()
+{
+    char     sPath[ B33_LONG_STRING ];
+    uint32_t uLen = B33_LONG_STRING;
+
+    if ( _NSGetExecutablePath( sPath, &uLen ) )
+    {
+        B33_LOG( Error, L"Couldn't get path to executable!!! Falling back to `./`" );
+        return wstring( L"./" );
+    }
+
+    puts( sPath );
+
+    wstring wstrPath( uLen + 1, {} );
+    mbstowcs( wstrPath.data(), sPath, uLen );
+
+    return wstrPath.substr( 0, wstrPath.find_last_of( '/' ) );
+}
+
+#elif _WIN32
+
+// --------------------------------------------------------------------------------------------------------------------
+wstring AppResources::InternalGetExecutablePathW()
+{
+    return wstring( L"./" );
+}
+
+#endif // !__linux__
+
+// --------------------------------------------------------------------------------------------------------------------
+string AppResources::InternalGetExecutablePathA( const ::std::wstring wstrBase )
+{
+    size_t len = std::wcstombs( nullptr, wstrBase.c_str(), 0 );
+
+    if ( len != static_cast<size_t>( -1 ) )
+    {
+        std::string str( len, '\0' );
+        std::wcstombs( &str[ 0 ], wstrBase.c_str(), len );
+        return str;
+    }
+
+    return "./";
+}
+
+} // namespace B33::App

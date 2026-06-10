@@ -1,0 +1,22 @@
+#ifndef B33_COLORED_CUBE_AB
+#define B33_COLORED_CUBE_AB
+
+#include "Primitives/Cube.hpp"
+#include "Primitives/MaterialProperties/ColorProperty.hpp"
+#include "Primitives/MaterialProperties/ReflectionProperty.hpp"
+#include "Primitives/MaterialProperties/RoughnessProperty.hpp"
+
+namespace B33::Rendering
+{
+
+class alignas( 16 ) ColoredCube
+  : public B33::Math::Cube
+  , public B33::Rendering::ColorProperty
+  , public B33::Rendering::ReflectionProperty
+  , public B33::Rendering::RoughnessProperty
+{
+    uint32_t m_uPadding;
+};
+
+} // namespace B33::Rendering
+#endif // !B33_COLORED_CUBE_AB

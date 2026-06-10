@@ -1,0 +1,37 @@
+#ifndef B33_BASE_WINDOW_DETAILS_H
+#define B33_BASE_WINDOW_DETAILS_H
+
+#include "B33Core.h"
+
+#ifdef __cplusplus
+#    if defined( _X11 )
+
+/**
+ * Wraps display query logic for linux.
+ **/
+__B33_API Display *AbAskForDisplayLinux( const char *pszDisplayName );
+
+/**
+ * Wraps display query logic for linux.
+ * Ensures that after window closes, we don't destroy display that is still in use.
+ **/
+__B33_API void AbAskToCloseDisplayLinux( const char *pszDisplayName );
+
+#    endif // !__linux__
+
+#    ifdef _WIN32
+
+/**
+ * Wraps window class query logic for win32.
+ **/
+__B33_API void AbAskToRegisterWindowClass( const wchar_t *pwszClassName, WNDCLASSEX &wcex );
+
+/**
+ * Wraps window class query logic for win32.
+ * Ensures that after window closes, we don't unregister window class that is still in use.
+ **/
+__B33_API void AbAskToCloseWindowClass( const wchar_t *pwszClassName );
+
+#    endif // !_WIN32
+#endif     // !__cplusplus
+#endif     // !B33_BASE_WINDOW_DETAILS_H

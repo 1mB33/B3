@@ -1,0 +1,8 @@
+#ifndef B33_LIMITS_H
+#define B33_LIMITS_H
+
+#define B33_LONG_STRING   1024
+#define B33_MEDIUM_STRING 512
+#define B33_SMALL_STRING  64
+
+#endif // !B33_LIMITS_H

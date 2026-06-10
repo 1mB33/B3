@@ -1,0 +1,27 @@
+#ifndef B33_RAYS_H
+#define B33_RAYS_H
+
+#include "Raycaster/VoxelGrid.hpp"
+
+namespace B33::Rendering
+{
+
+struct HitResult
+{
+    using Vec  = ::B33::Math::Vec3;
+    using iVec = ::B33::Math::iVec3;
+
+    bool     bHit;
+    iVec     iHitCoords;
+    ::size_t uHitIndex;
+    float    fDistance;
+    Vec      Normal;
+};
+
+__B33_API HitResult MarchTheRay( const ::B33::Rendering::IWorldGrid *worldGrid,
+                                 const ::B33::Math::Vec3            &rayOrigin,
+                                 const ::B33::Math::Vec3            &rayDestination,
+                                 ::size_t                            maxSteps );
+
+} // namespace B33::Rendering
+#endif //! B33_RAYS_H

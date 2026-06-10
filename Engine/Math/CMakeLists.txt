@@ -1,0 +1,66 @@
+SET(BEE_MATH_SOURCE
+    "${CMAKE_CURRENT_SOURCE_DIR}/Private/Primitives/Object.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Private/Primitives/Objects.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Private/B33Math.cpp"
+)
+SET(BEE_MATH_HEADRES
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/B33Math.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Consts.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Mat4.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Operations.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Rot.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Vec3.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Vec3Operators.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Vec4.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Primitives/Object.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Primitives/Objects.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Primitives/Cube.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Primitives/Cubes.hpp"
+)
+
+ADD_LIBRARY(B33Math SHARED
+    "${BEE_MATH_SOURCE}"
+    "${BEE_MATH_HEADRES}"
+)
+
+IF (MSVC)
+
+    TARGET_COMPILE_OPTIONS(B33Math PRIVATE "/permissive-")
+    TARGET_COMPILE_OPTIONS(B33Math PRIVATE "/GR")
+
+    IF (CMAKE_BUILD_TYPE!="Debug")
+
+        TARGET_COMPILE_OPTIONS(B33Math PUBLIC "/O2")
+
+    ENDIF()
+
+ELSE()
+
+    TARGET_COMPILE_OPTIONS(B33Math PRIVATE
+        "-Wall"
+        "-Werror"
+        "-Wextra"
+    )
+    IF (CMAKE_BUILD_TYPE STREQUAL "Debug")
+
+        TARGET_COMPILE_OPTIONS(B33Math PRIVATE "-g")
+
+    ELSE()
+
+        TARGET_COMPILE_OPTIONS(B33Math PRIVATE "-O3")
+
+    ENDIF()
+
+ENDIF()
+
+TARGET_INCLUDE_DIRECTORIES(B33Math PUBLIC
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/"
+)
+
+TARGET_LINK_LIBRARIES(B33Math PUBLIC
+    B33Core
+)
+
+TARGET_PRECOMPILE_HEADERS(B33Math PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/Public/B33Math.hpp")
+
+TARGET_COMPILE_DEFINITIONS(B33Math PRIVATE _BEAST_EXPORTS _UNICODE UNICODE)

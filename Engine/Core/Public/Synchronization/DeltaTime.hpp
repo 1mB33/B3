@@ -1,0 +1,50 @@
+#ifndef B33_DELTA_TIME_H
+#define B33_DELTA_TIME_H
+
+#include "B33Core.h"
+
+namespace B33::Core
+{
+
+class DeltaTime
+{
+    using ClockType  = ::std::chrono::steady_clock;
+    using DurationMs = ::std::chrono::duration<float, ::std::milli>;
+    using TimeStamp  = ::std::chrono::time_point<ClockType>;
+
+  public:
+    __B33_API DeltaTime();
+
+    ~DeltaTime() = default;
+
+  public:
+    DeltaTime( const DeltaTime & ) noexcept            = default;
+    DeltaTime &operator=( const DeltaTime & ) noexcept = default;
+
+    DeltaTime( DeltaTime && ) noexcept            = default;
+    DeltaTime &operator=( DeltaTime && ) noexcept = default;
+
+  public:
+    /**
+     * @brief Sets the first timestamp on the timer, will be used for `FetchMs` as the next reference.
+     */
+    __B33_API void SetReferenceFrame();
+
+    /**
+     * @return Delta time between current and last reference frame or fetch
+     */
+    __B33_API float FetchMs();
+
+    /**
+     * @brief This method doesn't update the last fetch time.
+     *
+     * @return Delta time between current and last reference frame or fetch
+     */
+    __B33_API float DeltaMs();
+
+  private:
+    TimeStamp m_LastTimeStamp;
+};
+
+} // namespace B33::Core
+#endif //! B33_DELTA_TIME_H

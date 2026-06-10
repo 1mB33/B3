@@ -1,0 +1,62 @@
+#ifndef B33_EMPTYCANVAS_H
+#define B33_EMPTYCANVAS_H
+
+#include "B33App.h"
+#include "Input/UserInput.hpp"
+#include "Window/IBaseWindow.hpp"
+#include "Window/WindowPolicy/GameSystemPolicy.hpp"
+
+namespace B33::App
+{
+
+/**
+ * Basic empty window implementation for rendering and game. Has it's own built in UserInput instance.
+ *
+ * @param bManualInputUpdate - if true, input update will not be called automatically on every window update,
+ * this way you can manualy update the input on another thread or at a different time.
+ * @param GamePolicy - policy that defines window behaviour on different os level events. Defaults to
+ * DefaultGameSystemWindowPolicy
+ * */
+template <bool bManualInputUpdate = false, class GamePolicy = DefaultGameSystemWindowPolicy>
+class EmptyCanvas : public ::B33::App::IBaseWindow<EmptyCanvas<bManualInputUpdate>, GamePolicy>
+{
+    friend class IBaseWindow<EmptyCanvas<bManualInputUpdate>, GamePolicy>;
+
+  public:
+    EmptyCanvas( std::wstring wstrWindowName, int32_t defaultWidth, int32_t defaultHeigth )
+      : IBaseWindow<EmptyCanvas, GamePolicy>(
+            CreateWindowDesc( std::move( wstrWindowName ), defaultWidth, defaultHeigth ) )
+      , m_pInput( ::std::make_shared<UserInput>( this->GetWindowDesc() ) )
+    {
+    }
+
+    template <class U>
+    explicit EmptyCanvas( U &&desc )
+      : IBaseWindow<EmptyCanvas, GamePolicy>( ::std::forward<U>( desc ) )
+    {
+    }
+
+  public:
+    ::std::weak_ptr<UserInput> GetInput() const
+    {
+        return m_pInput;
+    }
+
+  private:
+    /**
+     * @brief It's called on every update
+     */
+    void HandleMessageImpl( const float fDelta, EAbWindowEventsFlags events )
+    {
+        if constexpr ( !bManualInputUpdate )
+        {
+            m_pInput->Update( fDelta );
+        }
+    }
+
+  private:
+    ::std::shared_ptr<UserInput> m_pInput;
+};
+
+} // namespace B33::App
+#endif // !B33_EMPTYCANVAS_H
