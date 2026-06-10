@@ -75,6 +75,7 @@ jobs:
         curl -LO https://github.com/microsoft/DirectXShaderCompiler/releases/download/v1.9.2602/linux_dxc_2026_02_20.x86_64.tar.gz
         tar -xf linux_dxc_*.tar.gz
         sudo cp bin/dxc /usr/local/bin/
+        sudo cp bin/dxc /bin/dxc 
         sudo cp lib/libdxcompiler.so* /usr/local/lib/
         sudo cp lib/libdxil.so /usr/local/lib/
         sudo ldconfig
