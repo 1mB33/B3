@@ -35,7 +35,7 @@ void EngineLoop::UpdateComponents( float fDelta )
             case Default:
             {
                 for ( auto component : componentVector )
-                    static_cast<IComponentDefault *>( component )->Update( fDelta, m_ComponentBridge );
+                    dynamic_cast<IComponentDefault *>( component )->Update( fDelta, m_ComponentBridge );
                 continue;
             }
             case Async:
@@ -44,7 +44,7 @@ void EngineLoop::UpdateComponents( float fDelta )
                     m_JobSystem.PushJob(
                         [ & ]()
                         {
-                            static_cast<IComponentAsync *>( component )->Update( fDelta );
+                            dynamic_cast<IComponentAsync *>( component )->Update( fDelta );
                         } );
                 continue;
             }
@@ -54,7 +54,7 @@ void EngineLoop::UpdateComponents( float fDelta )
                     m_JobSystem.PushJob(
                         [ & ]()
                         {
-                            static_cast<IComponentAsyncNoBridge *>( component )->Update( fDelta );
+                            dynamic_cast<IComponentAsyncNoBridge *>( component )->Update( fDelta );
                         } );
                 continue;
             }
@@ -63,7 +63,7 @@ void EngineLoop::UpdateComponents( float fDelta )
                 m_JobSystem.BlockAndWait();
 
                 for ( IComponentAbstractBase *component : componentVector )
-                    static_cast<IComponentNoBridge *>( component )->Update( fDelta );
+                    dynamic_cast<IComponentNoBridge *>( component )->Update( fDelta );
                 continue;
             }
             default:
@@ -85,25 +85,25 @@ void EngineLoop::DestroyComponents()
             case Default:
             {
                 for ( auto back = componentVector.rbegin(); back != componentVector.rend(); ++back )
-                    static_cast<IComponentAsyncNoBridge *>( *back )->Destroy( m_ComponentBridge );
+                    dynamic_cast<IComponentDefault *>( *back )->Destroy( m_ComponentBridge );
                 continue;
             }
             case Async:
             {
                 for ( auto back = componentVector.rbegin(); back != componentVector.rend(); ++back )
-                    static_cast<IComponentAsyncNoBridge *>( *back )->Destroy( m_ComponentBridge );
+                    dynamic_cast<IComponentAsync *>( *back )->Destroy( m_ComponentBridge );
                 continue;
             }
             case AsyncNoBridge:
             {
                 for ( auto back = componentVector.rbegin(); back != componentVector.rend(); ++back )
-                    static_cast<IComponentAsyncNoBridge *>( *back )->Destroy();
+                    dynamic_cast<IComponentAsyncNoBridge *>( *back )->Destroy();
                 continue;
             }
             case NoBridge:
             {
                 for ( auto back = componentVector.end() - 1; back >= componentVector.begin(); --back )
-                    static_cast<IComponentAsyncNoBridge *>( *back )->Destroy();
+                    dynamic_cast<IComponentNoBridge *>( *back )->Destroy();
                 continue;
             }
             default:
@@ -143,7 +143,7 @@ void EngineLoop::AddComponentInternal( ::std::string_view componentName )
         case AsyncNoBridge:
         {
             if ( m_bInitialized )
-                reinterpret_cast<IComponentAsyncNoBridge *>( component )->Initialize();
+                dynamic_cast<IComponentAsyncNoBridge *>( component )->Initialize();
 
             m_Components[::B33::System::EComponentType::AsyncNoBridge ].push_back( component );
             break;
@@ -151,7 +151,7 @@ void EngineLoop::AddComponentInternal( ::std::string_view componentName )
         case NoBridge:
         {
             if ( m_bInitialized )
-                reinterpret_cast<IComponentNoBridge *>( component )->Initialize();
+                dynamic_cast<IComponentNoBridge *>( component )->Initialize();
 
             m_Components[::B33::System::EComponentType::NoBridge ].push_back( component );
             break;
