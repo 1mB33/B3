@@ -51,7 +51,7 @@ UserInput::UserInput( const UserInput &other ) noexcept
 // --------------------------------------------------------------------------------------------------------------------
 UserInput &UserInput::operator=( const UserInput &other ) noexcept
 {
-    this->ListenToWindow( other.GetWindowDesc() );
+    WindowListener::operator=(other);
     this->m_bIsCapturing          = false;
     this->m_BindsHandles          = other.m_BindsHandles;
     this->m_vCurrentlyPressedKeys = {};
@@ -73,7 +73,7 @@ UserInput::UserInput( UserInput &&other ) noexcept
 // --------------------------------------------------------------------------------------------------------------------
 UserInput &UserInput::operator=( UserInput &&other ) noexcept
 {
-    this->ListenToWindow( other.GetWindowDesc() );
+    WindowListener::operator=(other);
     this->m_bIsCapturing          = false;
     this->m_BindsHandles          = ::std::move( other.m_BindsHandles );
     this->m_vCurrentlyPressedKeys = {};
@@ -85,7 +85,7 @@ UserInput &UserInput::operator=( UserInput &&other ) noexcept
 // ---------------------------------------------------------------------------------------------------------------------
 void UserInput::StartCapturing()
 {
-    if ( !this->GetWindowDesc().get() )
+    if ( !this->GetWindowDesc() )
     {
         Logger::Get().Log( Warning, L"UserInput::StartCapturing() -> Cannot start the capture, window desc is null." );
         Logger::Get().Log( Warning, L"UserInput::StartCapturing() -> Setting stop on the capture for safety." );
@@ -111,7 +111,7 @@ void UserInput::StopCapturing()
 // ---------------------------------------------------------------------------------------------------------------------
 void UserInput::Update( const float fDelta )
 {
-    B33_ASSERT( this->GetWindowDesc().get() != nullptr );
+    B33_ASSERT( this->GetWindowDesc() != nullptr );
 
     if ( !m_bIsCapturing )
     {
