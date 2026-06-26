@@ -1,6 +1,5 @@
 #pragma once
 
-#include "B33Core.h"
 #include "Game.hpp"
 
 #include "Input/Bind.h"
@@ -11,7 +10,6 @@
 #include "Raycaster/Rays.hpp"
 #include "Input/Action.hpp"
 #include "Input/Playable.hpp"
-#include <cstdint>
 
 class PaperCharacter : public ::B33::Rendering::Camera
 {
