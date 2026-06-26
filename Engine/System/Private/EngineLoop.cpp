@@ -42,7 +42,7 @@ void EngineLoop::UpdateComponents( float fDelta )
             {
                 for ( IComponentAbstractBase *component : componentVector )
                     m_JobSystem.PushJob(
-                        [ & ]()
+                        [ = ]()
                         {
                             dynamic_cast<IComponentAsync *>( component )->Update( fDelta );
                         } );
@@ -52,7 +52,7 @@ void EngineLoop::UpdateComponents( float fDelta )
             {
                 for ( IComponentAbstractBase *component : componentVector )
                     m_JobSystem.PushJob(
-                        [ & ]()
+                        [ = ]()
                         {
                             dynamic_cast<IComponentAsyncNoBridge *>( component )->Update( fDelta );
                         } );
