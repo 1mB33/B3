@@ -42,7 +42,7 @@ void EngineLoop::UpdateComponents( float fDelta )
             }
             case Async:
             {
-                UpdateCall call = +[]( IComponentAbstractBase *pComponent, float fDelta )
+                static constexpr UpdateCall call = +[]( IComponentAbstractBase *pComponent, float fDelta )
                 {
                     dynamic_cast<IComponentAsync *>( pComponent )->Update( fDelta );
                 };
@@ -53,7 +53,7 @@ void EngineLoop::UpdateComponents( float fDelta )
             }
             case AsyncNoBridge:
             {
-                UpdateCall call = +[]( IComponentAbstractBase *pComponent, float fDelta )
+                static constexpr UpdateCall call = +[]( IComponentAbstractBase *pComponent, float fDelta )
                 {
                     dynamic_cast<IComponentAsyncNoBridge *>( pComponent )->Update( fDelta );
                 };
