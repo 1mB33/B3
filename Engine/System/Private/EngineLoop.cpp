@@ -26,6 +26,8 @@ void EngineLoop::InitializeComponents()
 
 void EngineLoop::UpdateComponents( float fDelta )
 {
+    typedef void ( *UpdateCall )( IComponentAbstractBase *pComponent, float fDelta );
+
     B33_TRACE( L"Starting update loop" );
     for ( auto [ componentType, componentVector ] : m_Components )
     {
@@ -40,22 +42,24 @@ void EngineLoop::UpdateComponents( float fDelta )
             }
             case Async:
             {
+                UpdateCall call = +[]( IComponentAbstractBase *pComponent, float fDelta )
+                {
+                    dynamic_cast<IComponentAsync *>( pComponent )->Update( fDelta );
+                };
+
                 for ( IComponentAbstractBase *component : componentVector )
-                    m_JobSystem.PushJob(
-                        [ = ]()
-                        {
-                            dynamic_cast<IComponentAsync *>( component )->Update( fDelta );
-                        } );
+                    m_JobSystem.PushJob( call, component, fDelta );
                 continue;
             }
             case AsyncNoBridge:
             {
+                UpdateCall call = +[]( IComponentAbstractBase *pComponent, float fDelta )
+                {
+                    dynamic_cast<IComponentAsyncNoBridge *>( pComponent )->Update( fDelta );
+                };
+
                 for ( IComponentAbstractBase *component : componentVector )
-                    m_JobSystem.PushJob(
-                        [ = ]()
-                        {
-                            dynamic_cast<IComponentAsyncNoBridge *>( component )->Update( fDelta );
-                        } );
+                    m_JobSystem.PushJob( call, component, fDelta );
                 continue;
             }
             case NoBridge:

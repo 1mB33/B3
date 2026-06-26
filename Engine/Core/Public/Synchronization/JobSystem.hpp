@@ -1,3 +1,4 @@
+#include <memory>
 #if !defined( B33_JOB_SYSTEM_HPP )
 #    define B33_JOB_SYSTEM_HPP
 
@@ -8,18 +9,48 @@ namespace B33::Core
 
 class JobSystem
 {
+    class IRunnableJob
+    {
+      public:
+        virtual ~IRunnableJob() = default;
+
+      public:
+        virtual void Call() = 0;
+    };
+
+    template <typename... ARGS>
+    class RunnableJob final : public IRunnableJob
+    {
+      public:
+        explicit constexpr RunnableJob( void ( *func )( ARGS... ), ARGS... argv )
+          : m_FuncPtr { func }
+          , m_Params { std::make_tuple( argv... ) }
+        {
+        }
+
+      public:
+        virtual void Call() override final
+        {
+            std::apply( m_FuncPtr, m_Params );
+        }
+
+      private:
+        void ( *m_FuncPtr )( ARGS... ) = nullptr;
+        std::tuple<ARGS...> m_Params   = {};
+    };
+
   public:
     __B33_API JobSystem();
 
     __B33_API ~JobSystem();
 
   public:
-    template <typename FUNCTION>
-    void PushJob( FUNCTION fn )
+    template <typename... ARGS>
+    void PushJob( void ( *func )( ARGS... ), ARGS... argv )
     {
         B33_TRACE( L"JobSystem::PushJob() Pushing new job" );
         Job newJob      = {};
-        newJob.Runnable = fn;
+        newJob.Runnable = new RunnableJob( func, argv... );
 
         PushJobInternal( ::std::move( newJob ) );
     }
@@ -29,7 +60,7 @@ class JobSystem
   private:
     struct Job
     {
-        ::std::function<void()> Runnable;
+        IRunnableJob *Runnable;
     };
 
     struct JobProcessor
