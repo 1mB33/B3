@@ -1,5 +1,6 @@
 #pragma once
 
+#include "B33Core.h"
 #include "Game.hpp"
 
 #include "Input/Bind.h"
@@ -10,6 +11,7 @@
 #include "Raycaster/Rays.hpp"
 #include "Input/Action.hpp"
 #include "Input/Playable.hpp"
+#include <cstdint>
 
 class PaperCharacter : public ::B33::Rendering::Camera
 {
@@ -34,7 +36,25 @@ class PaperCharacter : public ::B33::Rendering::Camera
 
         if ( hr.bHit )
         {
-            m_g.GenerateCube( B33::Math::iVec3( hr.iHitCoords + hr.Normal ) );
+            const auto halfSize = B33::Math::Vec3( 2.0f, 2.0f, 2.0f ) *
+                                  m_g.GetWorld()->GetStoredObjects().GetHalfSize( m_g.GetIdFromPos( hr.iHitCoords ) ) *
+                                  hr.Normal;
+            B33_TRACE( L"GenerateCube, placing on top of cube with halfsizes %f %f %f",
+                       halfSize.x,
+                       halfSize.y,
+                       halfSize.z );
+            if ( halfSize.x || halfSize.y || halfSize.z )
+            {
+                m_g.GenerateCube(
+                    B33::Math::iVec3( hr.iHitCoords + halfSize ),
+                    ::B33::Math::Vec3( m_fPlacedType + 0.5f, m_fPlacedType + 0.5f, m_fPlacedType + 0.5f ) );
+            }
+            else
+            {
+                m_g.GenerateCube(
+                    B33::Math::iVec3( hr.iHitCoords + hr.Normal ),
+                    ::B33::Math::Vec3( m_fPlacedType + 0.5f, m_fPlacedType + 0.5f, m_fPlacedType + 0.5f ) );
+            }
         }
     }
 
@@ -106,14 +126,25 @@ class PaperCharacter : public ::B33::Rendering::Camera
         m_fSpeed = m_fWalk;
     }
 
+    void RotatePlaceTypeBackward( const float )
+    {
+        m_fPlacedType = std::max( m_fPlacedType - 0.25f, 0.f );
+    }
+
+    void RotatePlaceTypeForward( const float )
+    {
+        m_fPlacedType = std::min( m_fPlacedType + 0.25f, 2.f );
+    }
+
   private:
     Game &m_g;
 
     uint32_t m_uColor;
 
-    static constexpr float m_fWalk   = 0.1;
-    static constexpr float m_fSprint = 0.3;
-    float                  m_fSpeed  = -1.f;
+    static constexpr float m_fWalk       = 0.1;
+    static constexpr float m_fSprint     = 0.3;
+    float                  m_fSpeed      = -1.f;
+    float                  m_fPlacedType = 0;
 };
 
 class PaperController : public B33::App::ControllerObject
@@ -163,6 +194,12 @@ class PaperController : public B33::App::ControllerObject
 
     const inline static Action UseActionMouse =
         ActionFactory::CreateMouseAction<PaperCharacter, &PaperCharacter::MouseMove>();
+
+    const inline static Action UseActionRotatePlacedTypeForward =
+        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::RotatePlaceTypeForward>();
+
+    const inline static Action UseActionRotatePlacedTypeBackward =
+        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::RotatePlaceTypeBackward>();
 };
 
 typedef ::B33::App::Playable<PaperCharacter, PaperController> PlayablePaper;

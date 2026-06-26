@@ -123,7 +123,7 @@ class WorldGrid : public IWorldGrid
     }
 
   public:
-    virtual const ::B33::Math::WorldObjects &GetStoredObjects() const override
+    virtual const StoredObjectType &GetStoredObjects() const override
     {
         return m_StoredObjects;
     }
