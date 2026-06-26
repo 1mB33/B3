@@ -155,9 +155,9 @@ const wstring Logger::Stringify( const LogStruct &ls ) const
     auto milli = duration_cast<milliseconds>( duration );
     duration -= milli;
 
-    return ( wstringstream() << L'[' << h.count() << ":" << min.count() << ":" << sec.count() << "." << milli.count()
-                             << L"][" << setw( 10 ) << GetTag( ls.Sev ) << L"][" << GetFileName( ls.pszFile ) << L"]: "
-                             << ls.pwszMessage )
+    return ( wstringstream() << L'[' << setw( 2 ) << h.count() << ":" << min.count() << ":" << sec.count() << "."
+                             << setw( 3 ) << milli.count() << L"][" << setw( 10 ) << GetTag( ls.Sev ) << L"]["
+                             << GetFileName( ls.pszFile ) << L"]: " << ls.pwszMessage )
         .str();
 }
 
@@ -184,8 +184,8 @@ const wstring Logger::StringifyAndColorize( const LogStruct &ls ) const
     duration -= milli;
 
     return ( wstringstream()
-             << L'[' << h.count() << ":" << min.count() << ":" << sec.count() << "." << milli.count() << L"]["
-             << setw( 16 ) << ColorizeWithSeverity( GetTag( ls.Sev ), ls.Sev ) << L"]["
+             << L'[' << setw( 2 ) << h.count() << ":" << min.count() << ":" << sec.count() << "." << setw( 3 )
+             << milli.count() << L"][" << setw( 16 ) << ColorizeWithSeverity( GetTag( ls.Sev ), ls.Sev ) << L"]["
              << ColorizeTerminal::Colorize( string( GetFileName( ls.pszFile ) ), EColors::BrigthBlack ).c_str()
              << L"]: " << ColorizeWithSeverity( ls.pwszMessage, ls.Sev ) )
         .str();
