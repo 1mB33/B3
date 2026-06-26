@@ -1,5 +1,6 @@
 OPTION(BUILD_SHARED_LIBS "Compile Jolt as a shared library" ON)
 OPTION(CPP_RTTI_ENABLED "Enable C++ RTTI" ON)
+OPTION(DEBUG_RENDERER_IN_DEBUG_AND_RELEASE "Enable debug renderer in Debug and Release builds" OFF)
 
 ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/JoltPhysics/Build)
 
