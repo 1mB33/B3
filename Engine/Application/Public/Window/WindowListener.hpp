@@ -48,6 +48,11 @@ class WindowListener
         m_pWindowDesc = pWd;
     }
 
+    void ListenToWindow( WindowListener &other )
+    {
+        m_pWindowDesc = other.m_pWindowDesc;
+    }
+
   protected:
     WindowDesc *GetWindowDesc() const
     {
