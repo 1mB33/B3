@@ -34,11 +34,12 @@ class PaperCharacter : public ::B33::Rendering::Camera
 
         if ( hr.bHit )
         {
-            const auto halfSize = B33::Math::Vec3( 2.0f, 2.0f, 2.0f ) *
-                                  m_g.GetWorld()->GetStoredObjects().GetHalfSize( m_g.GetIdFromPos( hr.iHitCoords ) ) *
-                                  hr.Normal;
-            if ( halfSize.x || halfSize.y || halfSize.z )
+            auto id = m_g.GetIdFromPos( hr.iHitCoords );
+            if ( id + 1 )
             {
+                const auto halfSize =
+                    B33::Math::Vec3( 2.0f, 2.0f, 2.0f ) *
+                    m_g.GetWorld()->GetStoredObjects().GetHalfSize( m_g.GetIdFromPos( hr.iHitCoords ) ) * hr.Normal;
                 B33_TRACE( L"GenerateCube, placing on top of cube with halfsizes %f %f %f",
                            halfSize.x,
                            halfSize.y,
