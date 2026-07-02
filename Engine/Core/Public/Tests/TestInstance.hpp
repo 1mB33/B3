@@ -6,9 +6,10 @@
 
 #    if _B33_TESTS
 #        define TEST( PTESTFUN )                                                                                       \
-            inline void               PTESTFUN##_TEST();                                                               \
-            static Core::TestInstance PTESTFUN##_TESTSTRCT = Core::TestInstance( PTESTFUN##_TEST, #PTESTFUN );         \
-            inline void               PTESTFUN##_TEST()
+            inline void                             PTESTFUN##_TEST();                                                 \
+            static ::B33::Core::Tests::TestInstance PTESTFUN##_TESTSTRCT =                                             \
+                ::B33::Core::Tests::TestInstance( PTESTFUN##_TEST, __FILE__ ": " #PTESTFUN );                          \
+            inline void PTESTFUN##_TEST()
 #    else
 #        define TEST( PTESTFUN )
 #    endif // !_B33_TESTS

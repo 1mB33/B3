@@ -6,7 +6,7 @@ namespace B33::Core::Tests
 {
 class __B33_API TestMaster
 {
-    TestMaster();
+    __B33_API TestMaster();
 
     TestMaster( const TestMaster & ) = delete;
     TestMaster( TestMaster && )      = delete;
@@ -15,18 +15,14 @@ class __B33_API TestMaster
     TestMaster &operator=( TestMaster && )      = delete;
 
   public:
-    static TestMaster &Get()
-    {
-        static TestMaster instance = {};
-        return instance;
-    }
+    __B33_API static TestMaster &Get();
 
     ~TestMaster() = default;
 
   public:
-    void AddTest( void ( *pTest )(), const char *pszTestName, size_t uTestNameLen );
+    __B33_API void AddTest( void ( *pTest )(), const char *pszTestName, size_t uTestNameLen );
 
-    void Run();
+    __B33_API void Run();
 
   private:
     struct Test

@@ -1,8 +1,15 @@
-#include "Debug/Logger.hpp"
 #include "Tests/TestMaster.hpp"
+#include "TerminalColors.hpp"
 
 namespace B33::Core::Tests
 {
+
+// --------------------------------------------------------------------------------------------------------------------
+TestMaster &TestMaster::Get()
+{
+    static TestMaster instance;
+    return instance;
+}
 
 // ---------------------------------------------------------------------------------------------------------------------
 TestMaster::TestMaster()
@@ -12,9 +19,10 @@ TestMaster::TestMaster()
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-void TestMaster::AddTest( void( *pTest )(), const char *pszTestName, size_t uTestNameLen )
+void TestMaster::AddTest( void ( *pTest )(), const char *pszTestName, size_t uTestNameLen )
 {
-    m_pTestsBuf[ m_uTestAmount++ ] = Test { pTest, pszTestName, uTestNameLen, false };
+    m_pTestsBuf.push_back( Test { pTest, pszTestName, uTestNameLen, false } );
+    ++m_uTestAmount;
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -38,7 +46,13 @@ void TestMaster::Run()
         {
             m_pTestsBuf[ i ].bPassed = false;
 
-            Debug::Logger::Get().Log( Debug::Info, L"Failed test: %s", m_pTestsBuf[ i ].pszTestName );
+            Debug::Logger::Get().Log( Debug::Info,
+#if defined( _WIN32 )
+                                      L"Failed test: %S",
+#elif defined( __linux__ ) || defined( __APPLE__ )
+                                      L"Failed test: %s",
+#endif // !_WIN32
+                                      ColorizeTerminal::Colorize( m_pTestsBuf[ i ].pszTestName, BrigthRed ).c_str() );
         }
     }
 
@@ -48,7 +62,7 @@ void TestMaster::Run()
     //     }
     // }
 
-    Debug::Logger::Get().Log( Debug::Info, L"Passed test %d out of %d", uTestsPassed, m_uTestAmount );
+    Debug::Logger::Get().Log( Debug::Info, L"Passed tests %d out of %d", uTestsPassed, m_uTestAmount );
 }
 
 } // namespace B33::Core::Tests
