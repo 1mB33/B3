@@ -4,7 +4,7 @@
 namespace B33::Core::Tests
 
 {
-class __B33_API TestMaster
+class TestMaster
 {
     __B33_API TestMaster();
 
