@@ -85,8 +85,7 @@ void MyGame::Initialize( ::B33::System::ComponentBridge &bridge )
             } );
     }
 
-    m_Paper.GetObject().SetRotation( ::B33::Math::Vec3 { -0.5f, 1.25f, 0.f } );
-    m_Paper.GetObject().SetPositon( ::B33::Math::Vec3 { 14.5f, 2.25f, 25.f } );
+    m_Paper.GetObject().Initialize();
 }
 
 void MyGame::Update( float fDelta )

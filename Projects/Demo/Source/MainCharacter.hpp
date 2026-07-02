@@ -23,6 +23,13 @@ class PaperCharacter : public ::B33::Rendering::Camera
     }
 
   public:
+    void Initialize()
+    {
+        this->SetRotation( ::B33::Math::Vec3 { -0.5f, 1.25f, 0.f } );
+        this->SetPositon( ::B33::Math::Vec3 { 14.5f, 2.25f, 25.f } );
+    }
+
+  public:
     void PlaceBlock( const float )
     {
         B33::Math::Vec3 rot     = this->GetRotation();
