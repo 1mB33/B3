@@ -6,10 +6,15 @@
 #        include "Synchronization/DeltaTime.hpp"
 #        include "../../EngineLoop.hpp"
 #        include "AppleRunningUtils.hpp"
+#        include "Tests/TestMaster.hpp"
 
 int main( int argc, char *pArgv[] )
 {
     ::B33::Core::Debug::Logger::Get().Log( ::B33::Core::Debug::Info, L"Starting B33..." );
+#        if defined( _B33_TESTS )
+    ::B33::Core::Tests::TestMaster::Get().Run();
+#        endif // defined (_B33_TESTS)
+
     ::B33::System::EngineLoop engineLoop = {};
     ::B33::Core::DeltaTime    dt         = {};
 
@@ -32,5 +37,4 @@ int main( int argc, char *pArgv[] )
 }
 
 #    endif // !B33_ENTRY_POINT_HPP
-#endif     // !__APPLE__ 
-
+#endif     // !__APPLE__

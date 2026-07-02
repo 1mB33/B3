@@ -7,6 +7,8 @@ SET(BEE_CORE_SOURCE
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Synchronization/JobSystem.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/TerminalColors.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Unknown.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Private/Tests/TestInstance.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Private/Tests/TestMaster.cpp"
 )
 SET(BEE_CORE_HEADRES
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/CStandard.h"
@@ -27,11 +29,24 @@ SET(BEE_CORE_HEADRES
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Utility.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/TerminalColors.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Unknown.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Tests/TestInstance.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Tests/TestMaster.hpp"
 )
+IF(B33_RUN_TESTS STREQUAL "ON")
+
+    MESSAGE("Core includes tests")
+
+    SET(BEE_CORE_TESTS
+        "${CMAKE_CURRENT_SOURCE_DIR}/Tests/Run.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestMasterTest.hpp"
+    )
+
+ENDIF()
 
 ADD_LIBRARY(B33Core SHARED
     "${BEE_CORE_SOURCE}"
     "${BEE_CORE_HEADRES}"
+    "${BEE_CORE_TESTS}"
 )
 
 IF ( UNIX AND NOT APPLE )
