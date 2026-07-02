@@ -427,6 +427,11 @@ class Game
         return m_pWorld;
     }
 
+    InWorldCube GetCubeById( const size_t uId )
+    {
+        return m_vInWorldObjects[ uId ];
+    }
+
     size_t GetIdFromPos( const B33::Math::iVec3 &pos )
     {
         for ( auto &c : m_vInWorldObjects )
@@ -450,22 +455,24 @@ class Game
         m_pPhysics->Update( fDelta );
     }
 
-    void GenerateCube( const B33::Math::iVec3 &p )
+    void GenerateCube( const B33::Math::iVec3 &p, const B33::Math::Vec3 &halfSize )
     {
         B33_LOG( ::B33::Core::Debug::Info, L"Generating cube" );
 
         ::B33::Rendering::ColoredCube cc = ::B33::Rendering::ColoredCube();
-        ::B33::Math::Vec3             setP( 0.5f + p.x, 0.5f + p.y, 0.5f + p.z );
-        ::B33::Math::Vec3             setH( cc.GetHalfSize() );
-        size_t                        uCubeId;
+        cc.SetHalfSize( halfSize );
 
-        cc.SetHalfSize( ::B33::Math::Vec3( 0.5f, 0.5f, 0.5f ) );
+        ::B33::Math::Vec3 setP( halfSize.x + p.x, halfSize.y + p.y, halfSize.z + p.z );
+        ::B33::Math::Vec3 setH( cc.GetHalfSize() );
+        size_t            uCubeId;
+
         // cc.SetColor(0x99211200);
 
-        uCubeId = m_pWorld->GenerateObjectAtVoxel( p, std::move( cc ) );
+        uCubeId               = m_pWorld->GenerateObjectAtVoxel( p, std::move( cc ) );
+        auto newInWorldObject = InWorldCube( m_pWorld, uCubeId, m_pPhysics, m_pPhysics->CreateCube( setP, setH ) );
+        newInWorldObject.Update( 0.f );
 
-        m_vInWorldObjects.push_back(
-            InWorldCube( m_pWorld, uCubeId, m_pPhysics, m_pPhysics->CreateCube( setP, setH ) ) );
+        m_vInWorldObjects.push_back( newInWorldObject );
 
         m_pWorld->ForceUpload();
     }

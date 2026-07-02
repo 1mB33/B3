@@ -48,11 +48,16 @@ class WindowListener
         m_pWindowDesc = pWd;
     }
 
+    void ListenToWindow( WindowListener &other )
+    {
+        m_pWindowDesc = other.m_pWindowDesc;
+    }
+
   protected:
-    const ::std::shared_ptr<WindowDesc> &GetWindowDesc() const
+    WindowDesc *GetWindowDesc() const
     {
         B33_ASSERT( m_pWindowDesc != nullptr );
-        return m_pWindowDesc;
+        return m_pWindowDesc.get();
     }
 
   private:

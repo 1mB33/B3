@@ -25,7 +25,8 @@ void JobSystem::JobProcessorLoop( mutex              &mutex,
 
         if ( currentJob.Runnable != nullptr )
         {
-            currentJob.Runnable();
+            currentJob.Runnable->Call();
+            delete currentJob.Runnable;
             currentJob.Runnable = nullptr;
         }
 
@@ -98,7 +99,7 @@ void JobSystem::PushJobInternal( Job newJob )
                                    } );
     }
 
-    headThread.CurrentJob = newJob;
+    headThread.CurrentJob = std::move( newJob );
     headThread.IsFree.store( false );
     headThread.Condition.notify_all();
 

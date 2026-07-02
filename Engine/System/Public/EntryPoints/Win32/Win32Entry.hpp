@@ -5,10 +5,15 @@
 #        include "../../B33System.hpp"
 #        include "Synchronization/DeltaTime.hpp"
 #        include "../../EngineLoop.hpp"
+#        include "Tests/TestMaster.hpp"
 
 int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow )
 {
     ::B33::Core::Debug::Logger::Get().Log( ::B33::Core::Debug::Info, L"Starting B33..." );
+#        if defined( _B33_TESTS )
+    ::B33::Core::Tests::TestMaster::Get().Run();
+#        endif // defined (_B33_TESTS)
+
     ::B33::System::EngineLoop engineLoop = {};
     ::B33::Core::DeltaTime    dt         = {};
 

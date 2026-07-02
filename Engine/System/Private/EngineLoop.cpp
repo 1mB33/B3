@@ -26,6 +26,16 @@ void EngineLoop::InitializeComponents()
 
 void EngineLoop::UpdateComponents( float fDelta )
 {
+    typedef void ( *UpdateCall )( IComponentAbstractBase *pComponent, float fDelta );
+    constexpr UpdateCall asyncCall = +[]( IComponentAbstractBase *pComponent, float fDelta )
+    {
+        dynamic_cast<IComponentAsync *>( pComponent )->Update( fDelta );
+    };
+    constexpr UpdateCall asyncNoBridgeCall = +[]( IComponentAbstractBase *pComponent, float fDelta )
+    {
+        dynamic_cast<IComponentAsyncNoBridge *>( pComponent )->Update( fDelta );
+    };
+
     B33_TRACE( L"Starting update loop" );
     for ( auto [ componentType, componentVector ] : m_Components )
     {
@@ -33,43 +43,24 @@ void EngineLoop::UpdateComponents( float fDelta )
         switch ( componentType )
         {
             case Default:
-            {
                 for ( auto component : componentVector )
                     dynamic_cast<IComponentDefault *>( component )->Update( fDelta, m_ComponentBridge );
                 continue;
-            }
             case Async:
-            {
                 for ( IComponentAbstractBase *component : componentVector )
-                    m_JobSystem.PushJob(
-                        [ & ]()
-                        {
-                            dynamic_cast<IComponentAsync *>( component )->Update( fDelta );
-                        } );
+                    m_JobSystem.PushJob( asyncCall, component, fDelta );
                 continue;
-            }
             case AsyncNoBridge:
-            {
                 for ( IComponentAbstractBase *component : componentVector )
-                    m_JobSystem.PushJob(
-                        [ & ]()
-                        {
-                            dynamic_cast<IComponentAsyncNoBridge *>( component )->Update( fDelta );
-                        } );
+                    m_JobSystem.PushJob( asyncNoBridgeCall, component, fDelta );
                 continue;
-            }
             case NoBridge:
-            {
                 m_JobSystem.BlockAndWait();
-
                 for ( IComponentAbstractBase *component : componentVector )
                     dynamic_cast<IComponentNoBridge *>( component )->Update( fDelta );
                 continue;
-            }
             default:
-            {
                 B33_ASSERT_MSG( false, "Unknown component type" );
-            }
         }
     }
 }
