@@ -19,7 +19,7 @@ namespace B33::Core::Tests
 
 struct TestInstance
 {
-    TestInstance( void ( *pTest )(), const char szName[] );
+    __B33_API TestInstance( void ( *pTest )(), const char szName[] );
     ~TestInstance() = default;
 };
 
