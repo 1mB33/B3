@@ -6,6 +6,9 @@ SET(BEE_SYSTEM_SOURCE
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/EngineLoop.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/ComponentsOrder.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/B33System.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Private/Events/EventHandle.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Private/Events/EventDispatcher.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Private/Events/EventDispatcherInstance.cpp"
 )
 SET(BEE_SYSTEM_HEADRES
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/IComponent.hpp"
@@ -13,6 +16,12 @@ SET(BEE_SYSTEM_HEADRES
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/ComponentsOrder.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/EngineLoop.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/B33System.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Events/Call.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Events/Event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Events/EventDispatcherInstance.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Events/EventHandle.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Events/EventType.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Events/ICall.hpp"
 )
 
 IF (MSVC)
