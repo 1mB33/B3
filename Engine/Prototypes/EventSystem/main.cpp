@@ -71,11 +71,15 @@ class Call : public ICall
     void ( OBJECT_CLASS ::*m_pCall )() = nullptr;
 };
 
+typedef uint32_t EventId;
+typedef size_t   EventAddr;
+
 class EventDispatcherInstance
 {
     using UniqueCall  = unique_ptr<ICall>;
-    using EventSet    = unordered_map<int, vector<void ( * )()>>;
-    using EventSetArg = unordered_map<int, vector<UniqueCall>>;
+    using FnPtr       = void ( * )();
+    using EventSet    = unordered_map<EventId, vector<FnPtr>>;
+    using EventSetArg = unordered_map<EventId, vector<UniqueCall>>;
 
   public:
     EventDispatcherInstance()  = default;
@@ -88,7 +92,7 @@ class EventDispatcherInstance
     EventDispatcherInstance &operator=( const EventDispatcherInstance & ) = default;
 
   public:
-    void HandleNewEvent( int eventId )
+    void HandleNewEvent( EventId eventId )
     {
         if ( m_RegisteredEvents.contains( eventId ) )
         {
@@ -99,31 +103,31 @@ class EventDispatcherInstance
         m_RegisteredEvents[ eventId ] = {};
     }
 
-    void *Register( int eventId, void ( *pOnEvent )() )
+    EventAddr Register( EventId eventId, FnPtr pOnEvent )
     {
         if ( !m_RegisteredEvents.contains( eventId ) )
         {
             cerr << "That event isn't handled by this dispatcher!" << endl;
-            return nullptr;
+            return 0;
         }
         m_RegisteredEvents[ eventId ].push_back( pOnEvent );
-        return reinterpret_cast<void *>( pOnEvent );
+        return reinterpret_cast<EventAddr>( pOnEvent );
     }
 
     template <class OBJECT_CLASS>
-    void *Register( int eventId, OBJECT_CLASS *pObj, void ( OBJECT_CLASS ::*pCall )() )
+    EventAddr Register( EventId eventId, OBJECT_CLASS *pObj, void ( OBJECT_CLASS ::*pCall )() )
     {
         if ( !m_RegisteredEvents.contains( eventId ) )
         {
             cerr << "That event isn't handled by this dispatcher!" << endl;
-            return nullptr;
+            return 0;
         }
         m_RegisteredEventsArgs[ eventId ].push_back(
             unique_ptr<ICall>( Call<OBJECT_CLASS>::CreateCall( pObj, pCall ) ) );
-        return m_RegisteredEventsArgs[ eventId ].back().get();
+        return reinterpret_cast<EventAddr>( m_RegisteredEventsArgs[ eventId ].back().get() );
     }
 
-    void Trigger( int eventId )
+    void Trigger( EventId eventId )
     {
         for ( auto *pCall : m_RegisteredEvents[ eventId ] )
         {
@@ -135,19 +139,23 @@ class EventDispatcherInstance
         }
     }
 
-    void UnregisterHandler( int eventId, void *pAddr )
+    void UnregisterFunctionHandler( EventId eventId, EventAddr pAddr )
     {
         for ( auto it = m_RegisteredEvents[ eventId ].begin(); it != m_RegisteredEvents[ eventId ].end(); ++it )
         {
-            if ( reinterpret_cast<void *>( *it ) == pAddr )
+            if ( reinterpret_cast<EventAddr>( *it ) == pAddr )
             {
                 m_RegisteredEvents[ eventId ].erase( it );
                 break;
             }
         }
+    }
+
+    void UnregisterObjectHandler( EventId eventId, EventAddr pAddr )
+    {
         for ( auto it = m_RegisteredEventsArgs[ eventId ].begin(); it != m_RegisteredEventsArgs[ eventId ].end(); ++it )
         {
-            if ( reinterpret_cast<void *>( it->get() ) == pAddr )
+            if ( reinterpret_cast<EventAddr>( it->get() ) == pAddr )
             {
                 m_RegisteredEventsArgs[ eventId ].erase( it );
                 break;
@@ -160,24 +168,27 @@ class EventDispatcherInstance
     EventSetArg m_RegisteredEventsArgs = {};
 };
 
+enum EEventHandleType
+{
+    Invalid,
+    Funciton,
+    Object,
+};
+
 class EventHandle
 {
+    using FnPtr      = void ( * )();
     using UniqueCall = unique_ptr<ICall>;
 
   public:
-    EventHandle( const shared_ptr<EventDispatcherInstance> pInstance, int eventId, void *pFnAddr )
+    EventHandle( const shared_ptr<EventDispatcherInstance> pInstance,
+                 EventId                                   eventId,
+                 EventAddr                                 pAddr,
+                 EEventHandleType                          type )
       : m_EventId( eventId )
       , m_pInstance( pInstance )
-      , m_pAddrCall( nullptr )
-      , m_pFnAddr( pFnAddr )
-    {
-    }
-
-    EventHandle( const shared_ptr<EventDispatcherInstance> pInstance, int eventId, UniqueCall *pCallAddr )
-      : m_EventId( eventId )
-      , m_pInstance( pInstance )
-      , m_pAddrCall( pCallAddr )
-      , m_pFnAddr( nullptr )
+      , m_pEventAddr( reinterpret_cast<EventAddr>( pAddr ) )
+      , m_eType( type )
     {
     }
 
@@ -185,13 +196,13 @@ class EventHandle
     {
         if ( auto pLock = m_pInstance.lock() )
         {
-            if ( m_pAddrCall )
+            if ( m_eType == EEventHandleType::Funciton )
             {
-                pLock->UnregisterHandler( m_EventId, m_pAddrCall );
+                pLock->UnregisterFunctionHandler( m_EventId, m_pEventAddr );
             }
-            if ( m_pFnAddr )
+            if ( m_eType == EEventHandleType::Object )
             {
-                pLock->UnregisterHandler( m_EventId, m_pFnAddr );
+                pLock->UnregisterObjectHandler( m_EventId, m_pEventAddr );
             }
         }
     }
@@ -203,10 +214,10 @@ class EventHandle
     EventHandle &operator=( const EventHandle & ) = default;
 
   private:
-    int                               m_EventId   = -1;
-    weak_ptr<EventDispatcherInstance> m_pInstance = {};
-    UniqueCall                       *m_pAddrCall = nullptr;
-    void                             *m_pFnAddr   = nullptr;
+    EventId                           m_EventId    = -1;
+    weak_ptr<EventDispatcherInstance> m_pInstance  = {};
+    EventAddr                         m_pEventAddr = 0;
+    EEventHandleType                  m_eType      = Invalid;
 };
 
 template <class EVENT_NAME>
@@ -224,6 +235,8 @@ class OnMouseEvent : public Event<OnMouseEvent>
 
 class EventDispatcher
 {
+    using FnPtr = void ( * )();
+
   public:
     EventDispatcher()
       : m_pInstance( make_shared<EventDispatcherInstance>() )
@@ -239,26 +252,30 @@ class EventDispatcher
     EventDispatcher( const EventDispatcher & )            = default;
 
   public:
-    template <class EVENT, class OBJECT_CLASS>
-    EventHandle Register( OBJECT_CLASS *pObj, void ( OBJECT_CLASS ::*pCall )() )
+    template <class EVENT, class OBJECT_CLASS_PTR, class OBJECTS_METHOD_PTR>
+    EventHandle Register( OBJECT_CLASS_PTR pObj, OBJECTS_METHOD_PTR pMethod )
     {
-        EVENT e = {};
-        (void)e;
+        {
+            EVENT e = {};
+            (void)e;
+        }
         m_pInstance->HandleNewEvent( EVENT::GetIndex() );
-        auto r = m_pInstance->Register( EVENT::GetIndex(), pObj, pCall );
+        auto r = m_pInstance->Register( EVENT::GetIndex(), pObj, pMethod );
 
-        return EventHandle( m_pInstance, EVENT::GetIndex(), r );
+        return EventHandle( m_pInstance, EVENT::GetIndex(), r, EEventHandleType::Object );
     }
 
     template <class EVENT>
-    EventHandle Register( void ( *pOnEvent )() )
+    EventHandle Register( FnPtr pOnEvent )
     {
-        EVENT e = {};
-        (void)e;
+        {
+            EVENT e = {};
+            (void)e;
+        }
         m_pInstance->HandleNewEvent( EVENT::GetIndex() );
         auto r = m_pInstance->Register( EVENT::GetIndex(), pOnEvent );
 
-        return EventHandle( m_pInstance, EVENT::GetIndex(), r );
+        return EventHandle( m_pInstance, EVENT::GetIndex(), r, EEventHandleType::Funciton );
     }
 
     template <class EVENT>
