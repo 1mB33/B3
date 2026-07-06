@@ -10,7 +10,7 @@ EventHandle::EventHandle( const EventHandle::SharedDispacherInstance pInstance,
                           EEventHandleType                           type )
   : m_EventId( eventId )
   , m_pInstance( pInstance )
-  , m_pEventAddr( reinterpret_cast<EventAddr>( pAddr ) )
+  , m_pEventAddr( pAddr )
   , m_eType( type )
 {
 }
