@@ -3,6 +3,11 @@
 
 namespace B33::System
 {
+EventDispatcherInstance::EventDispatcherInstance()
+  : m_RegisteredEvents()
+  , m_RegisteredEventsArgs()
+{
+}
 
 void EventDispatcherInstance::HandleNewEvent( EventId eventId )
 {

@@ -18,7 +18,7 @@ class EventDispatcherInstance
     using EventSetObjectMethod = ::std::unordered_map<EventId, UniqueCallVector>;
 
   public:
-    EventDispatcherInstance()  = default;
+    __B33_API EventDispatcherInstance();
     ~EventDispatcherInstance() = default;
 
   public:
