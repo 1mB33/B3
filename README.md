@@ -35,10 +35,10 @@ Features a low-latency input system and a fully custom Vulkan-based compute rend
 
 ### Protypes:
 Project uses systems protypes that are available on my profile.
-- [AssetsManager](https://github.com/1mB33/AssetsManager)
+- [Assets manager](https://github.com/1mB33/AssetsManager)
 - [Unknown](https://github.com/1mB33/Unknown)
-- [ComponentSystem](https://github.com/1mB33/ComponentSystem)
-- [EventHandler](https://github.com/1mB33/EventHandler)
+- [Component system](https://github.com/1mB33/ComponentSystem)
+- [Event handler](https://github.com/1mB33/EventHandler)
 
 
 
