@@ -34,13 +34,11 @@ Implements a custom cross-platform window management system with runtime switcha
 Features a low-latency input system and a fully custom Vulkan-based compute rendering pipeline.
 
 ### Protypes:
-Projects uses protypes of systems that are availble on my profile.
----
+Project uses systems protypes that are available on my profile.
 - [AssetsManager](https://github.com/1mB33/AssetsManager)
 - [Unknown](https://github.com/1mB33/Unknown)
 - [ComponentSystem](https://github.com/1mB33/ComponentSystem)
 - [EventHandler](https://github.com/1mB33/EventHandler)
----
 
 
 
