@@ -10,10 +10,10 @@ namespace B33::System
 
 class EventDispatcherInstance
 {
-    using UniqueCall           = ::std::unique_ptr<ICall>;
+    using UniqueICall          = ::std::unique_ptr<ICall>;
     using FnPtr                = void ( * )();
     using FnVector             = ::std::vector<FnPtr>;
-    using UniqueCallVector     = ::std::vector<UniqueCall>;
+    using UniqueCallVector     = ::std::vector<UniqueICall>;
     using EventSet             = ::std::unordered_map<EventId, FnVector>;
     using EventSetObjectMethod = ::std::unordered_map<EventId, UniqueCallVector>;
 
@@ -40,8 +40,7 @@ class EventDispatcherInstance
             B33_WARNING( L"That event isn't handled by this dispatcher! Returning 0 as EventAddr" );
             return 0;
         }
-        m_RegisteredEventsArgs[ eventId ].push_back(
-            unique_ptr<ICall>( Call<OBJECT_CLASS>::CreateCall( pObj, pCall ) ) );
+        m_RegisteredEventsArgs[ eventId ].push_back( UniqueICall( Call<OBJECT_CLASS>::CreateCall( pObj, pCall ) ) );
 
         return reinterpret_cast<EventAddr>( m_RegisteredEventsArgs[ eventId ].back().get() );
     }

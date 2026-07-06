@@ -32,10 +32,10 @@ class EventDispatcher
             EVENT e = {};
             (void)e;
         }
-        m_pInstance->HandleNewEvent( EVENT::GetIndex() );
-        auto r = m_pInstance->Register( EVENT::GetIndex(), pObj, pMethod );
+        m_pInstance->HandleNewEvent( EVENT::GetGlobalIndex() );
+        auto r = m_pInstance->Register( EVENT::GetGlobalIndex(), pObj, pMethod );
 
-        return EventHandle( m_pInstance, EVENT::GetIndex(), r, EEventHandleType::Object );
+        return EventHandle( m_pInstance, EVENT::GetGlobalIndex(), r, EEventHandleType::Object );
     }
 
     template <class EVENT>
@@ -45,16 +45,16 @@ class EventDispatcher
             EVENT e = {};
             (void)e;
         }
-        m_pInstance->HandleNewEvent( EVENT::GetIndex() );
-        auto r = m_pInstance->Register( EVENT::GetIndex(), pOnEvent );
+        m_pInstance->HandleNewEvent( EVENT::GetGlobalIndex() );
+        auto r = m_pInstance->Register( EVENT::GetGlobalIndex(), pOnEvent );
 
-        return EventHandle( m_pInstance, EVENT::GetIndex(), r, EEventHandleType::Funciton );
+        return EventHandle( m_pInstance, EVENT::GetGlobalIndex(), r, EEventHandleType::Funciton );
     }
 
     template <class EVENT>
     void Trigger()
     {
-        m_pInstance->Trigger( EVENT::GetIndex() );
+        m_pInstance->Trigger( EVENT::GetGlobalIndex() );
     }
 
   private:
