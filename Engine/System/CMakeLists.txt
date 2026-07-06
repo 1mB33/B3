@@ -23,12 +23,23 @@ SET(BEE_SYSTEM_HEADRES
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Events/EventType.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Events/ICall.hpp"
 )
+IF(B33_RUN_TESTS STREQUAL "ON")
+
+    MESSAGE("Core includes tests")
+
+    SET(BEE_CORE_TESTS
+        "${CMAKE_CURRENT_SOURCE_DIR}/Tests/Run.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Tests/EventDispatcherTest.hpp"
+    )
+
+ENDIF()
 
 IF (MSVC)
 
     ADD_LIBRARY(B33System SHARED
         "${BEE_SYSTEM_SOURCE}"
         "${BEE_SYSTEM_HEADRES}"
+        "${BEE_CORE_TESTS}"
     )
 
     TARGET_COMPILE_OPTIONS(B33System PUBLIC "/permissive-")
@@ -47,6 +58,7 @@ IF (UNIX AND NOT APPLE)
     ADD_LIBRARY(B33System SHARED
         "${BEE_SYSTEM_SOURCE}"
         "${BEE_SYSTEM_HEADRES}"
+        "${BEE_CORE_TESTS}"
     )
     TARGET_COMPILE_OPTIONS(B33System PRIVATE
         "-Wall"
@@ -72,6 +84,7 @@ IF (APPLE)
         "${BEE_SYSTEM_SOURCE_OBJECTIVE_CPP}"
         "${BEE_SYSTEM_SOURCE}"
         "${BEE_SYSTEM_HEADRES}"
+        "${BEE_CORE_TESTS}"
     )
     TARGET_COMPILE_OPTIONS(B33System PRIVATE
         "-Wall"
