@@ -13,6 +13,9 @@ namespace B33::App
 class __B33_API BasicAppleWindowPolicy : public IWindowPolicy<BasicAppleWindowPolicy>
 {
   public:
+    virtual ~BasicAppleWindowPolicy() = default;
+
+  public:
     uint32_t CreateImpl( WindowDesc *pWd );
 
     void ShowImpl( WindowDesc *pWd );
