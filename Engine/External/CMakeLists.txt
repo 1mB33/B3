@@ -1,6 +1,15 @@
 OPTION(BUILD_SHARED_LIBS "Compile Jolt as a shared library" ON)
 OPTION(CPP_RTTI_ENABLED "Enable C++ RTTI" ON)
 OPTION(DEBUG_RENDERER_IN_DEBUG_AND_RELEASE "Enable debug renderer in Debug and Release builds" OFF)
+IF (B33_DEBUG_BUILD STREQUAL "ON")
+
+    OPTION(GENERATE_DEBUG_SYMBOLS "Generate debug symbols" ON)
+
+ELSE()
+
+    OPTION(GENERATE_DEBUG_SYMBOLS "Generate debug symbols" OFF)
+
+ENDIF()
 
 ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/JoltPhysics/Build)
 
