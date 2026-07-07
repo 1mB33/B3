@@ -68,8 +68,6 @@ uint32_t BasicLinuxWindowPolicy::CreateImpl( WindowDesc *pWd )
 
     OnCreate( pWd );
 
-    XMapWindow( pDisplay, window );
-
     return 0;
 }
 

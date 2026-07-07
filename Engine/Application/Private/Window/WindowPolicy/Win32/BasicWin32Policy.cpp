@@ -66,8 +66,6 @@ uint32_t BasicWin32WindowPolicy::CreateImpl( WindowDesc *pWd )
         pWd->hWnd = hWnd;
     }
 
-    ShowWindow( m_pWindowDesc->hWnd, SW_SHOW );
-
     return 0;
 }
 

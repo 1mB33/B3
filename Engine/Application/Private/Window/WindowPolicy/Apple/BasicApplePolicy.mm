@@ -23,8 +23,6 @@ uint32_t BasicAppleWindowPolicy::CreateImpl( WindowDesc *pWd )
 
     [pHandle setTitle:@"Unknown | fix me"];
     [pHandle center];
-    [pHandle makeKeyWindow];
-    [pHandle orderFrontRegardless];
     [pHandle setReleasedWhenClosed: NO];
     
     pWd->pWindow = (__bridge void*)pHandle;
