@@ -21,7 +21,7 @@ static const char szLogPostfix[] = "_AtlanticBeast.log";
 #    include "Debug/Assert.hpp"
 #    include "Debug/Logger.hpp"
 
-#    ifdef _DEBUG
+#    ifdef _B33_DEBUG
 #        define B33_LOG( ... ) ::B33::Core::Debug::Logger::Get().Log( __VA_ARGS__ )
 #        define B33_TRACE( ... )                                                                                       \
             ::B33::Core::Debug::Logger::Get().Log( __FILE__, ::B33::Core::Debug::Trace, __VA_ARGS__ )
@@ -38,7 +38,7 @@ static const char szLogPostfix[] = "_AtlanticBeast.log";
             ::B33::Core::Debug::Logger::Get().Log( __FILE__, ::B33::Core::Debug::Warning, __VA_ARGS__ )
 #        define B33_ERROR( ... )                                                                                       \
             ::B33::Core::Debug::Logger::Get().Log( __FILE__, ::B33::Core::Debug::Error, __VA_ARGS__ )
-#    endif // !_DEBUG
+#    endif // !_B33_DEBUG
 
 // Workaround for empty __VA_ARGS__
 #    ifdef _WIN32

@@ -115,11 +115,11 @@ class IBaseWindow
         m_Policy.swap( pNewPolicy );
         m_pWindowDesc->LastEvent = EAbWindowEvents::ChangedBehavior;
 
-        // This helps with pinning the focus to the window on Windows OS
-#if defined( _WIN32 )
-        this->Hide();
-        this->Show();
-#endif
+        this->Update( 0.f );
+        if ( oldDesc.bIsVisible )
+        {
+            this->Show();
+        }
     }
 
   public:
@@ -151,6 +151,7 @@ class IBaseWindow
         B33_ASSERT( m_Policy != nullptr );
 
         m_Policy->WindowPolicyShow( m_pWindowDesc.get() );
+        m_pWindowDesc->bIsVisible = true;
     }
 
     void Hide()
@@ -159,6 +160,7 @@ class IBaseWindow
         B33_ASSERT( m_Policy != nullptr );
 
         m_Policy->WindowPolicyHide( m_pWindowDesc.get() );
+        m_pWindowDesc->bIsVisible = false;
     }
 
     void Destroy()

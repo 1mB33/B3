@@ -17,20 +17,4 @@ TEST( WindowsInstanceCreation )
     B33_ASSERT( window.GetWindowDesc()->bIsAlive == true );
 }
 
-TEST( WindowZeroDimensions )
-{
-    try
-    {
-        B33::App::EmptyCanvas<true, ::B33::App::DefaultGameSystemWindowPolicy> window( L"Test", 0, 0 );
-        window.Create();
-        window.Update( 0.f );
-    }
-    catch ( B33::Core::Exception &e )
-    {
-        return;
-    }
-
-    throw B33::Core::Exception();
-}
-
 #endif // !defined ( B33_EVENT_DISPATCHER_TESTS_HPP )

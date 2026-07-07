@@ -1,6 +1,7 @@
 #if !defined( B33_EVENT_DISPATCHER_TESTS_HPP )
 #    define B33_EVENT_DISPATCHER_TESTS_HPP
 
+#    include "B33Core.h"
 #    include "Tests/TestInstance.hpp"
 #    include "Events/EventDispatcher.hpp"
 #    include "Events/Event.hpp"
@@ -8,7 +9,7 @@
 
 TEST( EventDispatcher )
 {
-    static int Count = 0;
+    __B33_ATTRIBUTE_MIGHT_BE_UNUSED static int Count = 0;
 
     class ClickerCounter
     {

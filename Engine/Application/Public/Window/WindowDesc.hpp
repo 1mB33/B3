@@ -17,6 +17,7 @@ struct WindowDesc
     int32_t                     Width;
     int32_t                     Height;
     bool                        bIsAlive;
+    bool                        bIsVisible;
     EAbWindowEventsFlags        LastEvent;
     ::std::queue<AbInputStruct> InputStruct;
 
@@ -27,9 +28,9 @@ struct WindowDesc
     Display *pDisplayHandle;
     Window   WindowHandle;
     int32_t  Screen;
-#elif defined(__APPLE__)
-    void* pWindow;
-    void* pMetalContext;
+#elif defined( __APPLE__ )
+    void *pWindow;
+    void *pMetalContext;
 #endif // !_WIN32
 };
 
@@ -43,6 +44,7 @@ WindowDesc CreateWindowDesc( U &&wstrName, int32_t width = 1200, int32_t height 
     wd.Width         = width;
     wd.Height        = height;
     wd.bIsAlive      = false;
+    wd.bIsVisible    = false;
     wd.LastEvent &= 0;
 
 #if defined( _WIN32 )
