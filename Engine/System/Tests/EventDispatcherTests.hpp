@@ -1,14 +1,15 @@
-#include "Debug/Assert.hpp"
 #if !defined( B33_EVENT_DISPATCHER_TESTS_HPP )
 #    define B33_EVENT_DISPATCHER_TESTS_HPP
 
+#    include "B33Core.h"
 #    include "Tests/TestInstance.hpp"
 #    include "Events/EventDispatcher.hpp"
 #    include "Events/Event.hpp"
+#    include "Debug/Assert.hpp"
 
 TEST( EventDispatcher )
 {
-    static int Count = 0;
+    __B33_ATTRIBUTE_MIGHT_BE_UNUSED static int Count = 0;
 
     class ClickerCounter
     {
@@ -29,7 +30,7 @@ TEST( EventDispatcher )
 
     B33::System::EventDispatcher dispatcher = {};
 
-    ClickerCounter doggie = {};
+    ClickerCounter counter = {};
     {
         auto handle1 = dispatcher.Register<SomeKindOfEvent>( +[]()
                                                              {
@@ -46,7 +47,7 @@ TEST( EventDispatcher )
                                                               ++Count;
                                                           } );
 
-        auto handle4 = dispatcher.Register<SomeKindOfEvent>( &doggie, &ClickerCounter::Click );
+        auto handle4 = dispatcher.Register<SomeKindOfEvent>( &counter, &ClickerCounter::Click );
     }
     auto handle1 = dispatcher.Register<SomeKindOfEvent>( +[]()
                                                          {
@@ -64,7 +65,7 @@ TEST( EventDispatcher )
                                                       } );
 
 
-    auto handle4 = dispatcher.Register<AnotherEvent>( &doggie, &ClickerCounter::Click );
+    auto handle4 = dispatcher.Register<AnotherEvent>( &counter, &ClickerCounter::Click );
 
     for ( int i = 0; i < 10; ++i )
     {

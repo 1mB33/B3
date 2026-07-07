@@ -3,8 +3,7 @@
 .vs/
 compile_commands.json
 Bin/
-Build/
-BuildDebug/
+Build*/
 out/
 Lib/
 

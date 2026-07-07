@@ -46,7 +46,7 @@ class EmptyCanvas : public ::B33::App::IBaseWindow<EmptyCanvas<bManualInputUpdat
     /**
      * @brief It's called on every update
      */
-    void HandleMessageImpl( const float fDelta, EAbWindowEventsFlags events )
+    void HandleMessageImpl( const float fDelta, __B33_ATTRIBUTE_MIGHT_BE_UNUSED EAbWindowEventsFlags events )
     {
         if constexpr ( !bManualInputUpdate )
         {

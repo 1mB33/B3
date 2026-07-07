@@ -15,6 +15,8 @@ uint32_t BasicWin32WindowPolicy::CreateImpl( WindowDesc *pWd )
     B33_ASSERT( pWd != NULL );
     B33_ASSERT( pWd->hWnd == NULL );
     B33_ASSERT( !pWd->bIsAlive );
+    B33_ASSERT( pWd->Height > 0 );
+    B33_ASSERT( pWd->Width > 0 );
 
     HWND hWnd;
 
@@ -65,8 +67,6 @@ uint32_t BasicWin32WindowPolicy::CreateImpl( WindowDesc *pWd )
 
         pWd->hWnd = hWnd;
     }
-
-    ShowWindow( m_pWindowDesc->hWnd, SW_SHOW );
 
     return 0;
 }

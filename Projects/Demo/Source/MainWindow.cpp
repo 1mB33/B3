@@ -22,6 +22,7 @@ void MainWindow::Initialize()
                                                                                  .KeyCode = B33::App::B33_KEY_ESC } } },
                                 } );
 
+    m_WindowInstance.Show();
     m_WindowInstance.GetInput().lock()->StartCapturing();
 }
 

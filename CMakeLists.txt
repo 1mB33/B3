@@ -18,6 +18,13 @@ IF(NOT CMAKE_BUILD_TYPE)
 
 ENDIF()
 
+IF(CMAKE_BUILD_TYPE STREQUAL "TestsOnly")
+
+    OPTION(B33_ONLY_TESTS "Run tests before starting the main loop" ON)
+    OPTION(B33_DEBUG_BUILD "Enables debug build" ON)
+
+ENDIF()
+
 IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
     OPTION(B33_DEBUG_BUILD "Enables debug build" ON)
