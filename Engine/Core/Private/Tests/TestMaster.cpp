@@ -35,6 +35,7 @@ void TestMaster::Run()
     {
         try
         {
+            Debug::Logger::Get().Log( Debug::Info, L"Starting test: %s", m_pTestsBuf[ i ].pszTestName );
             m_pTestsBuf[ i ].pTest();
 
             m_pTestsBuf[ i ].bPassed = true;

@@ -17,6 +17,9 @@ using namespace ::B33::Core::Debug;
 // ---------------------------------------------------------------------------------------------------------------------
 uint32_t BasicAppleWindowPolicy::CreateImpl( WindowDesc *pWd )
 {
+    B33_ASSERT( pWd->Height > 0 );
+    B33_ASSERT( pWd->Width > 0 );
+
     NSRect frame = NSMakeRect(0, 0, 800, 600);
     NSUInteger style = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskResizable;
     NSWindow *pHandle = [[NSWindow alloc] initWithContentRect:frame styleMask:style backing:NSBackingStoreBuffered defer:NO];

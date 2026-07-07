@@ -17,6 +17,9 @@ using namespace ::B33::Core::Debug;
 // ---------------------------------------------------------------------------------------------------------------------
 uint32_t BasicLinuxWindowPolicy::CreateImpl( WindowDesc *pWd )
 {
+    B33_ASSERT( pWd->Height > 0 );
+    B33_ASSERT( pWd->Width > 0 );
+
     XSetErrorHandler( X11HandleError );
     pWd->pDisplayHandle = AbAskForDisplayLinux( NULL );
 
