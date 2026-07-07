@@ -58,11 +58,18 @@ IF (MSVC)
     TARGET_COMPILE_OPTIONS(B33Rendering PUBLIC "/permissive-")
     TARGET_COMPILE_OPTIONS(B33Rendering PUBLIC "/GR")
 
-    IF (CMAKE_BUILD_TYPE!="Debug")
+    IF (B33_DEBUG_BUILD STREQUAL "ON")
 
-        TARGET_COMPILE_OPTIONS(B33Rendering PUBLIC "/O2")
+        TARGET_COMPILE_OPTIONS(B33Rendering PRIVATE "/Z7")
+        TARGET_COMPILE_OPTIONS(B33Rendering PRIVATE "/Zi")
+        TARGET_COMPILE_OPTIONS(B33Rendering PRIVATE "/ZI")
+
+    ELSE()
+
+        TARGET_COMPILE_OPTIONS(B33Rendering PRIVATE "/O2")
 
     ENDIF()
+
 
 ELSE()
 
@@ -71,7 +78,7 @@ ELSE()
         "-Werror"
         "-Wextra"
     )
-    IF (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    IF (B33_DEBUG_BUILD STREQUAL "ON")
 
         TARGET_COMPILE_OPTIONS(B33Rendering PRIVATE "-g")
 
