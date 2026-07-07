@@ -28,10 +28,8 @@ class EventDispatcher
     template <class EVENT, class OBJECT_CLASS_PTR, class OBJECTS_METHOD_PTR>
     EventHandle Register( OBJECT_CLASS_PTR pObj, OBJECTS_METHOD_PTR pMethod )
     {
-        {
-            EVENT e = {};
-            (void)e;
-        }
+        EVENT::template Invoke<EVENT>();
+
         m_pInstance->HandleNewEvent( EVENT::GetGlobalIndex() );
         auto r = m_pInstance->Register( EVENT::GetGlobalIndex(), pObj, pMethod );
 
@@ -41,10 +39,8 @@ class EventDispatcher
     template <class EVENT>
     EventHandle Register( FnPtr pOnEvent )
     {
-        {
-            EVENT e = {};
-            (void)e;
-        }
+        EVENT::template Invoke<EVENT>();
+
         m_pInstance->HandleNewEvent( EVENT::GetGlobalIndex() );
         auto r = m_pInstance->Register( EVENT::GetGlobalIndex(), pOnEvent );
 

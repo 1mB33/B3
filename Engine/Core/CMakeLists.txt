@@ -38,7 +38,6 @@ IF(B33_RUN_TESTS STREQUAL "ON")
 
     SET(BEE_CORE_TESTS
         "${CMAKE_CURRENT_SOURCE_DIR}/Tests/Run.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestMasterTest.hpp"
     )
 
 ENDIF()

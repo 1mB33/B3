@@ -1,1 +1,1 @@
-#include "EventDispatcherTest.hpp"
+#include "EventDispatcherTests.hpp"
