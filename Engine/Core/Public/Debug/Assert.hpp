@@ -1,9 +1,10 @@
 #ifndef B33_DEBUG_ASSERT_H
 #define B33_DEBUG_ASSERT_H
 
+#include "B33CoreMinimal.h"
 #include "Exception.hpp"
 
-#ifdef _DEBUG
+#ifdef _B33_DEBUG
 #    define B33_ASSERT( expr )                                                                                         \
         do                                                                                                             \
         {                                                                                                              \

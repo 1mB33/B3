@@ -18,7 +18,7 @@ typedef
 #elif defined( _X11 )
     BasicLinuxWindowPolicy
 #elif defined( __APPLE__ )
-    MetalAppleWindowPolicy
+    BasicAppleWindowPolicy
 #endif // !_WIN32
         DefaultSystemWindowPolicy;
 

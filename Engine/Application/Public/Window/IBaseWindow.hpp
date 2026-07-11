@@ -7,6 +7,7 @@
 #include "Window/WindowDesc.hpp"
 #include "Window/WindowEvents.h"
 #include "Window/WindowPolicy/BasicSystemPolicy.hpp"
+#include <memory>
 
 namespace B33::App
 {
@@ -214,6 +215,11 @@ class IBaseWindow
     const ::std::shared_ptr<WindowDesc> &GetWindowDesc() const
     {
         return m_pWindowDesc;
+    }
+
+    const DefaultSystemWindowPolicy *GetPolicy() const
+    {
+        return m_Policy.get();
     }
 
   private:
