@@ -74,6 +74,11 @@ void Renderer::Update( const float )
 // ---------------------------------------------------------------------------------------------------------------------
 void Renderer::Render()
 {
+    if ( m_pWindowDesc->LastEvent == EAbWindowEvents::ChangedBehavior )
+    {
+        return;
+    }
+
     uint32_t uImageIndex;
     VkDevice device = m_pDeviceAdapter->GetAdapterHandle();
     Frame   &frame  = ( *m_vFrames.get() )[ m_uCurrentFrame ];
@@ -277,11 +282,11 @@ void Renderer::RecordCommands( VkCommandBuffer &cmdBuff )
     presentBarrier.dstQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
     presentBarrier.image                = m_pSwapChain->GetImage();
     presentBarrier.subresourceRange     = {
-            .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
-            .baseMipLevel   = 0,
-            .levelCount     = 1,
-            .baseArrayLayer = 0,
-            .layerCount     = 1,
+        .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
+        .baseMipLevel   = 0,
+        .levelCount     = 1,
+        .baseArrayLayer = 0,
+        .layerCount     = 1,
     };
 
     vkCmdPipelineBarrier( cmdBuff,
