@@ -3,6 +3,7 @@
 
 #include "Input/InputEvents.h"
 #include "WindowEvents.h"
+#include <mutex>
 
 /**
  * Struct that contains all the handles and information about the window.
@@ -12,26 +13,49 @@
  */
 struct WindowDesc
 {
-    ::std::wstring              Name;
-    const wchar_t              *pwszClassName;
-    int32_t                     Width;
-    int32_t                     Height;
-    bool                        bIsAlive;
-    bool                        bIsVisible;
-    EAbWindowEventsFlags        LastEvent;
-    ::std::queue<AbInputStruct> InputStruct;
+    ::std::mutex mUpdated;
 
+    struct
+    {
+        ::std::wstring              Name;
+        const wchar_t              *pwszClassName;
+        int32_t                     Width;
+        int32_t                     Height;
+        bool                        bIsAlive;
+        bool                        bIsVisible;
+        EAbWindowEventsFlags        LastEvent;
+        ::std::queue<AbInputStruct> InputStruct;
+    } Data;
+
+    struct
+    {
 #if defined( _WIN32 )
-    HWND       hWnd;
-    WNDCLASSEX Wcex;
+        HWND       hWnd;
+        WNDCLASSEX Wcex;
 #elif defined( _X11 )
-    Display *pDisplayHandle;
-    Window   WindowHandle;
-    int32_t  Screen;
+        Display *pDisplayHandle;
+        Window   WindowHandle;
+        int32_t  Screen;
 #elif defined( __APPLE__ )
-    void *pWindow;
-    void *pMetalContext;
+        void *pWindow;
+        void *pMetalContext;
 #endif // !_WIN32
+    } OS;
+
+  public:
+    WindowDesc() noexcept
+      : mUpdated()
+      , Data()
+      , OS()
+    {
+    }
+
+    WindowDesc( const WindowDesc &other )
+      : mUpdated()
+      , Data( other.Data )
+      , OS( other.OS )
+    {
+    }
 };
 
 template <class U>
@@ -39,21 +63,21 @@ WindowDesc CreateWindowDesc( U &&wstrName, int32_t width = 1200, int32_t height 
 {
     WindowDesc wd = {};
 
-    wd.Name          = ::std::forward<U>( wstrName );
-    wd.pwszClassName = NULL;
-    wd.Width         = width;
-    wd.Height        = height;
-    wd.bIsAlive      = false;
-    wd.bIsVisible    = false;
-    wd.LastEvent &= 0;
+    wd.Data.Name          = ::std::forward<U>( wstrName );
+    wd.Data.pwszClassName = NULL;
+    wd.Data.Width         = width;
+    wd.Data.Height        = height;
+    wd.Data.bIsAlive      = false;
+    wd.Data.bIsVisible    = false;
+    wd.Data.LastEvent &= 0;
 
 #if defined( _WIN32 )
-    wd.hWnd = NULL;
-    wd.Wcex = {};
+    wd.OS.hWnd = NULL;
+    wd.OS.Wcex = {};
 #elif defined( _X11 )
-    wd.pDisplayHandle = NULL;
-    wd.WindowHandle   = 0;
-    wd.Screen         = 0;
+    wd.OS.pDisplayHandle = NULL;
+    wd.OS.WindowHandle   = 0;
+    wd.OS.Screen         = 0;
 #endif // !_WIN32
     return wd;
 }

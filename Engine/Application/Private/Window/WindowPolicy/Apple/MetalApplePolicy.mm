@@ -14,23 +14,25 @@ namespace B33::App
 using namespace ::B33::Core;
 using namespace ::B33::Core::Debug;
 
-
 void MetalAppleWindowPolicy::OnCreate( WindowDesc *pWd )
-{   
-    NSWindow *pHandle = (__bridge NSWindow*)pWd->pWindow;
-    NSView *pView = [pHandle contentView];
+{
+    B33_ASSERT( pWd );
 
-    [pView setWantsLayer: YES];
+    __B33_ATTRIBUTE_MIGHT_BE_UNUSED const auto &windowData = pWd->Data;
+    auto                                       &windowOS   = pWd->OS;
+
+
+    NSWindow *pHandle = (__bridge NSWindow *)windowOS.pWindow;
+    NSView   *pView   = [pHandle contentView];
+
+    [pView setWantsLayer:YES];
     CAMetalLayer *pMetalLayer = [CAMetalLayer layer];
-    pMetalLayer.frame = pView.bounds;
-    pMetalLayer.opaque = YES;
-    [pView setLayer: pMetalLayer];
+    pMetalLayer.frame         = pView.bounds;
+    pMetalLayer.opaque        = YES;
+    [pView setLayer:pMetalLayer];
 
-    pWd->pMetalContext = (__bridge void*)pMetalLayer;
+    windowOS.pMetalContext = (__bridge void *)pMetalLayer;
 }
 
 } // namespace B33::App
 #endif // !__linux__
-
-
-

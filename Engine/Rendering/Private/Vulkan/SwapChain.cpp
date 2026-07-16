@@ -106,15 +106,15 @@ VkSurfaceKHR Swapchain::CreateSurface( weak_ptr<const Instance> &pInstance, weak
     createInfo.pNext                       = NULL;
     createInfo.flags                       = 0;
     createInfo.hinstance                   = GetModuleHandle( NULL );
-    createInfo.hwnd                        = pLockedWd->hWnd;
+    createInfo.hwnd                        = pLockedWd->OS.hWnd;
     THROW_IF_FAILED( vkCreateWin32SurfaceKHR( pLockedInstance->GetInstance(), &createInfo, NULL, &surface ) )
 #elif defined( _X11 )
     VkXlibSurfaceCreateInfoKHR createInfo = {};
     createInfo.sType                      = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
     createInfo.pNext                      = NULL;
     createInfo.flags                      = 0;
-    createInfo.dpy                        = pLockedWd->pDisplayHandle;
-    createInfo.window                     = pLockedWd->WindowHandle;
+    createInfo.dpy                        = pLockedWd->OS.pDisplayHandle;
+    createInfo.window                     = pLockedWd->OS.WindowHandle;
 
     THROW_IF_FAILED( vkCreateXlibSurfaceKHR( pLockedInstance->GetInstance(), &createInfo, NULL, &surface ) );
 #elif defined( __APPLE__ )
@@ -124,7 +124,7 @@ VkSurfaceKHR Swapchain::CreateSurface( weak_ptr<const Instance> &pInstance, weak
     createInfo.sType                       = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;
     createInfo.pNext                       = NULL;
     createInfo.flags                       = 0;
-    createInfo.pLayer                      = pLockedWd->pMetalContext;
+    createInfo.pLayer                      = pLockedWd->OS.pMetalContext;
 
     THROW_IF_FAILED( vkCreateMetalSurfaceEXT( pLockedInstance->GetInstance(), &createInfo, NULL, &surface ) );
 #endif // !_WIN32
@@ -180,8 +180,8 @@ VkExtent2D Swapchain::GetExtentInternal( const VkSurfaceCapabilitiesKHR &capabil
 
     if ( extent.width == UINT32_MAX )
     {
-        extent.width  = pLockedWd->Width;
-        extent.height = pLockedWd->Height;
+        extent.width  = pLockedWd->Data.Width;
+        extent.height = pLockedWd->Data.Height;
     }
 
     return extent;

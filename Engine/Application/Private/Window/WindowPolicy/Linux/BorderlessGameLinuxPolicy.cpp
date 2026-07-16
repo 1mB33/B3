@@ -14,13 +14,18 @@ using namespace B33::Core::Debug;
 // ---------------------------------------------------------------------------------------------------------------------
 void BorderlessGameLinuxWindowPolicy::OnCreate( WindowDesc *pWd )
 {
+    B33_ASSERT( pWd );
+
+    auto &windowData = pWd->Data;
+    auto &windowOS   = pWd->OS;
+
     GameLinuxWindowPolicy::OnCreate( pWd );
 
-    m_WMState      = XInternAtom( pWd->pDisplayHandle, "_NET_WM_STATE", true );
-    m_WMFullscreen = XInternAtom( pWd->pDisplayHandle, "_NET_WM_STATE_FULLSCREEN", true );
+    m_WMState      = XInternAtom( windowOS.pDisplayHandle, "_NET_WM_STATE", true );
+    m_WMFullscreen = XInternAtom( windowOS.pDisplayHandle, "_NET_WM_STATE_FULLSCREEN", true );
 
-    XChangeProperty( pWd->pDisplayHandle,
-                     pWd->WindowHandle,
+    XChangeProperty( windowOS.pDisplayHandle,
+                     windowOS.WindowHandle,
                      m_WMState,
                      XA_ATOM,
                      32,
@@ -28,20 +33,20 @@ void BorderlessGameLinuxWindowPolicy::OnCreate( WindowDesc *pWd )
                      reinterpret_cast<unsigned char *>( &m_WMFullscreen ),
                      1 );
 
-    XSync( pWd->pDisplayHandle, false );
-    XFlush( pWd->pDisplayHandle );
+    XSync( windowOS.pDisplayHandle, false );
+    XFlush( windowOS.pDisplayHandle );
 
     Window       dummyWindow;
     int          dummyInt;
     unsigned int dummyUInt;
 
-    XGetGeometry( pWd->pDisplayHandle,
-                  pWd->WindowHandle,
+    XGetGeometry( windowOS.pDisplayHandle,
+                  windowOS.WindowHandle,
                   &dummyWindow,
                   &dummyInt,
                   &dummyInt,
-                  reinterpret_cast<unsigned int *>( &( pWd->Width ) ),
-                  reinterpret_cast<unsigned int *>( &( pWd->Height ) ),
+                  reinterpret_cast<unsigned int *>( &( windowData.Width ) ),
+                  reinterpret_cast<unsigned int *>( &( windowData.Height ) ),
                   &dummyUInt,
                   &dummyUInt );
 }

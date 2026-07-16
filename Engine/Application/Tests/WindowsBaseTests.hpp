@@ -18,7 +18,7 @@ TEST( WindowsInstanceCreation )
         window.Update( 0.f );
     }
 
-    B33_ASSERT( window.GetWindowDesc()->bIsAlive == true );
+    B33_ASSERT( window.GetWindowDesc()->Data.bIsAlive == true );
 }
 
 TEST( WindowsBehaviorChange )
@@ -37,7 +37,7 @@ TEST( WindowsBehaviorChange )
         window.Update( 0.f );
     }
 
-    B33_ASSERT( window.GetWindowDesc()->bIsAlive == true );
+    B33_ASSERT( window.GetWindowDesc()->Data.bIsAlive == true );
     B33_ASSERT( typeid( window.GetPolicy() ) != typeid( dgswp ) );
 }
 
@@ -55,7 +55,7 @@ TEST( WindowRecreateWindowBad )
         window.Update( 0.f );
     }
 
-    B33_ASSERT( window.GetWindowDesc()->bIsAlive == true );
+    B33_ASSERT( window.GetWindowDesc()->Data.bIsAlive == true );
 }
 
 TEST( WindowRecreateWindowGood )
@@ -72,12 +72,12 @@ TEST( WindowRecreateWindowGood )
     {
         window.Update( 0.f );
     }
-    B33_ASSERT( window.GetWindowDesc()->bIsAlive != true );
+    B33_ASSERT( window.GetWindowDesc()->Data.bIsAlive != true );
 
     window.Create();
     window.Update( 0.f );
 
-    B33_ASSERT( window.GetWindowDesc()->bIsAlive == true );
+    B33_ASSERT( window.GetWindowDesc()->Data.bIsAlive == true );
 }
 
 #endif // !defined ( B33_EVENT_DISPATCHER_TESTS_HPP )

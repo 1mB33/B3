@@ -74,7 +74,7 @@ void Renderer::Update( const float )
 // ---------------------------------------------------------------------------------------------------------------------
 void Renderer::Render()
 {
-    if ( m_pWindowDesc->LastEvent == EAbWindowEvents::ChangedBehavior )
+    if ( m_pWindowDesc->Data.LastEvent == EAbWindowEvents::ChangedBehavior )
     {
         return;
     }
@@ -84,7 +84,7 @@ void Renderer::Render()
     Frame   &frame  = ( *m_vFrames.get() )[ m_uCurrentFrame ];
     VkResult result;
 
-    if ( m_pWindowDesc->LastEvent & EAbWindowEvents::ChangedBehavior )
+    if ( m_pWindowDesc->Data.LastEvent & EAbWindowEvents::ChangedBehavior )
     {
         B33_WARNING( L"On update, the window just changed behavior, skipping a frame" );
         RecreateSwapChain();
@@ -335,7 +335,7 @@ void Renderer::DestroyFrameResources()
 void Renderer::RecreateSwapChain()
 {
     B33_INFO( L"Recreating swapchain" );
-    if ( m_pWindowDesc->bIsAlive == false )
+    if ( m_pWindowDesc->Data.bIsAlive == false )
     {
         B33_ERROR( L"RecreateSwapChain with dead window!!!" );
         return;

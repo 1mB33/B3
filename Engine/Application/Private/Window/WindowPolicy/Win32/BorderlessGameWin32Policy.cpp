@@ -9,30 +9,30 @@ namespace B33::App
 
 using namespace B33::Core;
 
-void BorderlessGameWin32Policy::OnPreWcex() 
+void BorderlessGameWin32Policy::OnPreWcex()
 {
     WindowDesc *pWd = this->GetWindowDesc();
 
-    pWd->pwszClassName = L"BorderlessGameAtlanticClass";
+    pWd->Data.pwszClassName = L"BorderlessGameAtlanticClass";
 
-    memset( &pWd->Wcex, 0, sizeof( WNDCLASSEX ) );
+    memset( &pWd->OS.Wcex, 0, sizeof( WNDCLASSEX ) );
 
-    pWd->Wcex.cbSize        = sizeof( WNDCLASSEX );
-    pWd->Wcex.style         = CS_HREDRAW | CS_VREDRAW;
-    pWd->Wcex.hInstance     = GetModuleHandle( NULL );
-    pWd->Wcex.hCursor       = LoadCursor( NULL, IDC_ARROW );
-    pWd->Wcex.lpszClassName = pWd->pwszClassName;
-    pWd->Wcex.lpfnWndProc   = WindowProc<WindowModeGameWin32WindowPolicy>;
+    pWd->OS.Wcex.cbSize        = sizeof( WNDCLASSEX );
+    pWd->OS.Wcex.style         = CS_HREDRAW | CS_VREDRAW;
+    pWd->OS.Wcex.hInstance     = GetModuleHandle( NULL );
+    pWd->OS.Wcex.hCursor       = LoadCursor( NULL, IDC_ARROW );
+    pWd->OS.Wcex.lpszClassName = pWd->Data.pwszClassName;
+    pWd->OS.Wcex.lpfnWndProc   = WindowProc<WindowModeGameWin32WindowPolicy>;
 
-    HMONITOR    hMonitor = MonitorFromWindow( pWd->hWnd, MONITOR_DEFAULTTONEAREST );
+    HMONITOR    hMonitor = MonitorFromWindow( pWd->OS.hWnd, MONITOR_DEFAULTTONEAREST );
     MONITORINFO mi;
 
     mi.cbSize = sizeof( mi );
 
     if ( GetMonitorInfo( hMonitor, &mi ) )
     {
-        pWd->Width  = mi.rcMonitor.right - mi.rcMonitor.left;
-        pWd->Height = mi.rcMonitor.bottom - mi.rcMonitor.top;
+        pWd->Data.Width  = mi.rcMonitor.right - mi.rcMonitor.left;
+        pWd->Data.Height = mi.rcMonitor.bottom - mi.rcMonitor.top;
     }
 }
 
@@ -41,13 +41,13 @@ void BorderlessGameWin32Policy::OnPreRegister()
     WindowDesc *pWd = this->GetWindowDesc();
 
     HWND hWnd = CreateWindowEx( WS_EX_APPWINDOW,
-                                pWd->pwszClassName,
-                                pWd->Name.c_str(),
+                                pWd->Data.pwszClassName,
+                                pWd->Data.Name.c_str(),
                                 WS_POPUP,
                                 CW_USEDEFAULT,
                                 CW_USEDEFAULT,
-                                pWd->Width,
-                                pWd->Height,
+                                pWd->Data.Width,
+                                pWd->Data.Height,
                                 NULL,
                                 NULL,
                                 GetModuleHandle( NULL ),
@@ -59,7 +59,7 @@ void BorderlessGameWin32Policy::OnPreRegister()
         return;
     }
 
-    pWd->hWnd = hWnd;
+    pWd->OS.hWnd = hWnd;
 }
 } // namespace B33::App
 #endif // !_WIN32
