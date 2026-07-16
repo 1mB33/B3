@@ -35,14 +35,14 @@ uint32_t BasicWin32WindowPolicy::CreateImpl( WindowDesc *pWd )
     {
         windowData.pwszClassName = L"AtlanticClass";
 
-        memset( &pWd->Wcex, 0, sizeof( WNDCLASSEX ) );
+        memset( &pWd->OS.Wcex, 0, sizeof( WNDCLASSEX ) );
 
-        pWd->Wcex.cbSize        = sizeof( WNDCLASSEX );
-        pWd->Wcex.style         = CS_HREDRAW | CS_VREDRAW;
-        pWd->Wcex.hInstance     = GetModuleHandle( NULL );
-        pWd->Wcex.hCursor       = LoadCursor( NULL, IDC_ARROW );
-        pWd->Wcex.lpszClassName = windowData.pwszClassName;
-        pWd->Wcex.lpfnWndProc   = BasicWin32WindowPolicy::WindowProc;
+        pWd->OS.Wcex.cbSize        = sizeof( WNDCLASSEX );
+        pWd->OS.Wcex.style         = CS_HREDRAW | CS_VREDRAW;
+        pWd->OS.Wcex.hInstance     = GetModuleHandle( NULL );
+        pWd->OS.Wcex.hCursor       = LoadCursor( NULL, IDC_ARROW );
+        pWd->OS.Wcex.lpszClassName = windowData.pwszClassName;
+        pWd->OS.Wcex.lpfnWndProc   = BasicWin32WindowPolicy::WindowProc;
     }
 
     AbAskToRegisterWindowClass( windowData.pwszClassName, windowOS.Wcex );
