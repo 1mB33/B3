@@ -17,6 +17,11 @@ class __B33_API Exception : public ::std::exception
                         const char *szFileName   = nullptr,
                         size_t      uFileNameLen = 0 ) noexcept;
 
+    explicit Exception( ::std::exception e ) noexcept
+      : Exception( e.what(), strlen( e.what() ), InvalidLine, nullptr, 0 )
+    {
+    }
+
     template <size_t uMesLen, size_t uFileNameLen>
     constexpr Exception( const char ( &pszMessage )[ uMesLen ],
                          int32_t uLine                               = 0,
