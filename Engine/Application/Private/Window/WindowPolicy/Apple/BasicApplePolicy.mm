@@ -97,7 +97,6 @@ void BasicAppleWindowPolicy::UpdateImpl( WindowDesc *pWd )
     B33_ASSERT( pWd );
 
     auto &windowData = pWd->Data;
-    auto &windowOS   = pWd->OS;
 
     B33_ASSERT( windowData.bIsAlive );
 

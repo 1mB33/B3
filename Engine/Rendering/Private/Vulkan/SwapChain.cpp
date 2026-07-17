@@ -118,7 +118,7 @@ VkSurfaceKHR Swapchain::CreateSurface( weak_ptr<const Instance> &pInstance, weak
 
     THROW_IF_FAILED( vkCreateXlibSurfaceKHR( pLockedInstance->GetInstance(), &createInfo, NULL, &surface ) );
 #elif defined( __APPLE__ )
-    B33_ASSERT( pLockedWd->pMetalContext != nullptr );
+    B33_ASSERT( pLockedWd->OS.pMetalContext != nullptr );
 
     VkMetalSurfaceCreateInfoEXT createInfo = {};
     createInfo.sType                       = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;

@@ -31,7 +31,7 @@ void MetalAppleWindowPolicy::OnCreate( WindowDesc *pWd )
     pMetalLayer.opaque        = YES;
     [pView setLayer:pMetalLayer];
 
-    windowOS.pMetalContext = (__bridge void *)pMetalLayer;
+    pWd->OS.pMetalContext = (__bridge void *)pMetalLayer;
 }
 
 } // namespace B33::App
