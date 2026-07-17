@@ -9,7 +9,7 @@
 #elif defined( __linux__ )
 #    include "Window/WindowPolicy/Linux/GameLinuxPolicy.hpp"
 #elif defined( __APPLE__ )
-#    include "BasicSystemPolicy.hpp"
+#    include "Window/WindowPolicy/Apple/MetalApplePolicy.hpp"
 #endif // !_WIN32
 
 namespace B33::App
@@ -21,7 +21,7 @@ typedef
 #elif defined( __linux__ )
     GameLinuxWindowPolicy
 #elif defined( __APPLE__ )
-    DefaultSystemWindowPolicy
+    MetalAppleWindowPolicy
 #endif // !_WIN32
         DefaultGameSystemWindowPolicy;
 

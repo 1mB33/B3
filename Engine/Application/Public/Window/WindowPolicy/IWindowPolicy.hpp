@@ -1,6 +1,7 @@
 #ifndef B33_IWINDOW_POLICY_H
 #define B33_IWINDOW_POLICY_H
 
+#include "Unknown.hpp"
 #include "Window/WindowDesc.hpp"
 
 namespace B33::App

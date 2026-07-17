@@ -12,11 +12,16 @@ using namespace B33::Core;
 // ---------------------------------------------------------------------------------------------------------------------
 uint32_t BasicWin32WindowPolicy::CreateImpl( WindowDesc *pWd )
 {
-    B33_ASSERT( pWd != NULL );
-    B33_ASSERT( pWd->hWnd == NULL );
-    B33_ASSERT( !pWd->bIsAlive );
-    B33_ASSERT( pWd->Height > 0 );
-    B33_ASSERT( pWd->Width > 0 );
+    B33_ASSERT( pWd );
+
+    auto &windowData = pWd->Data;
+    auto &windowOS   = pWd->OS;
+
+
+    B33_ASSERT( windowOS.hWnd == NULL );
+    B33_ASSERT( !windowData.bIsAlive );
+    B33_ASSERT( windowData.Height > 0 );
+    B33_ASSERT( windowData.Width > 0 );
 
     HWND hWnd;
 
@@ -26,34 +31,34 @@ uint32_t BasicWin32WindowPolicy::CreateImpl( WindowDesc *pWd )
 
     // Fallback to default class name if none is provided,
     // if pwszClassName is provided, we assume that WCEX is already filled
-    if ( pWd->pwszClassName == NULL || wcscmp( pWd->pwszClassName, L"" ) == 0 )
+    if ( windowData.pwszClassName == NULL || wcscmp( windowData.pwszClassName, L"" ) == 0 )
     {
-        pWd->pwszClassName = L"AtlanticClass";
+        windowData.pwszClassName = L"AtlanticClass";
 
-        memset( &pWd->Wcex, 0, sizeof( WNDCLASSEX ) );
+        memset( &pWd->OS.Wcex, 0, sizeof( WNDCLASSEX ) );
 
-        pWd->Wcex.cbSize        = sizeof( WNDCLASSEX );
-        pWd->Wcex.style         = CS_HREDRAW | CS_VREDRAW;
-        pWd->Wcex.hInstance     = GetModuleHandle( NULL );
-        pWd->Wcex.hCursor       = LoadCursor( NULL, IDC_ARROW );
-        pWd->Wcex.lpszClassName = pWd->pwszClassName;
-        pWd->Wcex.lpfnWndProc   = BasicWin32WindowPolicy::WindowProc;
+        pWd->OS.Wcex.cbSize        = sizeof( WNDCLASSEX );
+        pWd->OS.Wcex.style         = CS_HREDRAW | CS_VREDRAW;
+        pWd->OS.Wcex.hInstance     = GetModuleHandle( NULL );
+        pWd->OS.Wcex.hCursor       = LoadCursor( NULL, IDC_ARROW );
+        pWd->OS.Wcex.lpszClassName = windowData.pwszClassName;
+        pWd->OS.Wcex.lpfnWndProc   = BasicWin32WindowPolicy::WindowProc;
     }
 
-    AbAskToRegisterWindowClass( pWd->pwszClassName, pWd->Wcex );
+    AbAskToRegisterWindowClass( windowData.pwszClassName, windowOS.Wcex );
 
     this->OnPreRegister();
 
-    if ( m_pWindowDesc->hWnd == NULL )
+    if ( windowOS.hWnd == NULL )
     {
         hWnd = CreateWindowEx( WS_EX_OVERLAPPEDWINDOW,
-                               pWd->pwszClassName,
-                               pWd->Name.c_str(),
+                               windowData.pwszClassName,
+                               windowData.Name.c_str(),
                                WS_OVERLAPPEDWINDOW,
                                CW_USEDEFAULT,
                                CW_USEDEFAULT,
-                               pWd->Width,
-                               pWd->Height,
+                               windowData.Width,
+                               windowData.Height,
                                NULL,
                                NULL,
                                GetModuleHandle( NULL ),
@@ -65,7 +70,7 @@ uint32_t BasicWin32WindowPolicy::CreateImpl( WindowDesc *pWd )
             return -1;
         }
 
-        pWd->hWnd = hWnd;
+        windowOS.hWnd = hWnd;
     }
 
     return 0;
@@ -74,44 +79,67 @@ uint32_t BasicWin32WindowPolicy::CreateImpl( WindowDesc *pWd )
 // ---------------------------------------------------------------------------------------------------------------------
 void BasicWin32WindowPolicy::ShowImpl( WindowDesc *pWd )
 {
-    B33_ASSERT( pWd != NULL );
-    B33_ASSERT( pWd->hWnd != NULL );
+    B33_ASSERT( pWd );
 
-    ShowWindow( pWd->hWnd, SW_SHOW );
+    auto                                       &windowOS   = pWd->OS;
+    __B33_ATTRIBUTE_MIGHT_BE_UNUSED const auto &windowData = pWd->Data;
+
+
+    B33_ASSERT( windowData.bIsAlive );
+    B33_ASSERT( windowOS.hWnd != NULL );
+
+    ShowWindow( windowOS.hWnd, SW_SHOW );
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
 void BasicWin32WindowPolicy::HideImpl( WindowDesc *pWd )
 {
-    B33_ASSERT( pWd != NULL );
-    B33_ASSERT( pWd->hWnd != NULL );
+    B33_ASSERT( pWd );
 
-    ShowWindow( pWd->hWnd, SW_HIDE );
+    auto                                       &windowOS   = pWd->OS;
+    __B33_ATTRIBUTE_MIGHT_BE_UNUSED const auto &windowData = pWd->Data;
+
+
+    B33_ASSERT( windowData.bIsAlive );
+    B33_ASSERT( windowOS.hWnd != NULL );
+
+    ShowWindow( windowOS.hWnd, SW_HIDE );
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
 void BasicWin32WindowPolicy::DestroyImpl( WindowDesc *pWd )
 {
-    B33_ASSERT( pWd != NULL );
-    B33_ASSERT( pWd->hWnd != NULL );
-    B33_ASSERT( pWd->bIsAlive );
+    B33_ASSERT( pWd );
 
-    if ( DestroyWindow( pWd->hWnd ) )
+    auto       &windowOS   = pWd->OS;
+    const auto &windowData = pWd->Data;
+
+
+    B33_ASSERT( windowData.bIsAlive );
+    B33_ASSERT( windowOS.hWnd != NULL );
+
+    if ( DestroyWindow( windowOS.hWnd ) )
     {
-        pWd->hWnd = NULL;
+        windowOS.hWnd = NULL;
     }
 
-    AbAskToCloseWindowClass( pWd->pwszClassName );
+    AbAskToCloseWindowClass( windowData.pwszClassName );
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
 void BasicWin32WindowPolicy::UpdateImpl( WindowDesc *pWd )
 {
-    B33_ASSERT( pWd != NULL );
-    B33_ASSERT( pWd->bIsAlive );
+    B33_ASSERT( pWd );
+
+    auto                                       &windowOS   = pWd->OS;
+    __B33_ATTRIBUTE_MIGHT_BE_UNUSED const auto &windowData = pWd->Data;
+
+
+    B33_ASSERT( windowData.bIsAlive );
+
 
     MSG msg;
-    while ( PeekMessage( &msg, pWd->hWnd, 0, 0, PM_REMOVE ) != 0 )
+    while ( PeekMessage( &msg, windowOS.hWnd, 0, 0, PM_REMOVE ) != 0 )
     {
         TranslateMessage( &msg );
         DispatchMessage( &msg );
@@ -133,85 +161,85 @@ void BasicWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM lParam )
             }
 
             AbInputStruct is = {};
-            m_pWindowDesc->LastEvent |= EAbWindowEvents::Input;
+            m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::Input;
 
             is.Event          = EAbInputEvents::AbKeyPress;
             is.Keyboard.KeyId = LOWORD( wKeyFlags );
 
-            m_pWindowDesc->InputStruct.push( is );
+            m_pWindowDesc->Data.InputStruct.push( is );
             return;
         }
 
         case WM_KEYUP:
         {
             AbInputStruct is = {};
-            m_pWindowDesc->LastEvent |= EAbWindowEvents::Input;
+            m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::Input;
 
             is.Event          = EAbInputEvents::AbKeyRelease;
             is.Keyboard.KeyId = LOWORD( HIWORD( lParam ) );
 
-            m_pWindowDesc->InputStruct.push( is );
+            m_pWindowDesc->Data.InputStruct.push( is );
             return;
         }
 
         case WM_LBUTTONDOWN:
         {
             AbInputStruct is = {};
-            m_pWindowDesc->LastEvent |= EAbWindowEvents::Input;
+            m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::Input;
 
             is.Event             = EAbInputEvents::AbButtonPress;
             is.MouseButton.KeyId = 1;
 
-            m_pWindowDesc->InputStruct.push( is );
+            m_pWindowDesc->Data.InputStruct.push( is );
             break;
         }
 
         case WM_RBUTTONDOWN:
         {
             AbInputStruct is = {};
-            m_pWindowDesc->LastEvent |= EAbWindowEvents::Input;
+            m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::Input;
 
             is.Event             = EAbInputEvents::AbButtonPress;
             is.MouseButton.KeyId = 3;
 
-            m_pWindowDesc->InputStruct.push( is );
+            m_pWindowDesc->Data.InputStruct.push( is );
             break;
         }
 
         case WM_MBUTTONDOWN:
         {
             AbInputStruct is = {};
-            m_pWindowDesc->LastEvent |= EAbWindowEvents::Input;
+            m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::Input;
 
             is.Event             = EAbInputEvents::AbButtonPress;
             is.MouseButton.KeyId = 2;
 
-            m_pWindowDesc->InputStruct.push( is );
+            m_pWindowDesc->Data.InputStruct.push( is );
             break;
         }
 
         case WM_MOUSEMOVE:
         {
             AbInputStruct is = {};
-            m_pWindowDesc->LastEvent |= EAbWindowEvents::Input;
+            m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::Input;
 
             is.Event        = EAbInputEvents::AbMotion;
             is.Mouse.MouseX = GET_X_LPARAM( lParam );
             is.Mouse.MouseY = GET_Y_LPARAM( lParam );
 
-            m_pWindowDesc->InputStruct.push( is );
+            m_pWindowDesc->Data.InputStruct.push( is );
 
             return;
         }
 
         case WM_SIZE:
-            m_pWindowDesc->Width  = LOWORD( lParam );
-            m_pWindowDesc->Height = HIWORD( lParam );
-            m_pWindowDesc->LastEvent |= EAbWindowEvents::Resize;
+            m_pWindowDesc->Data.Width  = LOWORD( lParam );
+            m_pWindowDesc->Data.Height = HIWORD( lParam );
+            m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::Resize;
             break;
 
         case WM_CLOSE:
-            m_pWindowDesc->LastEvent |= EAbWindowEvents::Destroy;
+            m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::Destroy;
             break;
 
         default:

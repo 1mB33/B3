@@ -32,7 +32,7 @@ class Renderer
 
     // Methods // -----------------------------------------------------------------------------------------------------
   public:
-    __B33_API void Initialize( ::std::shared_ptr<const ::WindowDesc> wd );
+    __B33_API void Initialize( ::std::shared_ptr<::WindowDesc> wd );
 
     __B33_API void Update( const float fDelta );
 
@@ -79,7 +79,7 @@ class Renderer
     void RecreateSwapChain();
 
   private:
-    ::std::shared_ptr<const ::WindowDesc>                m_pWindowDesc    = nullptr;
+    ::std::shared_ptr<::WindowDesc>                      m_pWindowDesc    = nullptr;
     ::std::shared_ptr<::B33::Rendering::Instance>        m_pInstance      = nullptr;
     ::std::shared_ptr<::B33::Rendering::HardwareWrapper> m_pHardware      = nullptr;
     ::std::shared_ptr<::B33::Rendering::AdapterWrapper>  m_pDeviceAdapter = nullptr;

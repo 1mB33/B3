@@ -132,9 +132,9 @@ void UserInput::Update( const float fDelta )
         }
     }
 
-    while ( !pWindowDesc->InputStruct.empty() )
+    while ( !pWindowDesc->Data.InputStruct.empty() )
     {
-        AbInputStruct &is = pWindowDesc->InputStruct.front();
+        AbInputStruct &is = pWindowDesc->Data.InputStruct.front();
 
         switch ( is.Event )
         {
@@ -204,11 +204,11 @@ void UserInput::Update( const float fDelta )
         }
 
         // Consume the input event
-        if ( !pWindowDesc->InputStruct.empty() )
-            pWindowDesc->InputStruct.pop();
+        if ( !pWindowDesc->Data.InputStruct.empty() )
+            pWindowDesc->Data.InputStruct.pop();
     }
 
-    pWindowDesc->LastEvent &= ~EAbWindowEvents::Input;
+    pWindowDesc->Data.LastEvent &= ~EAbWindowEvents::Input;
 }
 
 // ---------------------------------------------------------------------------------------------------------------------

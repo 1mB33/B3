@@ -18,7 +18,7 @@ typedef
 #elif defined( _X11 )
     BorderlessGameLinuxWindowPolicy
 #elif defined( __APPLE__ )
-    DefaultSystemWindowPolicy
+    MetalAppleWindowPolicy
 #endif // !_WIN32
         BorderlessGameSystemPolicy;
 

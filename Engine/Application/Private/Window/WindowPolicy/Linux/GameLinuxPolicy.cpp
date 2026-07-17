@@ -13,8 +13,13 @@ using namespace B33::Core::Debug;
 // ---------------------------------------------------------------------------------------------------------------------
 void GameLinuxWindowPolicy::OnCreate( WindowDesc *pWd )
 {
-    Display      *pDisplay = pWd->pDisplayHandle;
-    Window        window   = RootWindow( pDisplay, pWd->Screen );
+    B33_ASSERT( pWd );
+
+    auto &windowOS = pWd->OS;
+
+
+    Display      *pDisplay = windowOS.pDisplayHandle;
+    Window        window   = RootWindow( pDisplay, windowOS.Screen );
     XIEventMask   evmask;
     unsigned char pMask[ ( XI_LASTEVENT + 7 ) / 8 ] = { 0 };
 
@@ -54,7 +59,10 @@ void GameLinuxWindowPolicy::OnCreate( WindowDesc *pWd )
 // ---------------------------------------------------------------------------------------------------------------------
 uint32_t GameLinuxWindowPolicy::OnUpdate( WindowDesc *pWd, XEvent &event )
 {
-    Display *pDisplay = pWd->pDisplayHandle;
+    B33_ASSERT( pWd );
+
+    auto    &windowOS = pWd->OS;
+    Display *pDisplay = windowOS.pDisplayHandle;
 
     if ( event.xcookie.type == GenericEvent && event.xcookie.extension == m_OpCode &&
          XGetEventData( pDisplay, &event.xcookie ) )
@@ -84,6 +92,11 @@ uint32_t GameLinuxWindowPolicy::OnUpdate( WindowDesc *pWd, XEvent &event )
 // ---------------------------------------------------------------------------------------------------------------------
 void GameLinuxWindowPolicy::HandleRawInput( WindowDesc *pWd, XEvent &event )
 {
+    B33_ASSERT( pWd );
+
+    auto &windowOS   = pWd->OS;
+    auto &windowData = pWd->Data;
+
     XIRawEvent *rawev = reinterpret_cast<XIRawEvent *>( event.xcookie.data );
     double      dx = 0.0, dy = 0.0;
 
@@ -100,24 +113,37 @@ void GameLinuxWindowPolicy::HandleRawInput( WindowDesc *pWd, XEvent &event )
         }
     }
 
-    pWd->LastEvent |= Input;
+    windowData.LastEvent |= Input;
 
     AbInputStruct is;
     is.Event        = AbMotion;
     is.Mouse.MouseX = dx;
     is.Mouse.MouseY = dy;
 
-    pWd->InputStruct.push( is );
+    windowData.InputStruct.push( is );
 
-    XWarpPointer( pWd->pDisplayHandle, None, pWd->WindowHandle, 0, 0, 0, 0, pWd->Width * 0.5f, pWd->Height * 0.5f );
+    XWarpPointer( windowOS.pDisplayHandle,
+                  None,
+                  windowOS.WindowHandle,
+                  0,
+                  0,
+                  0,
+                  0,
+                  windowData.Width * 0.5f,
+                  windowData.Height * 0.5f );
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
 void GameLinuxWindowPolicy::HandleFocusIn( WindowDesc *pWd )
 {
+    B33_ASSERT( pWd );
+
+    auto &windowOS   = pWd->OS;
+    auto &windowData = pWd->Data;
+
     static char pEmptyData[ 8 ] = { 0 };
-    Display    *pDisplay        = pWd->pDisplayHandle;
-    Window      window          = pWd->WindowHandle;
+    Display    *pDisplay        = windowOS.pDisplayHandle;
+    Window      window          = windowOS.WindowHandle;
 
     XGrabPointer( pDisplay,
                   window,
@@ -138,7 +164,7 @@ void GameLinuxWindowPolicy::HandleFocusIn( WindowDesc *pWd )
 
     XDefineCursor( pDisplay, window, invisibleCursor );
 
-    XWarpPointer( pDisplay, None, window, 0, 0, 0, 0, pWd->Width * 0.5f, pWd->Height * 0.5f );
+    XWarpPointer( pDisplay, None, window, 0, 0, 0, 0, windowData.Width * 0.5f, windowData.Height * 0.5f );
 
     XFlush( pDisplay );
 }
@@ -146,8 +172,12 @@ void GameLinuxWindowPolicy::HandleFocusIn( WindowDesc *pWd )
 // --------------------------------------------------------------------------------------------------------------------
 void GameLinuxWindowPolicy::HandleFocusOut( WindowDesc *pWd )
 {
-    Display *pDisplay = pWd->pDisplayHandle;
-    Window   window   = pWd->WindowHandle;
+    B33_ASSERT( pWd );
+
+    auto &windowOS = pWd->OS;
+
+    Display *pDisplay = windowOS.pDisplayHandle;
+    Window   window   = windowOS.WindowHandle;
 
     XUngrabPointer( pDisplay, CurrentTime );
     XUndefineCursor( pDisplay, window );

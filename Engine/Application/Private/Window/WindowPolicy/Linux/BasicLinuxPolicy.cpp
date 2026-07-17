@@ -1,8 +1,8 @@
-#include "Input/InputEvents.h"
 #if defined( _X11 )
 
 #    include "B33Core.h"
 
+#    include "Input/InputEvents.h"
 #    include "AppStatus.hpp"
 #    include "Window/BaseWindowDetails.h"
 #    include "Window/WindowPolicy/Linux/BasicLinuxPolicy.hpp"
@@ -17,33 +17,39 @@ using namespace ::B33::Core::Debug;
 // ---------------------------------------------------------------------------------------------------------------------
 uint32_t BasicLinuxWindowPolicy::CreateImpl( WindowDesc *pWd )
 {
-    B33_ASSERT( pWd->Height > 0 );
-    B33_ASSERT( pWd->Width > 0 );
+    B33_ASSERT( pWd );
+
+    const auto &windowData = pWd->Data;
+    auto       &windowOS   = pWd->OS;
+
+
+    B33_ASSERT( windowData.Height > 0 );
+    B33_ASSERT( windowData.Width > 0 );
 
     XSetErrorHandler( X11HandleError );
-    pWd->pDisplayHandle = AbAskForDisplayLinux( NULL );
+    windowOS.pDisplayHandle = AbAskForDisplayLinux( NULL );
 
-    if ( pWd->pDisplayHandle == NULL )
+    if ( windowOS.pDisplayHandle == NULL )
     {
         throw B33_EXCEPT( "pDisplayHandle is null!" );
     }
 
-    int      screen   = DefaultScreen( pWd->pDisplayHandle );
-    Display *pDisplay = pWd->pDisplayHandle;
+    int      screen   = DefaultScreen( windowOS.pDisplayHandle );
+    Display *pDisplay = windowOS.pDisplayHandle;
 
-    Window window = XCreateSimpleWindow( pWd->pDisplayHandle,
+    Window window = XCreateSimpleWindow( windowOS.pDisplayHandle,
                                          RootWindow( pDisplay, screen ),
                                          100,
                                          100,
-                                         pWd->Width,
-                                         pWd->Height,
+                                         windowData.Width,
+                                         windowData.Height,
                                          1,
                                          BlackPixel( pDisplay, screen ),
                                          WhitePixel( pDisplay, screen ) );
 
     XTextProperty windowName;
     char         *szWindowName = (char *)malloc( sizeof( char ) * B33_SMALL_STRING );
-    size_t        uWriten      = wcstombs( szWindowName, pWd->Name.c_str(), pWd->Name.length() );
+    size_t        uWriten      = wcstombs( szWindowName, windowData.Name.c_str(), windowData.Name.length() );
     szWindowName[ uWriten ]    = '\0';
 
     XStringListToTextProperty( &szWindowName, 1, &windowName );
@@ -63,8 +69,8 @@ uint32_t BasicLinuxWindowPolicy::CreateImpl( WindowDesc *pWd )
                   FocusChangeMask | PointerMotionMask | PointerMotionHintMask | ButtonPressMask | ButtonReleaseMask |
                       KeyPressMask | KeyReleaseMask | ExposureMask | StructureNotifyMask | SubstructureNotifyMask |
                       SubstructureRedirectMask );
-    pWd->Screen       = screen;
-    pWd->WindowHandle = window;
+    windowOS.Screen       = screen;
+    windowOS.WindowHandle = window;
 
     Atom wmDeleteMessage = XInternAtom( pDisplay, "WM_DELETE_WINDOW", 0 );
     XSetWMProtocols( pDisplay, window, &wmDeleteMessage, 1 );
@@ -78,53 +84,73 @@ uint32_t BasicLinuxWindowPolicy::CreateImpl( WindowDesc *pWd )
 void BasicLinuxWindowPolicy::ShowImpl( WindowDesc *pWd )
 {
     B33_ASSERT( pWd );
-    B33_ASSERT( pWd->bIsAlive );
-    B33_ASSERT( pWd->pDisplayHandle );
-    B33_ASSERT( pWd->WindowHandle );
 
-    XMapWindow( pWd->pDisplayHandle, pWd->WindowHandle );
+    __B33_ATTRIBUTE_MIGHT_BE_UNUSED const auto &windowData = pWd->Data;
+    auto                                       &windowOS   = pWd->OS;
+
+
+    B33_ASSERT( windowData.bIsAlive );
+    B33_ASSERT( windowOS.pDisplayHandle );
+    B33_ASSERT( windowOS.WindowHandle );
+
+    XMapWindow( windowOS.pDisplayHandle, windowOS.WindowHandle );
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
 void BasicLinuxWindowPolicy::HideImpl( WindowDesc *pWd )
 {
     B33_ASSERT( pWd );
-    B33_ASSERT( pWd->bIsAlive );
-    B33_ASSERT( pWd->pDisplayHandle );
-    B33_ASSERT( pWd->WindowHandle );
 
-    XUnmapWindow( pWd->pDisplayHandle, pWd->WindowHandle );
+    __B33_ATTRIBUTE_MIGHT_BE_UNUSED const auto &windowData = pWd->Data;
+    auto                                       &windowOS   = pWd->OS;
+
+
+    B33_ASSERT( windowData.bIsAlive );
+    B33_ASSERT( windowOS.pDisplayHandle );
+    B33_ASSERT( windowOS.WindowHandle );
+
+    XUnmapWindow( windowOS.pDisplayHandle, windowOS.WindowHandle );
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
 void BasicLinuxWindowPolicy::DestroyImpl( WindowDesc *pWd )
 {
     B33_ASSERT( pWd );
-    B33_ASSERT( pWd->bIsAlive );
-    B33_ASSERT( pWd->pDisplayHandle );
-    B33_ASSERT( pWd->WindowHandle );
 
-    XDestroyWindow( pWd->pDisplayHandle, pWd->WindowHandle );
+    __B33_ATTRIBUTE_MIGHT_BE_UNUSED const auto &windowData = pWd->Data;
+    auto                                       &windowOS   = pWd->OS;
+
+
+    B33_ASSERT( windowData.bIsAlive );
+    B33_ASSERT( windowOS.pDisplayHandle );
+    B33_ASSERT( windowOS.WindowHandle );
+
+    XDestroyWindow( windowOS.pDisplayHandle, windowOS.WindowHandle );
     AbAskToCloseDisplayLinux( NULL );
 
-    pWd->WindowHandle   = 0;
-    pWd->pDisplayHandle = NULL;
-    pWd->Screen         = 0;
+    windowOS.WindowHandle   = 0;
+    windowOS.pDisplayHandle = NULL;
+    windowOS.Screen         = 0;
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
 void BasicLinuxWindowPolicy::UpdateImpl( WindowDesc *pWd )
 {
     B33_ASSERT( pWd );
-    B33_ASSERT( pWd->bIsAlive );
-    B33_ASSERT( pWd->pDisplayHandle );
-    B33_ASSERT( pWd->WindowHandle );
 
-    Display *display = pWd->pDisplayHandle;
-    Window   window  = pWd->WindowHandle;
+    __B33_ATTRIBUTE_MIGHT_BE_UNUSED const auto &windowData = pWd->Data;
+    auto                                       &windowOS   = pWd->OS;
+
+
+    B33_ASSERT( windowData.bIsAlive );
+    B33_ASSERT( windowOS.pDisplayHandle );
+    B33_ASSERT( windowOS.WindowHandle );
+
+    Display *display = windowOS.pDisplayHandle;
+    Window   window  = windowOS.WindowHandle;
     XEvent   event;
 
-    while ( XPending( pWd->pDisplayHandle ) )
+    while ( XPending( display ) )
     {
         XPeekEvent( display, &event );
 
@@ -133,7 +159,7 @@ void BasicLinuxWindowPolicy::UpdateImpl( WindowDesc *pWd )
         {
             for ( const auto &handle : B33::App::AppStatus::Get().GetWindowHandles() )
             {
-                if ( event.xany.window == handle->WindowHandle )
+                if ( event.xany.window == handle->OS.WindowHandle )
                 {
                     return;
                 }
@@ -150,8 +176,18 @@ void BasicLinuxWindowPolicy::UpdateImpl( WindowDesc *pWd )
 // ---------------------------------------------------------------------------------------------------------------------
 uint32_t BasicLinuxWindowPolicy::OnUpdate( WindowDesc *pWd, XEvent &event )
 {
-    Display *display = pWd->pDisplayHandle;
-    Window   window  = pWd->WindowHandle;
+    B33_ASSERT( pWd );
+
+    auto &windowData = pWd->Data;
+    auto &windowOS   = pWd->OS;
+
+
+    B33_ASSERT( windowData.bIsAlive );
+    B33_ASSERT( windowOS.pDisplayHandle );
+    B33_ASSERT( windowOS.WindowHandle );
+
+    Display *display = windowOS.pDisplayHandle;
+    Window   window  = windowOS.WindowHandle;
 
     switch ( event.type )
     {
@@ -185,26 +221,26 @@ uint32_t BasicLinuxWindowPolicy::OnUpdate( WindowDesc *pWd, XEvent &event )
                            &dummy,
                            reinterpret_cast<unsigned int *>( &dummy ) );
 
-            pWd->LastEvent |= Input;
+            windowData.LastEvent |= Input;
             AbInputStruct is;
 
             is.Event        = AbMotion;
             is.Mouse.MouseX = static_cast<int32_t>( rootX );
             is.Mouse.MouseY = static_cast<int32_t>( rootY );
 
-            pWd->InputStruct.push( is );
+            windowData.InputStruct.push( is );
             return 0;
 
         case Expose:
-            pWd->LastEvent |= Resize;
-            pWd->Width  = event.xexpose.width;
-            pWd->Height = event.xexpose.height;
+            windowData.LastEvent |= Resize;
+            windowData.Width  = event.xexpose.width;
+            windowData.Height = event.xexpose.height;
             return 1;
 
         case ConfigureNotify:
-            pWd->LastEvent |= Resize;
-            pWd->Height = event.xconfigure.height;
-            pWd->Width  = event.xconfigure.width;
+            windowData.LastEvent |= Resize;
+            windowData.Height = event.xconfigure.height;
+            windowData.Width  = event.xconfigure.width;
             return 1;
 
         case ClientMessage:
@@ -218,7 +254,7 @@ uint32_t BasicLinuxWindowPolicy::OnUpdate( WindowDesc *pWd, XEvent &event )
 
             if ( static_cast<Atom>( event.xclient.data.l[ 0 ] ) == wmDeleteMessage )
             {
-                pWd->LastEvent |= Destroy;
+                windowData.LastEvent |= Destroy;
                 return 0;
             }
 
@@ -231,25 +267,25 @@ uint32_t BasicLinuxWindowPolicy::OnUpdate( WindowDesc *pWd, XEvent &event )
 // ---------------------------------------------------------------------------------------------------------------------
 void BasicLinuxWindowPolicy::HandleKey( WindowDesc *pWd, XEvent &event, EAbInputEvents ie )
 {
-    pWd->LastEvent |= Input;
+    pWd->Data.LastEvent |= Input;
 
     AbInputStruct is;
     is.Event          = ie;
     is.Keyboard.KeyId = event.xkey.keycode - 8;
 
-    pWd->InputStruct.push( is );
+    pWd->Data.InputStruct.push( is );
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
 void BasicLinuxWindowPolicy::HandleMouseButton( WindowDesc *pWd, XEvent &event, EAbInputEvents ie )
 {
-    pWd->LastEvent |= Input;
+    pWd->Data.LastEvent |= Input;
 
     AbInputStruct is;
     is.Event             = ie;
     is.MouseButton.KeyId = event.xbutton.button;
 
-    pWd->InputStruct.push( is );
+    pWd->Data.InputStruct.push( is );
 }
 
 } // namespace B33::App

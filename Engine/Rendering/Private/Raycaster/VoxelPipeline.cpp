@@ -246,8 +246,8 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                           0,
                           NULL );
 
-    const uint32_t groupCountX = ( GetWindowDescInternal()->Width + 31 ) >> 5;
-    const uint32_t groupCountY = ( GetWindowDescInternal()->Height + 7 ) >> 3;
+    const uint32_t groupCountX = ( GetWindowDescInternal()->Data.Width + 31 ) >> 5;
+    const uint32_t groupCountY = ( GetWindowDescInternal()->Data.Height + 7 ) >> 3;
     vkCmdDispatch( cmdBuffer, groupCountX, groupCountY, 1 );
 }
 

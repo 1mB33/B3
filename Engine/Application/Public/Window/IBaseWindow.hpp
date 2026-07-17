@@ -7,6 +7,7 @@
 #include "Window/WindowDesc.hpp"
 #include "Window/WindowEvents.h"
 #include "Window/WindowPolicy/BasicSystemPolicy.hpp"
+#include <mutex>
 
 namespace B33::App
 {
@@ -67,7 +68,9 @@ class IBaseWindow
     {
         B33_ASSERT( m_pWindowDesc != nullptr );
 
-        bool                                         bWasAlive  = this->m_pWindowDesc->bIsAlive;
+        ::std::lock_guard lg( m_pWindowDesc->mUpdated );
+
+        bool                                         bWasAlive  = this->m_pWindowDesc->Data.bIsAlive;
         ::std::unique_ptr<DefaultSystemWindowPolicy> pNewPolicy = ::std::make_unique<NewPolicy>();
         m_Policy.swap( pNewPolicy );
 
@@ -79,9 +82,10 @@ class IBaseWindow
 
         // Create structs for new state and to keep the old state of WindowDesc
         WindowDesc oldDesc = *( this->m_pWindowDesc.get() );
-        WindowDesc newDesc = CreateWindowDesc( oldDesc.Name, oldDesc.Width, oldDesc.Height );
+        WindowDesc newDesc = CreateWindowDesc( oldDesc.Data.Name, oldDesc.Data.Width, oldDesc.Data.Height );
 
         // Try to create the new window
+        B33_TRACE( L"Creating new window for behavior change" );
         SetWindowDescBufferStateInternal( newDesc );
         try
         {
@@ -97,7 +101,8 @@ class IBaseWindow
         }
 
         // Load old state, try to destroy the old window
-        newDesc = *( this->m_pWindowDesc.get() );
+        newDesc.OS   = this->m_pWindowDesc->OS;
+        newDesc.Data = this->m_pWindowDesc->Data;
         SetWindowDescBufferStateInternal( oldDesc );
         m_Policy.swap( pNewPolicy );
         try
@@ -111,15 +116,25 @@ class IBaseWindow
         }
 
         // Load our new policy and new state
+        B33_TRACE( L"Swaping old window desc with new one" );
         SetWindowDescBufferStateInternal( newDesc );
         m_Policy.swap( pNewPolicy );
-        m_pWindowDesc->LastEvent = EAbWindowEvents::ChangedBehavior;
 
-        this->Update( 0.f );
-        if ( oldDesc.bIsVisible )
+        B33_TRACE( L"Updating the new window desc" );
+        try
         {
-            this->Show();
+            this->Update( 0.f );
+            if ( oldDesc.Data.bIsVisible )
+            {
+                this->Show();
+            }
         }
+        catch ( ::std::exception &e )
+        {
+            B33_ERROR( L"Fatal on updating the new behavior" );
+            throw ::B33::Core::Exception( e );
+        }
+        m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::ChangedBehavior;
     }
 
   public:
@@ -128,7 +143,7 @@ class IBaseWindow
         B33_ASSERT( m_pWindowDesc != nullptr );
         B33_ASSERT( m_Policy != nullptr );
 
-        if ( m_pWindowDesc->bIsAlive )
+        if ( m_pWindowDesc->Data.bIsAlive )
         {
             B33_LOG( Core::Debug::Warning, L"Cannot create alive window" );
             return;
@@ -139,7 +154,7 @@ class IBaseWindow
         }
 
         B33::App::AppStatus::Get().SendOpenWindowSignal( m_pWindowDesc );
-        m_pWindowDesc->bIsAlive = true;
+        m_pWindowDesc->Data.bIsAlive = true;
 
         // Some OS need to go trough one queue of messages to fully create the window
         this->Update( 0.0 );
@@ -151,7 +166,7 @@ class IBaseWindow
         B33_ASSERT( m_Policy != nullptr );
 
         m_Policy->WindowPolicyShow( m_pWindowDesc.get() );
-        m_pWindowDesc->bIsVisible = true;
+        m_pWindowDesc->Data.bIsVisible = true;
     }
 
     void Hide()
@@ -160,7 +175,7 @@ class IBaseWindow
         B33_ASSERT( m_Policy != nullptr );
 
         m_Policy->WindowPolicyHide( m_pWindowDesc.get() );
-        m_pWindowDesc->bIsVisible = false;
+        m_pWindowDesc->Data.bIsVisible = false;
     }
 
     void Destroy()
@@ -168,7 +183,7 @@ class IBaseWindow
         B33_ASSERT( m_pWindowDesc != nullptr );
         B33_ASSERT( m_Policy != nullptr );
 
-        if ( !m_pWindowDesc->bIsAlive )
+        if ( !m_pWindowDesc->Data.bIsAlive )
         {
             B33_LOG( Core::Debug::Warning, L"Cannot destroy dead window" );
             return;
@@ -178,7 +193,7 @@ class IBaseWindow
 
         m_Policy->WindowPolicyDestroy( m_pWindowDesc.get() );
 
-        m_pWindowDesc->bIsAlive = false;
+        m_pWindowDesc->Data.bIsAlive = false;
     }
 
     void Update( const float fDelta )
@@ -186,34 +201,39 @@ class IBaseWindow
         B33_ASSERT( m_pWindowDesc != nullptr );
         B33_ASSERT( m_Policy != nullptr );
 
-        if ( !m_pWindowDesc->bIsAlive )
+        if ( !m_pWindowDesc->Data.bIsAlive )
         {
             B33_WARNING( L"Dead window is being updated" );
             return;
         }
 
         // Don't reset the last event flags if the only flag that we have set is EAbWindowEvents::ChangedBehavior
-        if ( this->m_pWindowDesc->LastEvent & ~EAbWindowEvents::ChangedBehavior )
-            m_pWindowDesc->LastEvent &= 0;
+        if ( this->m_pWindowDesc->Data.LastEvent & ~EAbWindowEvents::ChangedBehavior )
+            m_pWindowDesc->Data.LastEvent &= 0;
 
         // Make sure that after EAbWindowEvents::ChangedBehavior propagation,
         // we are going to reset the events by setting EAbWindowEvents::NothingNew flag
-        this->m_pWindowDesc->LastEvent |= EAbWindowEvents::NothingNew;
+        this->m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::NothingNew;
         m_Policy->WindowPolicyUpdate( m_pWindowDesc.get() );
 
-        if ( m_pWindowDesc->LastEvent & EAbWindowEvents::Destroy )
+        if ( m_pWindowDesc->Data.LastEvent & EAbWindowEvents::Destroy )
         {
             B33_LOG( Core::Debug::Info, L"Window is being closed by user" );
             this->Destroy();
         }
 
-        static_cast<Derived *>( this )->HandleMessageImpl( fDelta, m_pWindowDesc->LastEvent );
+        static_cast<Derived *>( this )->HandleMessageImpl( fDelta, m_pWindowDesc->Data.LastEvent );
     }
 
   public:
     const ::std::shared_ptr<WindowDesc> &GetWindowDesc() const
     {
         return m_pWindowDesc;
+    }
+
+    const DefaultSystemWindowPolicy *GetPolicy() const
+    {
+        return m_Policy.get();
     }
 
   private:
@@ -225,7 +245,8 @@ class IBaseWindow
   private:
     void SetWindowDescBufferStateInternal( const WindowDesc &wd )
     {
-        *( this->m_pWindowDesc.get() ) = wd;
+        this->m_pWindowDesc.get()->Data = wd.Data;
+        this->m_pWindowDesc.get()->OS   = wd.OS;
     }
 
   private:

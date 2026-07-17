@@ -2,6 +2,7 @@
 #define B33_EXCEPT_H
 
 #include "B33CoreMinimal.h"
+#include <exception>
 
 namespace B33::Core
 {
@@ -16,6 +17,16 @@ class __B33_API Exception : public ::std::exception
                         int32_t     uLine        = InvalidLine,
                         const char *szFileName   = nullptr,
                         size_t      uFileNameLen = 0 ) noexcept;
+
+    explicit Exception( ::std::exception e ) noexcept
+      : std::exception( e )
+      , m_pszMessage( nullptr )
+      , m_uMesLen( 0 )
+      , m_Line( InvalidLine )
+      , m_pszFileName( nullptr )
+      , m_uFileNameLen( 0 )
+    {
+    }
 
     template <size_t uMesLen, size_t uFileNameLen>
     constexpr Exception( const char ( &pszMessage )[ uMesLen ],

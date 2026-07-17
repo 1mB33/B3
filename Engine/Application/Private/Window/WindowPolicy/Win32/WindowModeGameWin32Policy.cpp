@@ -15,16 +15,16 @@ void WindowModeGameWin32WindowPolicy::OnPreWcex()
 {
     WindowDesc *pWd = this->GetWindowDesc();
 
-    pWd->pwszClassName = L"GameAtlanticClass";
+    pWd->Data.pwszClassName = L"GameAtlanticClass";
 
-    memset( &pWd->Wcex, 0, sizeof( WNDCLASSEX ) );
+    memset( &pWd->OS.Wcex, 0, sizeof( WNDCLASSEX ) );
 
-    pWd->Wcex.cbSize        = sizeof( WNDCLASSEX );
-    pWd->Wcex.style         = CS_HREDRAW | CS_VREDRAW;
-    pWd->Wcex.hInstance     = GetModuleHandle( NULL );
-    pWd->Wcex.hCursor       = LoadCursor( NULL, IDC_ARROW );
-    pWd->Wcex.lpszClassName = pWd->pwszClassName;
-    pWd->Wcex.lpfnWndProc   = WindowProc<WindowModeGameWin32WindowPolicy>;
+    pWd->OS.Wcex.cbSize        = sizeof( WNDCLASSEX );
+    pWd->OS.Wcex.style         = CS_HREDRAW | CS_VREDRAW;
+    pWd->OS.Wcex.hInstance     = GetModuleHandle( NULL );
+    pWd->OS.Wcex.hCursor       = LoadCursor( NULL, IDC_ARROW );
+    pWd->OS.Wcex.lpszClassName = pWd->Data.pwszClassName;
+    pWd->OS.Wcex.lpfnWndProc   = WindowProc<WindowModeGameWin32WindowPolicy>;
 }
 
 typedef __int64 QWORD;
@@ -53,7 +53,7 @@ void WindowModeGameWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM
             rid.usUsagePage = 0x01;
             rid.usUsage     = 0x02;
             rid.dwFlags     = 0;
-            rid.hwndTarget  = pWd->hWnd;
+            rid.hwndTarget  = pWd->OS.hWnd;
 
             if ( !RegisterRawInputDevices( &rid, 1, sizeof( rid ) ) )
             {
@@ -62,10 +62,10 @@ void WindowModeGameWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM
 
             ShowCursor( FALSE );
 
-            GetWindowRect( pWd->hWnd, &rect );
+            GetWindowRect( pWd->OS.hWnd, &rect );
             ClipCursor( &rect );
-            SetCursorPos( static_cast<int>( rect.left + 0.5f * pWd->Width ),
-                          static_cast<int>( rect.top + 0.5f * pWd->Height ) );
+            SetCursorPos( static_cast<int>( rect.left + 0.5f * pWd->Data.Width ),
+                          static_cast<int>( rect.top + 0.5f * pWd->Data.Height ) );
 
             break;
         }
@@ -119,7 +119,7 @@ void WindowModeGameWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM
                 break;
             }
 
-            pWd->LastEvent |= EAbWindowEvents::Input;
+            pWd->Data.LastEvent |= EAbWindowEvents::Input;
 
             is.Event = EAbInputEvents::AbMotion;
             pRi      = reinterpret_cast<PRAWINPUT>( &vRi[ 0 ] );
@@ -134,9 +134,9 @@ void WindowModeGameWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM
                 is.Mouse.MouseY += mouse.lLastY;
             }
 
-            pWd->InputStruct.push( is );
+            pWd->Data.InputStruct.push( is );
 
-            GetWindowRect( this->GetWindowDesc()->hWnd, &clientPos );
+            GetWindowRect( this->GetWindowDesc()->OS.hWnd, &clientPos );
 
             SetCursorPos( clientPos.left + ( ( clientPos.right - clientPos.left ) * 0.5f ),
                           clientPos.top + ( ( clientPos.bottom - clientPos.top ) * 0.5f ) );

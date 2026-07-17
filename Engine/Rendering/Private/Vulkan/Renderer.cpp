@@ -39,7 +39,7 @@ Renderer::~Renderer()
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-void Renderer::Initialize( shared_ptr<const WindowDesc> wd )
+void Renderer::Initialize( shared_ptr<WindowDesc> wd )
 {
     B33_LOG( Core::Debug::Info, L"Initializing renderer!" );
 
@@ -74,17 +74,19 @@ void Renderer::Update( const float )
 // ---------------------------------------------------------------------------------------------------------------------
 void Renderer::Render()
 {
-    uint32_t uImageIndex;
-    VkDevice device = m_pDeviceAdapter->GetAdapterHandle();
-    Frame   &frame  = ( *m_vFrames.get() )[ m_uCurrentFrame ];
-    VkResult result;
+    lock_guard lg( m_pWindowDesc->mUpdated );
 
-    if ( m_pWindowDesc->LastEvent & EAbWindowEvents::ChangedBehavior )
+    if ( m_pWindowDesc->Data.LastEvent & EAbWindowEvents::ChangedBehavior )
     {
         B33_WARNING( L"On update, the window just changed behavior, skipping a frame" );
         RecreateSwapChain();
         return;
     }
+
+    uint32_t uImageIndex;
+    VkDevice device = m_pDeviceAdapter->GetAdapterHandle();
+    Frame   &frame  = ( *m_vFrames.get() )[ m_uCurrentFrame ];
+    VkResult result;
 
     THROW_IF_FAILED( vkWaitForFences( device, 1, &frame.InFlightFence, VK_TRUE, UINT64_MAX ) );
     THROW_IF_FAILED( vkResetFences( device, 1, &frame.InFlightFence ) );
@@ -277,11 +279,11 @@ void Renderer::RecordCommands( VkCommandBuffer &cmdBuff )
     presentBarrier.dstQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
     presentBarrier.image                = m_pSwapChain->GetImage();
     presentBarrier.subresourceRange     = {
-            .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
-            .baseMipLevel   = 0,
-            .levelCount     = 1,
-            .baseArrayLayer = 0,
-            .layerCount     = 1,
+        .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
+        .baseMipLevel   = 0,
+        .levelCount     = 1,
+        .baseArrayLayer = 0,
+        .layerCount     = 1,
     };
 
     vkCmdPipelineBarrier( cmdBuff,
@@ -330,7 +332,7 @@ void Renderer::DestroyFrameResources()
 void Renderer::RecreateSwapChain()
 {
     B33_INFO( L"Recreating swapchain" );
-    if ( m_pWindowDesc->bIsAlive == false )
+    if ( m_pWindowDesc->Data.bIsAlive == false )
     {
         B33_ERROR( L"RecreateSwapChain with dead window!!!" );
         return;
