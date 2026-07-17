@@ -120,7 +120,7 @@ void BasicWin32WindowPolicy::DestroyImpl( WindowDesc *pWd )
 
     if ( DestroyWindow( windowOS.hWnd ) )
     {
-        pWd->hWnd = NULL;
+        windowOS.hWnd = NULL;
     }
 
     AbAskToCloseWindowClass( windowData.pwszClassName );
