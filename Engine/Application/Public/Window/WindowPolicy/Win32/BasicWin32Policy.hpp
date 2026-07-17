@@ -54,7 +54,7 @@ class __B33_API BasicWin32WindowPolicy : public IWindowPolicy<BasicWin32WindowPo
             pPolicy               = reinterpret_cast<Policy *>( pCreate->lpCreateParams );
             SetWindowLongPtr( hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>( pPolicy ) );
 
-            pPolicy->m_pWindowDesc->hWnd = hWnd;
+            pPolicy->m_pWindowDesc->OS.hWnd = hWnd;
         }
         else
             pPolicy = reinterpret_cast<Policy *>( GetWindowLongPtr( hWnd, GWLP_USERDATA ) );
