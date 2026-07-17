@@ -39,6 +39,8 @@ class WindowMaster
     B33::App::EmptyCanvas<true, B33::App::DefaultGameSystemWindowPolicy> &m_Window;
 };
 
+typedef ::B33::App::Playable<class WindowMaster, class WindowMasterController> WindowMasterPuppet;
+
 class WindowMasterController : public B33::App::ControllerObject
 {
     using Action        = ::B33::App::Action;
@@ -46,13 +48,11 @@ class WindowMasterController : public B33::App::ControllerObject
 
   public:
     const inline static Action UseActionSetWindowMode =
-        ActionFactory::CreateKeyboardAction<WindowMaster, &WindowMaster::SetWindow>();
+        ActionFactory::CreateKeyboardAction<WindowMasterPuppet, &WindowMaster::SetWindow>();
 
     const inline static Action UseActionSetWindowBorderless =
-        ActionFactory::CreateKeyboardAction<WindowMaster, &WindowMaster::SetBorderless>();
+        ActionFactory::CreateKeyboardAction<WindowMasterPuppet, &WindowMaster::SetBorderless>();
 
     const inline static Action UseActionExit =
-        ActionFactory::CreateKeyboardAction<WindowMaster, &WindowMaster::ExitGame>();
+        ActionFactory::CreateKeyboardAction<WindowMasterPuppet, &WindowMaster::ExitGame>();
 };
-
-typedef ::B33::App::Playable<WindowMaster, WindowMasterController> WindowMasterPuppet;

@@ -53,13 +53,13 @@ class PaperCharacter : public ::B33::Rendering::Camera
                            halfSize.z );
                 m_g.GenerateCube(
                     B33::Math::iVec3( hr.iHitCoords + halfSize ),
-                    ::B33::Math::Vec3( m_fPlacedType + 0.5f, m_fPlacedType + 0.5f, m_fPlacedType + 0.5f ) );
+                    ::B33::Math::Vec3( m_fPlacedType + 0.1f, m_fPlacedType + 0.1f, m_fPlacedType + 0.1f ) );
             }
             else
             {
                 m_g.GenerateCube(
                     B33::Math::iVec3( hr.iHitCoords + hr.Normal ),
-                    ::B33::Math::Vec3( m_fPlacedType + 0.5f, m_fPlacedType + 0.5f, m_fPlacedType + 0.5f ) );
+                    ::B33::Math::Vec3( m_fPlacedType + 0.1f, m_fPlacedType + 0.1f, m_fPlacedType + 0.1f ) );
             }
         }
     }
@@ -139,7 +139,7 @@ class PaperCharacter : public ::B33::Rendering::Camera
 
     void RotatePlaceTypeForward( const float )
     {
-        m_fPlacedType = std::min( m_fPlacedType + 0.25f, 2.f );
+        m_fPlacedType = std::min( m_fPlacedType + 0.25f, 10.f );
     }
 
   private:
@@ -153,6 +153,8 @@ class PaperCharacter : public ::B33::Rendering::Camera
     float                  m_fPlacedType = 0;
 };
 
+typedef ::B33::App::Playable<class PaperCharacter, class PaperController> PlayablePaper;
+
 class PaperController : public B33::App::ControllerObject
 {
     using Action        = ::B33::App::Action;
@@ -160,52 +162,50 @@ class PaperController : public B33::App::ControllerObject
 
   public:
     const inline static Action UseActionMoveRigth =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::Strafe, 0.1f>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::Strafe, 0.1f>();
 
     const inline static Action UseActionMoveLeft =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::Strafe, -0.1f>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::Strafe, -0.1f>();
 
     const inline static Action UseActionMoveUp =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::MoveVertical, 0.1f>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::MoveVertical, 0.1f>();
 
     const inline static Action UseActionMoveDown =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::MoveVertical, -0.1f>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::MoveVertical, -0.1f>();
 
     const inline static Action UseActionPlaceBlock =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::PlaceBlock>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::PlaceBlock>();
 
     const inline static Action UseActionRemoveBlock =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::RemoveBlock>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::RemoveBlock>();
 
     const inline static Action UseActionPushLowForce =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::Push, 10.f>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::Push, 10.f>();
 
     const inline static Action UseActionPushMediumForce =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::Push, 50.f>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::Push, 50.f>();
 
     const inline static Action UseActionPushHighForce =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::Push, 100.f>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::Push, 100.f>();
 
     const inline static Action UseActionWalk =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::ActivateWalk>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::ActivateWalk>();
 
     const inline static Action UseActionSprint =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::ActivateSprint>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::ActivateSprint>();
 
     const inline static Action UseActionMoveBack =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::MoveForwardBackwards, -0.1f>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::MoveForwardBackwards, -0.1f>();
 
     const inline static Action UseActionMoveFront =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::MoveForwardBackwards, 0.1f>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::MoveForwardBackwards, 0.1f>();
 
     const inline static Action UseActionMouse =
-        ActionFactory::CreateMouseAction<PaperCharacter, &PaperCharacter::MouseMove>();
+        ActionFactory::CreateMouseAction<PlayablePaper, &PaperCharacter::MouseMove>();
 
     const inline static Action UseActionRotatePlacedTypeForward =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::RotatePlaceTypeForward>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::RotatePlaceTypeForward>();
 
     const inline static Action UseActionRotatePlacedTypeBackward =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::RotatePlaceTypeBackward>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::RotatePlaceTypeBackward>();
 };
-
-typedef ::B33::App::Playable<PaperCharacter, PaperController> PlayablePaper;

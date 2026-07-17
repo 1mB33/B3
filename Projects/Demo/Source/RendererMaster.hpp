@@ -35,6 +35,8 @@ class RendererMaster
     bool                        m_bDebugMode = false;
 };
 
+typedef ::B33::App::Playable<class RendererMaster, class RendererMasterController> RendererMasterPuppet;
+
 class RendererMasterController : public ::B33::App::ControllerObject
 {
     using Action        = ::B33::App::Action;
@@ -42,7 +44,5 @@ class RendererMasterController : public ::B33::App::ControllerObject
 
   public:
     const inline static Action UseActionSwitchDebugMode =
-        ActionFactory::CreateKeyboardAction<RendererMaster, &RendererMaster::SwitchDebugMode>();
+        ActionFactory::CreateKeyboardAction<RendererMasterPuppet, &RendererMaster::SwitchDebugMode>();
 };
-
-typedef ::B33::App::Playable<RendererMaster, RendererMasterController> RendererMasterPuppet;

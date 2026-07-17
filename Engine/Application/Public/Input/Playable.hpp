@@ -29,6 +29,7 @@ class Playable
     Playable()
       : m_Object()
       , m_Controller()
+      , m_Used()
     {
     }
 
@@ -36,6 +37,7 @@ class Playable
     Playable( ARGS &&...args )
       : m_Object( forward<ARGS>( args )... )
       , m_Controller()
+      , m_Used()
     {
     }
 
@@ -50,18 +52,20 @@ class Playable
 
     OBJECT_CLASS &GetObject()
     {
+        ::std::lock_guard lg( m_Used );
         return m_Object;
     }
 
     const CONTROLLER &GetController() const
     {
+        ::std::lock_guard lg( m_Used );
         return m_Controller;
     }
 
     // Methods // -----------------------------------------------------------------------------------------------------
   public:
-    using UserInputPtr      = ::std::shared_ptr<B33::App::UserInput>;
-    using ActionInputVector = ::std::vector<::std::pair<B33::App::Action, AbInputBind>>;
+    using UserInputPtr      = ::std::shared_ptr<::B33::App::UserInput>;
+    using ActionInputVector = ::std::vector<::std::pair<::B33::App::Action, AbInputBind>>;
 
     void BindToInput( const UserInputPtr &pInput, const ActionInputVector &binds )
     {
@@ -80,6 +84,7 @@ class Playable
   private:
     OBJECT_CLASS m_Object;
     CONTROLLER   m_Controller;
+    ::std::mutex m_Used;
 };
 
 } // namespace B33::App

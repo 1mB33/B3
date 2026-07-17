@@ -27,7 +27,7 @@ class ActionFactory
             .ButtonAction =
                 +[]( const float fDelta, void *pThis )
                 {
-                    ( static_cast<CLASS *>( pThis )->*ACTION )( fDelta, ARGS... );
+                    ( static_cast<CLASS *>( pThis )->GetObject().*ACTION )( fDelta, ARGS... );
                     return ::AbActionType();
                 },
             .MouseAction = nullptr,
@@ -43,7 +43,7 @@ class ActionFactory
             .MouseAction =
                 +[]( const float fDelta, void *pThis, int32_t fX, int32_t fY )
                 {
-                    ( static_cast<CLASS *>( pThis )->*ACTION )( fDelta, fX, fY, ARGS... );
+                    ( static_cast<CLASS *>( pThis )->GetObject().*ACTION )( fDelta, fX, fY, ARGS... );
                     return ::AbActionType();
                 },
         };

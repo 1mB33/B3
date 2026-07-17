@@ -3,7 +3,6 @@
 
 #include "Input/InputEvents.h"
 #include "WindowEvents.h"
-#include <mutex>
 
 /**
  * Struct that contains all the handles and information about the window.
@@ -13,7 +12,7 @@
  */
 struct WindowDesc
 {
-    ::std::mutex       mUpdated;
+    ::std::mutex mUpdated;
 
     struct
     {
