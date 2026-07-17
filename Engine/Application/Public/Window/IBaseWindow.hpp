@@ -134,7 +134,7 @@ class IBaseWindow
             B33_ERROR( L"Fatal on updating the new behavior" );
             throw ::B33::Core::Exception( e );
         }
-        m_pWindowDesc->Data.LastEvent = EAbWindowEvents::ChangedBehavior;
+        m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::ChangedBehavior;
     }
 
   public:
