@@ -68,7 +68,7 @@ class IBaseWindow
     {
         B33_ASSERT( m_pWindowDesc != nullptr );
 
-        ::std::unique_lock ul( m_pWindowDesc->mUpdated );
+        ::std::lock_guard lg( m_pWindowDesc->mUpdated );
 
         bool                                         bWasAlive  = this->m_pWindowDesc->Data.bIsAlive;
         ::std::unique_ptr<DefaultSystemWindowPolicy> pNewPolicy = ::std::make_unique<NewPolicy>();
@@ -119,14 +119,22 @@ class IBaseWindow
         B33_TRACE( L"Swaping old window desc with new one" );
         SetWindowDescBufferStateInternal( newDesc );
         m_Policy.swap( pNewPolicy );
-        m_pWindowDesc->Data.LastEvent = EAbWindowEvents::ChangedBehavior;
 
         B33_TRACE( L"Updating the new window desc" );
-        this->Update( 0.f );
-        if ( oldDesc.Data.bIsVisible )
+        try
         {
-            this->Show();
+            this->Update( 0.f );
+            if ( oldDesc.Data.bIsVisible )
+            {
+                this->Show();
+            }
         }
+        catch ( ::std::exception &e )
+        {
+            B33_ERROR( L"Fatal on updating the new behavior" );
+            throw ::B33::Core::Exception( e );
+        }
+        m_pWindowDesc->Data.LastEvent = EAbWindowEvents::ChangedBehavior;
     }
 
   public:

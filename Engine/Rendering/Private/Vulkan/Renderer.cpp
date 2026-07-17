@@ -39,7 +39,7 @@ Renderer::~Renderer()
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-void Renderer::Initialize( shared_ptr<const WindowDesc> wd )
+void Renderer::Initialize( shared_ptr<WindowDesc> wd )
 {
     B33_LOG( Core::Debug::Info, L"Initializing renderer!" );
 
@@ -74,8 +74,12 @@ void Renderer::Update( const float )
 // ---------------------------------------------------------------------------------------------------------------------
 void Renderer::Render()
 {
+    lock_guard lg( m_pWindowDesc->mUpdated );
+
     if ( m_pWindowDesc->Data.LastEvent == EAbWindowEvents::ChangedBehavior )
     {
+        B33_WARNING( L"On update, the window just changed behavior, skipping a frame" );
+        RecreateSwapChain();
         return;
     }
 
@@ -83,13 +87,6 @@ void Renderer::Render()
     VkDevice device = m_pDeviceAdapter->GetAdapterHandle();
     Frame   &frame  = ( *m_vFrames.get() )[ m_uCurrentFrame ];
     VkResult result;
-
-    if ( m_pWindowDesc->Data.LastEvent & EAbWindowEvents::ChangedBehavior )
-    {
-        B33_WARNING( L"On update, the window just changed behavior, skipping a frame" );
-        RecreateSwapChain();
-        return;
-    }
 
     THROW_IF_FAILED( vkWaitForFences( device, 1, &frame.InFlightFence, VK_TRUE, UINT64_MAX ) );
     THROW_IF_FAILED( vkResetFences( device, 1, &frame.InFlightFence ) );

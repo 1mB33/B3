@@ -13,7 +13,7 @@
  */
 struct WindowDesc
 {
-    ::std::mutex mUpdated;
+    ::std::mutex       mUpdated;
 
     struct
     {
