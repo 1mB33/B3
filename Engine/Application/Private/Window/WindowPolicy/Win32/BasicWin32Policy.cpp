@@ -14,8 +14,8 @@ uint32_t BasicWin32WindowPolicy::CreateImpl( WindowDesc *pWd )
 {
     B33_ASSERT( pWd );
 
-    const auto &windowData = pWd->Data;
-    auto       &windowOS   = pWd->OS;
+    auto &windowData = pWd->Data;
+    auto &windowOS   = pWd->OS;
 
 
     B33_ASSERT( windowOS.hWnd == NULL );
