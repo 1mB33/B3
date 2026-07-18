@@ -207,13 +207,6 @@ class IBaseWindow
             return;
         }
 
-        // Don't reset the last event flags if the only flag that we have set is EAbWindowEvents::ChangedBehavior
-        if ( this->m_pWindowDesc->Data.LastEvent & ~EAbWindowEvents::ChangedBehavior )
-            m_pWindowDesc->Data.LastEvent &= 0;
-
-        // Make sure that after EAbWindowEvents::ChangedBehavior propagation,
-        // we are going to reset the events by setting EAbWindowEvents::NothingNew flag
-        this->m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::NothingNew;
         m_Policy->WindowPolicyUpdate( m_pWindowDesc.get() );
 
         if ( m_pWindowDesc->Data.LastEvent & EAbWindowEvents::Destroy )
