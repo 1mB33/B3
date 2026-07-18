@@ -37,6 +37,8 @@ void JobSystem::JobProcessorLoop( mutex              &mutex,
         ul.unlock();
         condition.notify_all();
     }
+
+    IsFree.store( true );
 }
 
 JobSystem::JobSystem()

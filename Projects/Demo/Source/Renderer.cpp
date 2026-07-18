@@ -9,11 +9,13 @@ using namespace B33::Math;
 
 void Renderer::Initialize( ::B33::System::ComponentBridge &bridge )
 {
-    auto input = bridge.QueryComponent<MainWindow>().GetWindowInstance().GetInput();
-    if ( auto locked = input.lock() )
+    auto windowHandle = bridge.QueryComponent<MainWindow>();
+    auto gameHandle   = bridge.QueryComponent<MyGame>();
+
+    if ( auto lockedInput = windowHandle->GetWindowInstance().GetInput().lock() )
     {
         m_RendererMaster.BindToInput(
-            locked,
+            lockedInput,
             {
                 { RendererMasterController::UseActionSwitchDebugMode,
                   AbInputBind {
@@ -22,37 +24,36 @@ void Renderer::Initialize( ::B33::System::ComponentBridge &bridge )
             } );
     }
 
-    m_RendererInstance.Initialize( bridge.QueryComponent<MainWindow>().GetWindowInstance().GetWindowDesc() );
+    m_RendererInstance.Initialize( windowHandle->GetWindowInstance().GetWindowDesc() );
 
-    m_RendererInstance.PushPipeline<::B33::Rendering::VoxelPipeline>(
-        bridge.QueryComponent<MyGame>().GetGameInstance().GetWorld() );
-
+    m_RendererInstance.PushPipeline<::B33::Rendering::VoxelPipeline>( gameHandle->GetGameInstance().GetWorld() );
     m_RendererInstance.PushPipeline<::B33::Rendering::EditorPipeline>();
 }
 
 void Renderer::Update( float fDelta, ::B33::System::ComponentBridge &bridge )
 {
-    B33_TRACE( L"Renderer is updated, delta = %f", fDelta );
-    auto &characterHandle = bridge.QueryComponent<MyGame>().GetMainCharacter().GetObject();
-    auto &gameHandle      = bridge.QueryComponent<MyGame>().GetGameInstance();
+    auto  gameComonentHandle = bridge.QueryComponent<MyGame>();
+    auto &characterHandle    = gameComonentHandle->GetMainCharacter().GetObject();
+    auto &gameHandle         = gameComonentHandle->GetGameInstance();
 
-    const Vec3 rot         = characterHandle.GetRotation();
-    const Vec3 rotVec      = Normalize( RotateY( RotateX( Vec3 { 0.f, 0.f, 1.f }, rot.x ), rot.y ) );
-    const Vec3 cameraRight = Normalize( Cross( rotVec, Vec3 { 0.f, -1.f, 0.f } ) );
-    const Vec3 cameraUp    = Cross( cameraRight, rotVec );
+    const Vec3   rot         = characterHandle.GetRotation();
+    const Vec3   rotVec      = Normalize( RotateY( RotateX( Vec3 { 0.f, 0.f, 1.f }, rot.x ), rot.y ) );
+    const Vec3   cameraRight = Normalize( Cross( rotVec, Vec3 { 0.f, -1.f, 0.f } ) );
+    const Vec3   cameraUp    = Cross( cameraRight, rotVec );
+    const size_t uWorldWidth = gameHandle.GetWorld()->GetGridWidth();
 
-    B33::Rendering::VoxelPushConstants constants = {};
-    constants.fFov                               = characterHandle.GetFov() * B33_DEG_TO_RAD;
-    constants.CameraPos                          = characterHandle.GetPosition();
-    constants.CameraLookDir                      = rotVec;
-    constants.CameraRight                        = cameraRight;
-    constants.CameraUp                           = cameraUp;
-    const size_t uWorldWidth                     = gameHandle.GetWorld()->GetGridWidth();
-    constants.GridSize                           = iVec3( uWorldWidth, uWorldWidth, uWorldWidth );
-    constants.uMode                              = m_RendererMaster.GetObject().GetDebugMode();
+    B33::Rendering::VoxelPushConstants constants = {
+        .CameraPos     = characterHandle.GetPosition(),
+        .GridSize      = iVec3( uWorldWidth, uWorldWidth, uWorldWidth ),
+        .CameraLookDir = rotVec,
+        .CameraRight   = cameraRight,
+        .CameraUp      = cameraUp,
+        .fFov          = characterHandle.GetFov() * B33_DEG_TO_RAD,
+        .uMode         = m_RendererMaster.GetObject().GetDebugMode(),
+    };
 
-    m_RendererInstance.GetPipeline<Rendering::VoxelPipeline>()->LoadPushConstants( constants, sizeof( constants ) );
-    m_RendererInstance.GetPipeline<Rendering::EditorPipeline>()->LoadPushConstants( constants, sizeof( constants ) );
+    m_RendererInstance.GetPipeline<Rendering::VoxelPipeline>()->LoadPushConstants( constants );
+    m_RendererInstance.GetPipeline<Rendering::EditorPipeline>()->LoadPushConstants( constants );
     m_RendererInstance.Update( fDelta );
     m_RendererInstance.Render();
 }

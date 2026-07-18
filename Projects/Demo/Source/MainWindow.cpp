@@ -3,7 +3,7 @@
 #include "EntryPoints/DefaultSystemEntryPoint.hpp"
 #include "WindowMaster.hpp"
 
-void MainWindow::Initialize()
+void MainWindow::Initialize( ::B33::System::ComponentBridge & )
 {
     m_WindowInstance.Create();
     m_WindowPuppet.BindToInput( m_WindowInstance.GetInput().lock(),
@@ -26,14 +26,13 @@ void MainWindow::Initialize()
     m_WindowInstance.GetInput().lock()->StartCapturing();
 }
 
-void MainWindow::Update( float fDelta )
+void MainWindow::Update( float fDelta, ::B33::System::ComponentBridge & )
 {
-    B33_TRACE( L"MainWindow is updated, delta = %f", fDelta );
     m_WindowInstance.Update( fDelta );
     m_WindowInstance.GetInput().lock()->Update( fDelta );
 }
 
-void MainWindow::Destroy()
+void MainWindow::Destroy( ::B33::System::ComponentBridge & )
 {
     m_WindowInstance.GetInput().lock()->StopCapturing();
     m_WindowInstance.Destroy();

@@ -6,7 +6,7 @@
 void MyGame::Initialize( ::B33::System::ComponentBridge &bridge )
 {
     m_Game.Initialize();
-    auto input = bridge.QueryComponent<MainWindow>().GetWindowInstance().GetInput();
+    auto input = bridge.QueryComponent<MainWindow>()->GetWindowInstance().GetInput();
     if ( auto lockedInput = input.lock() )
     {
         m_Paper.BindToInput(
@@ -88,9 +88,8 @@ void MyGame::Initialize( ::B33::System::ComponentBridge &bridge )
     m_Paper.GetObject().Initialize();
 }
 
-void MyGame::Update( float fDelta )
+void MyGame::Update( float fDelta, ::B33::System::ComponentBridge &bridge )
 {
-    B33_TRACE( L"Game is updated, delta = %f", fDelta );
     m_Game.Update( fDelta );
 }
 

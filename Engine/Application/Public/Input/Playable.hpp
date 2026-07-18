@@ -72,12 +72,18 @@ class Playable
         m_Controller.SignObject( pInput );
         for ( const auto &bind : binds )
         {
-            if ( bind.first.Type == EAbBindType::Keyboard )
-                pInput->Bind( &m_Object, &m_Controller, bind.first.ButtonAction, nullptr, bind.second );
-            if ( bind.first.Type == EAbBindType::Mouse )
-                pInput->Bind( &m_Object, &m_Controller, nullptr, bind.first.MouseAction, bind.second );
-            if ( bind.first.Type == EAbBindType::MouseButton )
-                pInput->Bind( &m_Object, &m_Controller, bind.first.ButtonAction, nullptr, bind.second );
+            switch ( bind.first.Type )
+            {
+                case EAbBindType::Keyboard:
+                    pInput->Bind( &m_Object, &m_Controller, bind.first.ButtonAction, nullptr, bind.second );
+                    break;
+                case EAbBindType::Mouse:
+                    pInput->Bind( &m_Object, &m_Controller, nullptr, bind.first.MouseAction, bind.second );
+                    break;
+                case EAbBindType::MouseButton:
+                    pInput->Bind( &m_Object, &m_Controller, bind.first.ButtonAction, nullptr, bind.second );
+                    break;
+            }
         }
     }
 

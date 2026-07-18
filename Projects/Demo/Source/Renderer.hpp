@@ -2,10 +2,11 @@
 
 #include "B33System.hpp"
 #include "B33Rendering.hpp"
+#include "IComponent.hpp"
 #include "RendererMaster.hpp"
 #include "Vulkan/Renderer.hpp"
 
-class Renderer : public ::B33::System::IComponentDefault
+class Renderer : public ::B33::System::ComponentAsyncUpdateOnly
 {
     B33_COMPONENT( Renderer );
 
