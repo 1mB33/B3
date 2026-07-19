@@ -9,6 +9,7 @@ using namespace B33::Math;
 
 void Renderer::Initialize( ::B33::System::ComponentBridge &bridge )
 {
+    B33_TRACE( L"Renderer initialize" );
     auto windowHandle = bridge.QueryComponent<MainWindow>();
     auto gameHandle   = bridge.QueryComponent<MyGame>();
 
@@ -32,6 +33,7 @@ void Renderer::Initialize( ::B33::System::ComponentBridge &bridge )
 
 void Renderer::Update( float fDelta, ::B33::System::ComponentBridge &bridge )
 {
+    B33_TRACE( L"Renderer update" );
     auto  gameComonentHandle = bridge.QueryComponent<MyGame>();
     auto &characterHandle    = gameComonentHandle->GetMainCharacter().GetObject();
     auto &gameHandle         = gameComonentHandle->GetGameInstance();
@@ -60,5 +62,6 @@ void Renderer::Update( float fDelta, ::B33::System::ComponentBridge &bridge )
 
 void Renderer::Destroy( ::B33::System::ComponentBridge &bridge )
 {
+    B33_TRACE( L"Renderer destroy" );
     m_RendererInstance.Destroy();
 }

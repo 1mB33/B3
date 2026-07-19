@@ -8,11 +8,7 @@ class MyGame : public ::B33::System::ComponentAsyncUpdateOnly
     B33_COMPONENT( MyGame );
 
   public:
-    MyGame()
-      : m_Game()
-      , m_Paper( m_Game )
-    {
-    }
+    MyGame();
 
   public:
     virtual void Initialize( ::B33::System::ComponentBridge &bridge ) override;
@@ -25,10 +21,12 @@ class MyGame : public ::B33::System::ComponentAsyncUpdateOnly
         return m_Game;
     }
 
-    const PlayablePaper &GetMainCharacter() const
+    Game &GetGameInstance()
     {
-        return m_Paper;
+        return m_Game;
     }
+
+    const PlayablePaper &GetMainCharacter() const;
 
   private:
     Game          m_Game = {};

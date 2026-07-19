@@ -33,6 +33,7 @@ void EngineLoop::UpdateComponents( float fDelta )
     {
         pComponent->Lock();
         dynamic_cast<ComponentAsync *>( pComponent )->Update( fDelta, *pBridge );
+        pComponent->DecreaseCount();
         pComponent->Unlock();
     };
 
@@ -52,12 +53,24 @@ void EngineLoop::UpdateComponents( float fDelta )
                 continue;
             case Async:
                 for ( ComponentAbstractBase *component : componentVector )
-                    m_JobSystem.PushJob( asyncCall, component, fDelta, &m_ComponentBridge );
+                {
+                    if ( component->GetCount() < 2 )
+                    {
+                        B33_TRACE( L"Queue job for component %p", component );
+                        component->IncreaseCount();
+                        m_JobSystem.PushJob( asyncCall, component, fDelta, &m_ComponentBridge );
+                    }
+                    else
+                    {
+                        B33_TRACE( L"Queued more then 2 jobs for the component, skipping" );
+                    }
+                }
                 continue;
             default:
                 B33_ASSERT_MSG( false, "Unknown component type" );
         }
     }
+    m_JobSystem.BlockAndWait();
 }
 
 void EngineLoop::DestroyComponents()

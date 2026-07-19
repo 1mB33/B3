@@ -3,11 +3,11 @@
 
 #include "B33Core.h"
 
+#include "AppResources.hpp"
 #include "AppStatus.hpp"
 #include "Window/WindowDesc.hpp"
 #include "Window/WindowEvents.h"
 #include "Window/WindowPolicy/BasicSystemPolicy.hpp"
-#include <mutex>
 
 namespace B33::App
 {
@@ -27,6 +27,7 @@ class IBaseWindow
       : m_Policy( ::std::make_unique<WindowPolicy>() )
       , m_pWindowDesc( ::std::make_shared<WindowDesc>( CreateWindowDesc( L"IBaseWindow", 1280, 720 ) ) )
     {
+        B33_ASSERT( ::std::this_thread::get_id() == AppResources::Get().GetMainThreadID() );
     }
 
     template <class U>
@@ -140,6 +141,7 @@ class IBaseWindow
   public:
     void Create()
     {
+        B33_ASSERT( ::std::this_thread::get_id() == AppResources::Get().GetMainThreadID() );
         B33_ASSERT( m_pWindowDesc != nullptr );
         B33_ASSERT( m_Policy != nullptr );
 
@@ -198,6 +200,7 @@ class IBaseWindow
 
     void Update( const float fDelta )
     {
+        B33_ASSERT( ::std::this_thread::get_id() == AppResources::Get().GetMainThreadID() );
         B33_ASSERT( m_pWindowDesc != nullptr );
         B33_ASSERT( m_Policy != nullptr );
 

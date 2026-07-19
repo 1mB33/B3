@@ -1,7 +1,9 @@
 #ifndef B33_ICOMPONENT_H
 #define B33_ICOMPONENT_H
 
+#include "B33Core.h"
 #include "B33System.hpp"
+#include <atomic>
 
 namespace B33::System
 {
@@ -29,7 +31,8 @@ class ComponentAbstractBase
 
   public:
     ComponentAbstractBase()
-      : m_mUsed()
+      : m_UpdateCount( 0 )
+      , m_mUsed()
       , m_bFree( true )
       , m_Conditional()
     {
@@ -42,10 +45,11 @@ class ComponentAbstractBase
     virtual void Update( float fDelta, class ComponentBridge &bridge ) = 0;
     virtual void Destroy( class ComponentBridge &bridge )              = 0;
 
-  private:
+  public:
     void Lock()
     {
         m_mUsed.lock();
+        B33_TRACE( L"Component locked %p", this );
     }
 
     bool TryLock()
@@ -56,9 +60,27 @@ class ComponentAbstractBase
     void Unlock()
     {
         m_mUsed.unlock();
+        B33_TRACE( L"Component unlocked %p", this );
     }
 
   private:
+    void IncreaseCount()
+    {
+        m_UpdateCount.store( m_UpdateCount.load() + 1 );
+    }
+
+    void DecreaseCount()
+    {
+        m_UpdateCount.store( m_UpdateCount.load() - 1 );
+    }
+
+    int32_t GetCount()
+    {
+        return m_UpdateCount.load();
+    }
+
+  private:
+    ::std::atomic_int32_t     m_UpdateCount;
     ::std::mutex              m_mUsed;
     ::std::atomic_bool        m_bFree;
     ::std::condition_variable m_Conditional;

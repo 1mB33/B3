@@ -1,3 +1,4 @@
+#include "B33Core.h"
 #include "B33Rendering.hpp"
 
 #include "Vulkan/ErrorHandling.hpp"
@@ -22,13 +23,19 @@ EReupload MemoryUploadTracker::ReuploadStatus()
     switch ( m_Reupload )
     {
         case EReupload::NoAction:
+            B33_TRACE( L"EReupload::NoAction" );
             return EReupload::NoAction;
+
         case EReupload::RequestStaging:
             m_Reupload = EReupload::RequestGpuUpload;
+            B33_TRACE( L"EReupload::RequestStaging" );
             return EReupload::RequestStaging;
+
         case EReupload::RequestGpuUpload:
+            B33_TRACE( L"EReupload::RequestGpuUpload" );
             m_Reupload = EReupload::NoAction;
             return EReupload::RequestGpuUpload;
+
         default:
             return EReupload::NoAction;
     }
@@ -43,9 +50,7 @@ EReupload MemoryUploadTracker::PeekStatus()
 // --------------------------------------------------------------------------------------------------------------------
 void MemoryUploadTracker::ForceUpload()
 {
-    if ( m_Reupload & EReupload::RequestStaging )
-        return;
-
+    B33_TRACE( L"Requesting staging" );
     m_Reupload = EReupload::RequestStaging;
 }
 

@@ -1,3 +1,4 @@
+#include "B33Core.h"
 #include "B33Rendering.hpp"
 
 #include "Raycaster/VoxelPipeline.hpp"
@@ -62,9 +63,14 @@ void VoxelPipeline::CreatePipelineResourcesImpl( ::std::shared_ptr<::B33::Render
 // --------------------------------------------------------------------------------------------------------------------
 void VoxelPipeline::Update()
 {
-    if ( !( m_pVoxelGrid->ReuploadStatus() & EReupload::RequestStaging ) )
+    auto tmp = m_pVoxelGrid->ReuploadStatus();
+    if ( !( tmp & EReupload::RequestStaging ) )
+    {
+        B33_TRACE( L"Checking reupload status but got %d", tmp );
         return;
+    }
 
+    B33_TRACE( L"Staging on GPU" );
     m_uStorageBuffersFlags = m_pVoxelGrid->GetChanged();
 
     GetMemoryInternal()->UploadOnStreamBuffer(
@@ -139,6 +145,8 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
 
     if ( m_pVoxelGrid->ReuploadStatus() & EReupload::RequestGpuUpload )
     {
+        B33_TRACE( L"Uploading on GPU" );
+
         VkBufferCopy copyRegion = {
             .srcOffset = 0,
             .dstOffset = 0,

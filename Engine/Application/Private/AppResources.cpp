@@ -9,10 +9,20 @@ using namespace ::std;
 using namespace ::B33::Core;
 using namespace ::B33::Core::Debug;
 
+__B33_ATTRIBUTE_MIGHT_BE_UNUSED static struct Runnable
+{
+    Runnable()
+    {
+        B33_INFO(L"Spawing AppResources on main thread");
+        AppResources::Get();
+    }
+} MakeSureThatAppResourcesAreOnMainThread = {};
+
 // ---------------------------------------------------------------------------------------------------------------------
 AppResources::AppResources()
   : m_wstrExePathW( InternalGetExecutablePathW() )
   , m_strExePathA( InternalGetExecutablePathA( m_wstrExePathW ) )
+  , m_MainThreadId( ::std::this_thread::get_id() )
 {
 }
 
@@ -25,6 +35,11 @@ const ::std::wstring &AppResources::GetExecutablePathW() const
 const ::std::string &AppResources::GetExecutablePathA() const
 {
     return m_strExePathA;
+}
+
+const thread::id &AppResources::GetMainThreadID() const
+{
+    return m_MainThreadId;
 }
 
 // ---------------------------------------------------------------------------------------------------------------------

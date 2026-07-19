@@ -13,7 +13,6 @@ void JobSystem::JobProcessorLoop( mutex              &mutex,
                                   Job                &currentJob )
 {
     IsFree.store( true );
-
     while ( 1 )
     {
         unique_lock ul( mutex );
@@ -29,20 +28,17 @@ void JobSystem::JobProcessorLoop( mutex              &mutex,
             delete currentJob.Runnable;
             currentJob.Runnable = nullptr;
         }
-
         if ( !IsWorking.load() )
+        {
             return;
-
+        }
         IsFree.store( true );
-        ul.unlock();
         condition.notify_all();
     }
-
-    IsFree.store( true );
 }
 
 JobSystem::JobSystem()
-  : m_Threads( 4 )
+  : m_Threads( ::std::thread::hardware_concurrency() - 2 )
   , m_uHead( 0 )
 {
     for ( auto &t : m_Threads )
