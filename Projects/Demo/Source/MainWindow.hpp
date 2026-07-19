@@ -9,7 +9,7 @@
 
 B33_CREATE_COMPONENTS( "MainWindow", "MyGame", "Renderer" )
 
-class MainWindow : public ::B33::System::IComponentNoBridge
+class MainWindow : public ::B33::System::Component
 {
     B33_COMPONENT( MainWindow );
 
@@ -21,9 +21,9 @@ class MainWindow : public ::B33::System::IComponentNoBridge
     }
 
   public:
-    virtual void Initialize() override;
-    virtual void Update( float fDelta ) override;
-    virtual void Destroy() override;
+    virtual void Initialize( ::B33::System::ComponentBridge &bridge ) override;
+    virtual void Update( float fDelta, ::B33::System::ComponentBridge &bridge ) override;
+    virtual void Destroy( ::B33::System::ComponentBridge &bridge ) override;
 
   public:
     const ::B33::App::EmptyCanvas<true, ::B33::App::DefaultGameSystemWindowPolicy> &GetWindowInstance()

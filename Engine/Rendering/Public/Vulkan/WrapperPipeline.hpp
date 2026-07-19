@@ -99,6 +99,12 @@ class PipelineWrapper
         memcpy( m_pPushConstants, &constants, m_uPushConstantsByteSize );
     }
 
+    template <class T>
+    void LoadPushConstants( const T &constants )
+    {
+        LoadPushConstants( dynamic_cast<const IPushConstants &>( constants ), sizeof( T ) );
+    }
+
   public:
     ::VkPipelineLayout GetLayoutHandle() const
     {

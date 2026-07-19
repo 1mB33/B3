@@ -29,6 +29,7 @@ class Playable
     Playable()
       : m_Object()
       , m_Controller()
+      , m_Used()
     {
     }
 
@@ -36,6 +37,7 @@ class Playable
     Playable( ARGS &&...args )
       : m_Object( forward<ARGS>( args )... )
       , m_Controller()
+      , m_Used()
     {
     }
 
@@ -50,36 +52,45 @@ class Playable
 
     OBJECT_CLASS &GetObject()
     {
+        ::std::lock_guard lg( m_Used );
         return m_Object;
     }
 
     const CONTROLLER &GetController() const
     {
+        ::std::lock_guard lg( m_Used );
         return m_Controller;
     }
 
     // Methods // -----------------------------------------------------------------------------------------------------
   public:
-    using UserInputPtr      = ::std::shared_ptr<B33::App::UserInput>;
-    using ActionInputVector = ::std::vector<::std::pair<B33::App::Action, AbInputBind>>;
+    using UserInputPtr      = ::std::shared_ptr<::B33::App::UserInput>;
+    using ActionInputVector = ::std::vector<::std::pair<::B33::App::Action, AbInputBind>>;
 
     void BindToInput( const UserInputPtr &pInput, const ActionInputVector &binds )
     {
         m_Controller.SignObject( pInput );
         for ( const auto &bind : binds )
         {
-            if ( bind.first.Type == EAbBindType::Keyboard )
-                pInput->Bind( &m_Object, &m_Controller, bind.first.ButtonAction, nullptr, bind.second );
-            if ( bind.first.Type == EAbBindType::Mouse )
-                pInput->Bind( &m_Object, &m_Controller, nullptr, bind.first.MouseAction, bind.second );
-            if ( bind.first.Type == EAbBindType::MouseButton )
-                pInput->Bind( &m_Object, &m_Controller, bind.first.ButtonAction, nullptr, bind.second );
+            switch ( bind.first.Type )
+            {
+                case EAbBindType::Keyboard:
+                    pInput->Bind( &m_Object, &m_Controller, bind.first.ButtonAction, nullptr, bind.second );
+                    break;
+                case EAbBindType::Mouse:
+                    pInput->Bind( &m_Object, &m_Controller, nullptr, bind.first.MouseAction, bind.second );
+                    break;
+                case EAbBindType::MouseButton:
+                    pInput->Bind( &m_Object, &m_Controller, bind.first.ButtonAction, nullptr, bind.second );
+                    break;
+            }
         }
     }
 
   private:
     OBJECT_CLASS m_Object;
     CONTROLLER   m_Controller;
+    ::std::mutex m_Used;
 };
 
 } // namespace B33::App

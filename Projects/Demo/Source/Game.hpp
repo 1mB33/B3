@@ -319,7 +319,7 @@ class World : public ::B33::Rendering::CubeWorld
             {
                 for ( uint32_t x = 0; x < uDim; ++x )
                 {
-                    this->SetVoxel( B33::Math::iVec3( x, y, z ), 0x101010FF );
+                    this->SetVoxel( B33::Math::iVec3( x, y, z ), 0x105010FF );
                 }
             }
         }

@@ -1,10 +1,12 @@
+#include "B33Core.h"
 #include "MainWindow.hpp"
 
 #include "EntryPoints/DefaultSystemEntryPoint.hpp"
 #include "WindowMaster.hpp"
 
-void MainWindow::Initialize()
+void MainWindow::Initialize( ::B33::System::ComponentBridge & )
 {
+    B33_TRACE( L"MainWindow initialize" );
     m_WindowInstance.Create();
     m_WindowPuppet.BindToInput( m_WindowInstance.GetInput().lock(),
                                 {
@@ -26,15 +28,16 @@ void MainWindow::Initialize()
     m_WindowInstance.GetInput().lock()->StartCapturing();
 }
 
-void MainWindow::Update( float fDelta )
+void MainWindow::Update( float fDelta, ::B33::System::ComponentBridge & )
 {
-    B33_TRACE( L"MainWindow is updated, delta = %f", fDelta );
+    B33_TRACE(L"Window update");
     m_WindowInstance.Update( fDelta );
     m_WindowInstance.GetInput().lock()->Update( fDelta );
 }
 
-void MainWindow::Destroy()
+void MainWindow::Destroy( ::B33::System::ComponentBridge & )
 {
+    B33_TRACE( L"MainWindow destroy" );
     m_WindowInstance.GetInput().lock()->StopCapturing();
     m_WindowInstance.Destroy();
 }

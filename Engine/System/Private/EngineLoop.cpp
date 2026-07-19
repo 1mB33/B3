@@ -15,25 +15,26 @@ void EngineLoop::InitializeComponents()
 {
     m_bInitialized = true;
     m_Components.clear();
-    m_Components[::B33::System::EComponentType::Async ]         = vector<IComponentAbstractBase *> {};
-    m_Components[::B33::System::EComponentType::AsyncNoBridge ] = vector<IComponentAbstractBase *> {};
-    m_Components[::B33::System::EComponentType::NoBridge ]      = vector<IComponentAbstractBase *> {};
-    m_Components[::B33::System::EComponentType::Default ]       = vector<IComponentAbstractBase *> {};
+    m_Components[::B33::System::EComponentType::Default ] = vector<ComponentAbstractBase *> {};
+    m_Components[::B33::System::EComponentType::Async ]   = vector<ComponentAbstractBase *> {};
 
     for ( auto &requiredComponent : m_ComponentOrderRegistry )
+    {
+        B33_INFO( L"Adding compontent %s", requiredComponent.data() );
         AddComponentInternal( requiredComponent );
+    }
+
+    m_JobSystem.BlockAndWait();
 }
 
 void EngineLoop::UpdateComponents( float fDelta )
 {
-    typedef void ( *UpdateCall )( IComponentAbstractBase *pComponent, float fDelta );
-    constexpr UpdateCall asyncCall = +[]( IComponentAbstractBase *pComponent, float fDelta )
+    constexpr auto asyncCall = +[]( ComponentAbstractBase *pComponent, float fDelta, ComponentBridge *pBridge )
     {
-        dynamic_cast<IComponentAsync *>( pComponent )->Update( fDelta );
-    };
-    constexpr UpdateCall asyncNoBridgeCall = +[]( IComponentAbstractBase *pComponent, float fDelta )
-    {
-        dynamic_cast<IComponentAsyncNoBridge *>( pComponent )->Update( fDelta );
+        pComponent->Lock();
+        dynamic_cast<ComponentAsync *>( pComponent )->Update( fDelta, *pBridge );
+        pComponent->DecreaseCount();
+        pComponent->Unlock();
     };
 
     B33_TRACE( L"Starting update loop" );
@@ -43,30 +44,39 @@ void EngineLoop::UpdateComponents( float fDelta )
         switch ( componentType )
         {
             case Default:
-                for ( auto component : componentVector )
-                    dynamic_cast<IComponentDefault *>( component )->Update( fDelta, m_ComponentBridge );
+                for ( auto *component : componentVector )
+                {
+                    component->Lock();
+                    dynamic_cast<Component *>( component )->Update( fDelta, m_ComponentBridge );
+                    component->Unlock();
+                }
                 continue;
             case Async:
-                for ( IComponentAbstractBase *component : componentVector )
-                    m_JobSystem.PushJob( asyncCall, component, fDelta );
-                continue;
-            case AsyncNoBridge:
-                for ( IComponentAbstractBase *component : componentVector )
-                    m_JobSystem.PushJob( asyncNoBridgeCall, component, fDelta );
-                continue;
-            case NoBridge:
-                m_JobSystem.BlockAndWait();
-                for ( IComponentAbstractBase *component : componentVector )
-                    dynamic_cast<IComponentNoBridge *>( component )->Update( fDelta );
+                for ( ComponentAbstractBase *component : componentVector )
+                {
+                    if ( component->GetCount() < 2 )
+                    {
+                        B33_TRACE( L"Queue job for component %p", component );
+                        component->IncreaseCount();
+                        m_JobSystem.PushJob( asyncCall, component, fDelta, &m_ComponentBridge );
+                    }
+                    else
+                    {
+                        B33_TRACE( L"Queued more then 2 jobs for the component, skipping" );
+                    }
+                }
                 continue;
             default:
                 B33_ASSERT_MSG( false, "Unknown component type" );
         }
     }
+    m_JobSystem.BlockAndWait();
 }
 
 void EngineLoop::DestroyComponents()
 {
+    m_JobSystem.BlockAndWait();
+
     for ( ComponentsMap::reverse_iterator it = m_Components.rbegin(); it != m_Components.rend(); ++it )
     {
         auto [ componentType, componentVector ] = *it;
@@ -76,25 +86,17 @@ void EngineLoop::DestroyComponents()
             case Default:
             {
                 for ( auto back = componentVector.rbegin(); back != componentVector.rend(); ++back )
-                    dynamic_cast<IComponentDefault *>( *back )->Destroy( m_ComponentBridge );
+                {
+                    dynamic_cast<Component *>( *back )->Destroy( m_ComponentBridge );
+                }
                 continue;
             }
             case Async:
             {
                 for ( auto back = componentVector.rbegin(); back != componentVector.rend(); ++back )
-                    dynamic_cast<IComponentAsync *>( *back )->Destroy( m_ComponentBridge );
-                continue;
-            }
-            case AsyncNoBridge:
-            {
-                for ( auto back = componentVector.rbegin(); back != componentVector.rend(); ++back )
-                    dynamic_cast<IComponentAsyncNoBridge *>( *back )->Destroy();
-                continue;
-            }
-            case NoBridge:
-            {
-                for ( auto back = componentVector.end() - 1; back >= componentVector.begin(); --back )
-                    dynamic_cast<IComponentNoBridge *>( *back )->Destroy();
+                {
+                    dynamic_cast<ComponentAsync *>( *back )->Destroy( m_ComponentBridge );
+                }
                 continue;
             }
             default:
@@ -107,6 +109,13 @@ void EngineLoop::DestroyComponents()
 
 void EngineLoop::AddComponentInternal( ::std::string_view componentName )
 {
+    constexpr auto asyncCall = +[]( ComponentAbstractBase *pComponent, ComponentBridge *pBridge )
+    {
+        pComponent->Lock();
+        dynamic_cast<ComponentAsync *>( pComponent )->Initialize( *pBridge );
+        pComponent->Unlock();
+    };
+
     B33_ASSERT_MSG( m_ComponentRegistry.find( componentName ) != m_ComponentRegistry.end(),
                     "That component isn't registered. B33COMPONENT macro might be missing in the class body. " );
 
@@ -118,7 +127,11 @@ void EngineLoop::AddComponentInternal( ::std::string_view componentName )
         case Default:
         {
             if ( m_bInitialized )
+            {
+                component->Lock();
                 component->Initialize( m_ComponentBridge );
+                component->Unlock();
+            }
 
             m_Components[::B33::System::EComponentType::Default ].push_back( component );
             break;
@@ -126,28 +139,23 @@ void EngineLoop::AddComponentInternal( ::std::string_view componentName )
         case Async:
         {
             if ( m_bInitialized )
-                component->Initialize( m_ComponentBridge );
+                m_JobSystem.PushJob( asyncCall, component, &m_ComponentBridge );
 
             m_Components[::B33::System::EComponentType::Async ].push_back( component );
             break;
         }
-        case AsyncNoBridge:
+        case AsyncUpdateOnly:
         {
             if ( m_bInitialized )
-                dynamic_cast<IComponentAsyncNoBridge *>( component )->Initialize();
+            {
+                component->Lock();
+                component->Initialize( m_ComponentBridge );
+                component->Unlock();
+            }
 
-            m_Components[::B33::System::EComponentType::AsyncNoBridge ].push_back( component );
+            m_Components[::B33::System::EComponentType::Async ].push_back( component );
             break;
         }
-        case NoBridge:
-        {
-            if ( m_bInitialized )
-                dynamic_cast<IComponentNoBridge *>( component )->Initialize();
-
-            m_Components[::B33::System::EComponentType::NoBridge ].push_back( component );
-            break;
-        }
-
         default:
         {
             B33_ASSERT_MSG( false, "Unknown component type" );

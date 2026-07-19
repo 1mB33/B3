@@ -1,88 +1,119 @@
 #ifndef B33_ICOMPONENT_H
 #define B33_ICOMPONENT_H
 
+#include "B33Core.h"
 #include "B33System.hpp"
+#include <atomic>
 
 namespace B33::System
 {
 
 enum EComponentType
 {
-    AsyncNoBridge = 1,
-    Async         = AsyncNoBridge + 1,
-    NoBridge      = Async + 1,
-    Default       = NoBridge + 1,
+    Async           = 1,
+    Default         = Async << 1,
+    AsyncUpdateOnly = Default << 1,
 };
 
-class IComponentAbstractBase;
-using ComponentInstance = ::std::unique_ptr<IComponentAbstractBase>;
+class ComponentAbstractBase;
+using ComponentInstance = ::std::unique_ptr<ComponentAbstractBase>;
 using ComponentFactory  = ComponentInstance ( * )();
 
-class IComponentAbstractBase
+class ComponentAbstractBase
 {
+    friend class EngineLoop;
+
+    template <class T>
+    friend class BorrowedComponent;
+
   public:
     virtual ::B33::System::EComponentType GetComponentType() = 0;
 
   public:
-    virtual ~IComponentAbstractBase() = default;
+    ComponentAbstractBase()
+      : m_UpdateCount( 0 )
+      , m_mUsed()
+      , m_bFree( true )
+      , m_Conditional()
+    {
+    }
+
+    virtual ~ComponentAbstractBase() = default;
 
   public:
-    virtual void Initialize( class ComponentBridge &bridge ) = 0;
-    virtual void Destroy( class ComponentBridge &bridge )    = 0;
+    virtual void Initialize( class ComponentBridge &bridge )           = 0;
+    virtual void Update( float fDelta, class ComponentBridge &bridge ) = 0;
+    virtual void Destroy( class ComponentBridge &bridge )              = 0;
+
+  public:
+    void Lock()
+    {
+        m_mUsed.lock();
+        B33_TRACE( L"Component locked %p", this );
+    }
+
+    bool TryLock()
+    {
+        return true;
+    }
+
+    void Unlock()
+    {
+        m_mUsed.unlock();
+        B33_TRACE( L"Component unlocked %p", this );
+    }
+
+  private:
+    void IncreaseCount()
+    {
+        m_UpdateCount.store( m_UpdateCount.load() + 1 );
+    }
+
+    void DecreaseCount()
+    {
+        m_UpdateCount.store( m_UpdateCount.load() - 1 );
+    }
+
+    int32_t GetCount()
+    {
+        return m_UpdateCount.load();
+    }
+
+  private:
+    ::std::atomic_int32_t     m_UpdateCount;
+    ::std::mutex              m_mUsed;
+    ::std::atomic_bool        m_bFree;
+    ::std::condition_variable m_Conditional;
 };
 
-class IComponentDefault : public IComponentAbstractBase
+class Component : public ComponentAbstractBase
 {
   public:
-    virtual ::B33::System::EComponentType GetComponentType() override
+    virtual ::B33::System::EComponentType GetComponentType() override final
     {
         return ::B33::System::EComponentType::Default;
     }
-
-  public:
-    virtual void Update( float fDelta, class ComponentBridge &bridge ) = 0;
 };
 
-class IComponentAsync : public IComponentAbstractBase
+class ComponentAsync : public ComponentAbstractBase
 {
   public:
     virtual ::B33::System::EComponentType GetComponentType() override
     {
         return ::B33::System::EComponentType::Async;
     }
-
-  public:
-    virtual void Update( float fDelta ) = 0;
 };
 
-class IComponentNoBridge : public IComponentAbstractBase
+class ComponentAsyncUpdateOnly : public ComponentAsync
 {
   public:
-    virtual ::B33::System::EComponentType GetComponentType() override
+    virtual ::B33::System::EComponentType GetComponentType() override final
     {
-        return ::B33::System::EComponentType::NoBridge;
-    }
-
-  public:
-    virtual void Initialize( class ComponentBridge & ) override {}
-
-    virtual void Destroy( class ComponentBridge & ) override {}
-
-    virtual void Initialize()           = 0;
-    virtual void Update( float fDelta ) = 0;
-    virtual void Destroy()              = 0;
-};
-
-class IComponentAsyncNoBridge : public IComponentNoBridge
-{
-  public:
-    virtual ::B33::System::EComponentType GetComponentType() override
-    {
-        return ::B33::System::EComponentType::AsyncNoBridge;
+        return ::B33::System::EComponentType::AsyncUpdateOnly;
     }
 };
 
-struct ComponentInstanceRegister
+class ComponentInstanceRegister
 {
   private:
     ComponentInstanceRegister() = default;

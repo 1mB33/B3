@@ -15,7 +15,7 @@ class EngineLoop
     friend class ComponentInstanceRegister;
     friend struct ComponentOrderRegister;
 
-    using ComponentsMap = ::std::map<::B33::System::EComponentType, ::std::vector<IComponentAbstractBase *>>;
+    using ComponentsMap = ::std::map<::B33::System::EComponentType, ::std::vector<class ComponentAbstractBase *>>;
 
   public:
     EngineLoop()

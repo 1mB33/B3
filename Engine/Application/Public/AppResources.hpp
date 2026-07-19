@@ -25,6 +25,8 @@ class AppResources
 
     __B33_API const ::std::string &GetExecutablePathA() const;
 
+    __B33_API const ::std::thread::id &GetMainThreadID() const;
+
     // Methods // -----------------------------------------------------------------------------------------------------
   public:
     __B33_API static AppResources &Get();
@@ -35,8 +37,9 @@ class AppResources
     static ::std::string InternalGetExecutablePathA( const ::std::wstring wstrBase );
 
   private:
-    ::std::wstring m_wstrExePathW;
-    ::std::string  m_strExePathA;
+    ::std::wstring    m_wstrExePathW;
+    ::std::string     m_strExePathA;
+    ::std::thread::id m_MainThreadId;
 };
 
 } // namespace B33::App

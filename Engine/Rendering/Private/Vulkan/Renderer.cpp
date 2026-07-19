@@ -78,6 +78,7 @@ void Renderer::Render()
 
     if ( m_pWindowDesc->Data.LastEvent & EAbWindowEvents::ChangedBehavior )
     {
+        m_pWindowDesc->Data.LastEvent &= ~EAbWindowEvents::ChangedBehavior;
         B33_WARNING( L"On update, the window just changed behavior, skipping a frame" );
         RecreateSwapChain();
         return;

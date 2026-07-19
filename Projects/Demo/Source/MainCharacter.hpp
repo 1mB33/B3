@@ -15,7 +15,7 @@ class PaperCharacter : public ::B33::Rendering::Camera
 {
   public:
     template <class... U>
-    explicit PaperCharacter( Game &vg, U &&...args )
+    explicit PaperCharacter( class MyGame &vg, U &&...args )
       : m_g( vg )
       , Camera( ::std::forward<U>( args )... )
       , m_fSpeed( m_fWalk )
@@ -23,127 +23,35 @@ class PaperCharacter : public ::B33::Rendering::Camera
     }
 
   public:
-    void Initialize()
-    {
-        this->SetRotation( ::B33::Math::Vec3 { -0.5f, 1.25f, 0.f } );
-        this->SetPositon( ::B33::Math::Vec3 { 14.5f, 2.25f, 25.f } );
-    }
+    void Initialize();
 
   public:
-    void PlaceBlock( const float )
-    {
-        B33::Math::Vec3 rot     = this->GetRotation();
-        B33::Math::Vec3 lookDir = B33::Math::Normalize(
-            B33::Math::RotateY( B33::Math::RotateX( B33::Math::Vec3 { 0.f, 0.f, 1.f }, rot.x ), rot.y ) );
+    void PlaceBlock( const float );
 
-        B33::Rendering::HitResult hr =
-            ::B33::Rendering::MarchTheRay( m_g.GetWorld().get(), this->GetPosition(), lookDir, 10 );
+    void RemoveBlock( const float );
 
-        if ( hr.bHit )
-        {
-            auto id = m_g.GetIdFromPos( hr.iHitCoords );
-            if ( id + 1 )
-            {
-                const auto halfSize =
-                    B33::Math::Vec3( 2.0f, 2.0f, 2.0f ) *
-                    m_g.GetWorld()->GetStoredObjects().GetHalfSize( m_g.GetIdFromPos( hr.iHitCoords ) ) * hr.Normal;
-                B33_TRACE( L"GenerateCube, placing on top of cube with halfsizes %f %f %f",
-                           halfSize.x,
-                           halfSize.y,
-                           halfSize.z );
-                m_g.GenerateCube(
-                    B33::Math::iVec3( hr.iHitCoords + halfSize ),
-                    ::B33::Math::Vec3( m_fPlacedType + 0.5f, m_fPlacedType + 0.5f, m_fPlacedType + 0.5f ) );
-            }
-            else
-            {
-                m_g.GenerateCube(
-                    B33::Math::iVec3( hr.iHitCoords + hr.Normal ),
-                    ::B33::Math::Vec3( m_fPlacedType + 0.5f, m_fPlacedType + 0.5f, m_fPlacedType + 0.5f ) );
-            }
-        }
-    }
+    void Push( const float, const float fForceMul );
 
-    void RemoveBlock( const float )
-    {
-        B33::Math::Vec3 rot     = this->GetRotation();
-        B33::Math::Vec3 lookDir = ::B33::Math::Normalize(
-            ::B33::Math::RotateY( ::B33::Math::RotateX( ::B33::Math::Vec3 { 0.f, 0.f, 1.f }, rot.x ), rot.y ) );
+    void MoveForwardBackwards( const float fDelta, const float fDir );
 
-        B33::Rendering::HitResult hr =
-            ::B33::Rendering::MarchTheRay( m_g.GetWorld().get(), this->GetPosition(), lookDir, 10 );
+    void Strafe( const float fDelta, float fDir );
 
-        if ( hr.bHit )
-            m_g.RemoveCube( m_g.GetIdFromPos( hr.iHitCoords ) );
-    }
+    void MouseMove( const float, int32_t fX, int32_t fY );
 
-    void Push( const float, const float fForceMul )
-    {
-        B33::Math::Vec3 rot     = this->GetRotation();
-        B33::Math::Vec3 lookDir = ::B33::Math::Normalize(
-            ::B33::Math::RotateY( ::B33::Math::RotateX( ::B33::Math::Vec3 { 0.f, 0.f, 1.f }, rot.x ), rot.y ) );
+    void MoveVertical( const float fDelta, const float dir );
 
-        ::B33::Rendering::HitResult hr =
-            ::B33::Rendering::MarchTheRay( m_g.GetWorld().get(), this->GetPosition(), lookDir, 10 );
-        ::B33::Math::Vec3 pushDir = ::B33::Math::Normalize( this->GetPosition() - ::B33::Math::Vec3( hr.iHitCoords ) );
-        if ( hr.bHit )
-            m_g.PushCube( m_g.GetIdFromPos( hr.iHitCoords ), pushDir, fForceMul );
-    }
+    void Move( const float fDelta, const B33::Math::Vec3 &dir );
 
-    void MoveForwardBackwards( const float fDelta, const float fDir )
-    {
-        B33::Math::Rot3 rot     = this->GetRotation();
-        B33::Math::Vec3 lookDir = ::B33::Math::RotateY( ::B33::Math::Vec3 { 0.f, 0.f, 1.f }, rot.y );
+    void ActivateSprint( const float );
 
-        this->AddPositon( lookDir * fDir * ( fDelta * m_fSpeed ) );
-    }
+    void ActivateWalk( const float );
 
-    void Strafe( const float fDelta, float fDir )
-    {
-        B33::Math::Rot3 rot = this->GetRotation();
-        B33::Math::Vec3 lookDir =
-            ::B33::Math::RotateY( ::B33::Math::Vec3 { 0.f, 0.f, 1.f }, rot.y + ( 90.f * ::B33::Math::B33_DEG_TO_RAD ) );
+    void RotatePlaceTypeBackward( const float );
 
-        this->AddPositon( lookDir * fDir * ( fDelta * m_fSpeed ) );
-    }
-
-    void MouseMove( const float, int32_t fX, int32_t fY )
-    {
-        this->AddRotation( B33::Math::Rot3 { 0.00085f * fY, 0.00085f * fX, 0.f } );
-    }
-
-    void MoveVertical( const float fDelta, const float dir )
-    {
-        this->AddPositon( ::B33::Math::Vec3 { 0.f, dir * ( fDelta * m_fSpeed ), 0.f } );
-    }
-
-    void Move( const float fDelta, const B33::Math::Vec3 &dir )
-    {
-        this->AddPositon( dir * ( fDelta * m_fSpeed ) );
-    }
-
-    void ActivateSprint( const float )
-    {
-        m_fSpeed = m_fSprint;
-    }
-
-    void ActivateWalk( const float )
-    {
-        m_fSpeed = m_fWalk;
-    }
-
-    void RotatePlaceTypeBackward( const float )
-    {
-        m_fPlacedType = std::max( m_fPlacedType - 0.25f, 0.f );
-    }
-
-    void RotatePlaceTypeForward( const float )
-    {
-        m_fPlacedType = std::min( m_fPlacedType + 0.25f, 2.f );
-    }
+    void RotatePlaceTypeForward( const float );
 
   private:
-    Game &m_g;
+    MyGame &m_g;
 
     uint32_t m_uColor;
 
@@ -153,6 +61,8 @@ class PaperCharacter : public ::B33::Rendering::Camera
     float                  m_fPlacedType = 0;
 };
 
+typedef ::B33::App::Playable<class PaperCharacter, class PaperController> PlayablePaper;
+
 class PaperController : public B33::App::ControllerObject
 {
     using Action        = ::B33::App::Action;
@@ -160,52 +70,50 @@ class PaperController : public B33::App::ControllerObject
 
   public:
     const inline static Action UseActionMoveRigth =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::Strafe, 0.1f>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::Strafe, 0.1f>();
 
     const inline static Action UseActionMoveLeft =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::Strafe, -0.1f>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::Strafe, -0.1f>();
 
     const inline static Action UseActionMoveUp =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::MoveVertical, 0.1f>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::MoveVertical, 0.1f>();
 
     const inline static Action UseActionMoveDown =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::MoveVertical, -0.1f>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::MoveVertical, -0.1f>();
 
     const inline static Action UseActionPlaceBlock =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::PlaceBlock>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::PlaceBlock>();
 
     const inline static Action UseActionRemoveBlock =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::RemoveBlock>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::RemoveBlock>();
 
     const inline static Action UseActionPushLowForce =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::Push, 10.f>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::Push, 10.f>();
 
     const inline static Action UseActionPushMediumForce =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::Push, 50.f>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::Push, 50.f>();
 
     const inline static Action UseActionPushHighForce =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::Push, 100.f>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::Push, 100.f>();
 
     const inline static Action UseActionWalk =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::ActivateWalk>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::ActivateWalk>();
 
     const inline static Action UseActionSprint =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::ActivateSprint>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::ActivateSprint>();
 
     const inline static Action UseActionMoveBack =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::MoveForwardBackwards, -0.1f>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::MoveForwardBackwards, -0.1f>();
 
     const inline static Action UseActionMoveFront =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::MoveForwardBackwards, 0.1f>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::MoveForwardBackwards, 0.1f>();
 
     const inline static Action UseActionMouse =
-        ActionFactory::CreateMouseAction<PaperCharacter, &PaperCharacter::MouseMove>();
+        ActionFactory::CreateMouseAction<PlayablePaper, &PaperCharacter::MouseMove>();
 
     const inline static Action UseActionRotatePlacedTypeForward =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::RotatePlaceTypeForward>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::RotatePlaceTypeForward>();
 
     const inline static Action UseActionRotatePlacedTypeBackward =
-        ActionFactory::CreateKeyboardAction<PaperCharacter, &PaperCharacter::RotatePlaceTypeBackward>();
+        ActionFactory::CreateKeyboardAction<PlayablePaper, &PaperCharacter::RotatePlaceTypeBackward>();
 };
-
-typedef ::B33::App::Playable<PaperCharacter, PaperController> PlayablePaper;

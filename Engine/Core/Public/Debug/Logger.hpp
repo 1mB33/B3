@@ -90,7 +90,7 @@ class Logger
     ::std::condition_variable m_FlushCondition;
 
     ::std::unordered_map<::std::wstring, ::uint32_t> m_Messages;
-    const ::uint32_t                                 m_uMaxTraceMessages = 15;
+    const ::uint32_t                                 m_uMaxTraceMessages = 60;
 };
 
 } // namespace B33::Core::Debug
