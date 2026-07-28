@@ -40,6 +40,8 @@ class Swapchain
 
     ::VkImage GetImage() const;
 
+    ::VkImageView GetImageView() const;
+
     ::uint32_t GetImageindex() const;
 
     // Setters // -----------------------------------------------------------------------------------------------------
@@ -85,6 +87,10 @@ class Swapchain
                                                     ::VkSwapchainKHR                                         swapchain,
                                                     ::uint32_t                                               uAmount );
 
+    ::std::vector<::VkImageView> CreateImageViews( ::std::weak_ptr<const ::B33::Rendering::AdapterWrapper> &pAdapter,
+                                                   ::std::vector<::VkImage> swapChainImages,
+                                                   ::uint32_t               uAmount );
+
   private:
     ::std::weak_ptr<const ::B33::Rendering::Instance>        m_pInstance      = {};
     ::std::weak_ptr<const ::B33::Rendering::HardwareWrapper> m_pHardware      = {};
@@ -99,8 +105,9 @@ class Swapchain
     ::VkPresentModeKHR         m_PresentMode   = {};
     ::VkSwapchainKHR           m_pSwapChain    = VK_NULL_HANDLE;
 
-    ::uint32_t               m_uCurrentImageIndex = 0;
-    ::std::vector<::VkImage> m_SwapChainImages    = {};
+    ::uint32_t                   m_uCurrentImageIndex = 0;
+    ::std::vector<::VkImage>     m_SwapChainImages    = {};
+    ::std::vector<::VkImageView> m_ImageViews {};
 };
 
 } // namespace B33::Rendering

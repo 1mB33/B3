@@ -50,7 +50,7 @@ void Renderer::Update( float fDelta, ::B33::System::ComponentBridge &bridge )
         .CameraLookDir = rotVec,
         .CameraRight   = cameraRight,
         .CameraUp      = cameraUp,
-        .fFov          = characterHandle.GetFov() * B33_DEG_TO_RAD,
+        .fFov          = B33_DEG_TO_RAD( characterHandle.GetFov() ),
         .uMode         = m_RendererMaster.GetObject().GetDebugMode(),
     };
 

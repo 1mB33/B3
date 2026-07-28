@@ -92,7 +92,7 @@ void PaperCharacter::Strafe( const float fDelta, float fDir )
 {
     B33::Math::Rot3 rot = this->GetRotation();
     B33::Math::Vec3 lookDir =
-        ::B33::Math::RotateY( ::B33::Math::Vec3 { 0.f, 0.f, 1.f }, rot.y + ( 90.f * ::B33::Math::B33_DEG_TO_RAD ) );
+        ::B33::Math::RotateY( ::B33::Math::Vec3 { 0.f, 0.f, 1.f }, rot.y + ::B33::Math::B33_DEG_TO_RAD( 90.f ) );
 
     this->AddPositon( lookDir * fDir * ( fDelta * m_fSpeed ) );
 }

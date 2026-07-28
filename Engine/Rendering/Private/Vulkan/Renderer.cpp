@@ -8,7 +8,6 @@
 #include "Vulkan/FrameResources.hpp"
 #include "Vulkan/WrapperAdapter.hpp"
 #include "Vulkan/WrapperHardware.hpp"
-#include <utility>
 
 namespace B33::Rendering
 {
@@ -110,7 +109,7 @@ void Renderer::Render()
 
     RecordCommands( frame.CommandBuffer );
 
-    VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+    VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_ALL_COMMANDS_BIT };
 
     VkSubmitInfo submitInfo         = {};
     submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -280,11 +279,11 @@ void Renderer::RecordCommands( VkCommandBuffer &cmdBuff )
     presentBarrier.dstQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
     presentBarrier.image                = m_pSwapChain->GetImage();
     presentBarrier.subresourceRange     = {
-        .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
-        .baseMipLevel   = 0,
-        .levelCount     = 1,
-        .baseArrayLayer = 0,
-        .layerCount     = 1,
+            .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
+            .baseMipLevel   = 0,
+            .levelCount     = 1,
+            .baseArrayLayer = 0,
+            .layerCount     = 1,
     };
 
     vkCmdPipelineBarrier( cmdBuff,
@@ -299,7 +298,7 @@ void Renderer::RecordCommands( VkCommandBuffer &cmdBuff )
                           &presentBarrier );
 
     THROW_IF_FAILED( vkEndCommandBuffer( cmdBuff ) );
-} // namespace B33::Rendering
+}
 
 // --------------------------------------------------------------------------------------------------------------------
 void Renderer::DestroyFrameResources()
