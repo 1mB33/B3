@@ -8,7 +8,7 @@ namespace B33::Core
 
 typedef ::int64_t UnknownIndex;
 
-__B33_API ::int64_t IncreaseAndGetCounter() noexcept;
+__B33_API UnknownIndex IncreaseAndGetCounter() noexcept;
 
 template <class T>
 class Unknown
@@ -20,7 +20,7 @@ class Unknown
             m_Index = IncreaseAndGetCounter();
     }
 
-    static int GetGlobalIndex()
+    static UnknownIndex GetGlobalIndex()
     {
         return m_Index;
     }
@@ -33,7 +33,7 @@ class Unknown
 
 
   private:
-    static inline int m_Index = 0;
+    static inline UnknownIndex m_Index = 0;
 };
 
 } // namespace B33::Core
