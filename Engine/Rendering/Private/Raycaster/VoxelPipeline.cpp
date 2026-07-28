@@ -50,6 +50,7 @@ void VoxelPipeline::CreatePipelineResourcesImpl( ::std::shared_ptr<::B33::Render
                 ( /*FIXME: */ (Cubes &)pWorld->GetStoredObjects() ).GetHalfSizes().capacity() * sizeof( Vec3 ) ),
             .uStorageBuffersFlags     = 0,
             .uLastStorageBuffersFlags = 0,
+            .DescSet                  = CreateDescriptorSet(),
         } );
     }
 }
@@ -147,7 +148,7 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                              this->GetLayoutHandle(),
                              0,
                              1,
-                             &this->GetDescriptorSet(),
+                             &curPerFrame.DescSet,
                              0,
                              NULL );
 
@@ -204,7 +205,8 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                              &copyRegion );
         }
 
-        vector<VkMappedMemoryRange> mmrs = {};
+        vector<VkMappedMemoryRange>   mmrs           = {};
+        vector<VkBufferMemoryBarrier> bufferBarriers = {};
 
         VkMappedMemoryRange mmr = {};
         mmr.sType               = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
@@ -214,59 +216,77 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
 
         mmrs.push_back( mmr );
 
+        bufferBarriers.push_back( {
+            .sType               = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+            .srcAccessMask       = VK_ACCESS_TRANSFER_WRITE_BIT,
+            .dstAccessMask       = VK_ACCESS_SHADER_READ_BIT,
+            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .buffer              = curPerFrame.pVoxelBuffer->GetBufferHandle(),
+            .offset              = 0,
+            .size                = VK_WHOLE_SIZE,
+        } );
+
         if ( curPerFrame.uStorageBuffersFlags & EGridChanged::Position )
         {
             VkMappedMemoryRange mmr2 = mmr;
             mmr2.memory              = curPerFrame.pPositionsBuffer->GetMemoryHandle();
             mmrs.push_back( mmr2 );
+            bufferBarriers.push_back( {
+                .sType               = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+                .srcAccessMask       = VK_ACCESS_TRANSFER_WRITE_BIT,
+                .dstAccessMask       = VK_ACCESS_SHADER_READ_BIT,
+                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .buffer              = curPerFrame.pPositionsBuffer->GetBufferHandle(),
+                .offset              = 0,
+                .size                = VK_WHOLE_SIZE,
+            } );
         }
         if ( curPerFrame.uStorageBuffersFlags & EGridChanged::Rotation )
         {
             VkMappedMemoryRange mmr3 = mmr;
             mmr3.memory              = curPerFrame.pRotationsBuffer->GetMemoryHandle();
             mmrs.push_back( mmr3 );
+            bufferBarriers.push_back( {
+                .sType               = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+                .srcAccessMask       = VK_ACCESS_TRANSFER_WRITE_BIT,
+                .dstAccessMask       = VK_ACCESS_SHADER_READ_BIT,
+                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .buffer              = curPerFrame.pRotationsBuffer->GetBufferHandle(),
+                .offset              = 0,
+                .size                = VK_WHOLE_SIZE,
+            } );
         }
         if ( curPerFrame.uStorageBuffersFlags & EGridChanged::HalfSize )
         {
             VkMappedMemoryRange mmr4 = mmr;
             mmr4.memory              = curPerFrame.pHalfSizesBuffer->GetMemoryHandle();
             mmrs.push_back( mmr4 );
+            bufferBarriers.push_back( {
+                .sType               = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+                .srcAccessMask       = VK_ACCESS_TRANSFER_WRITE_BIT,
+                .dstAccessMask       = VK_ACCESS_SHADER_READ_BIT,
+                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .buffer              = curPerFrame.pHalfSizesBuffer->GetBufferHandle(),
+                .offset              = 0,
+                .size                = VK_WHOLE_SIZE,
+            } );
         }
 
-        vkFlushMappedMemoryRanges( GetAdaterInternal()->GetAdapterHandle(), mmrs.size(), mmrs.data() );
+        vkCmdPipelineBarrier( cmdBuffer,
+                              VK_PIPELINE_STAGE_TRANSFER_BIT,
+                              VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                              0,
+                              0,
+                              NULL,
+                              bufferBarriers.size(),
+                              bufferBarriers.data(),
+                              0,
+                              NULL );
     }
-
-    VkBufferMemoryBarrier bufferBarriers[ 4 ] = {};
-
-    bufferBarriers[ 0 ]                     = {};
-    bufferBarriers[ 0 ].sType               = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-    bufferBarriers[ 0 ].srcAccessMask       = VK_ACCESS_TRANSFER_WRITE_BIT;
-    bufferBarriers[ 0 ].dstAccessMask       = VK_ACCESS_SHADER_READ_BIT;
-    bufferBarriers[ 0 ].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    bufferBarriers[ 0 ].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    bufferBarriers[ 0 ].buffer              = curPerFrame.pVoxelBuffer->GetBufferHandle();
-    bufferBarriers[ 0 ].offset              = 0;
-    bufferBarriers[ 0 ].size                = VK_WHOLE_SIZE;
-
-    bufferBarriers[ 1 ]        = bufferBarriers[ 0 ];
-    bufferBarriers[ 1 ].buffer = curPerFrame.pPositionsBuffer->GetBufferHandle();
-
-    bufferBarriers[ 2 ]        = bufferBarriers[ 1 ];
-    bufferBarriers[ 2 ].buffer = curPerFrame.pRotationsBuffer->GetBufferHandle();
-
-    bufferBarriers[ 3 ]        = bufferBarriers[ 2 ];
-    bufferBarriers[ 3 ].buffer = curPerFrame.pHalfSizesBuffer->GetBufferHandle();
-
-    vkCmdPipelineBarrier( cmdBuffer,
-                          lastStage,
-                          VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-                          0,
-                          0,
-                          NULL,
-                          4,
-                          bufferBarriers,
-                          0,
-                          NULL );
 
     const uint32_t groupCountX = ( GetWindowDescInternal()->Data.Width + 31 ) >> 5;
     const uint32_t groupCountY = ( GetWindowDescInternal()->Data.Height + 7 ) >> 3;
@@ -304,7 +324,7 @@ UploadDescriptor VoxelPipeline::GetUniformUploadDescriptor( const shared_ptr<GPU
 
     VkWriteDescriptorSet write = {};
     write.sType                = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    write.dstSet               = GetDescriptorSet();
+    write.dstSet               = m_PerFrameResources[ m_uCurFrame ].DescSet;
     write.dstBinding           = static_cast<uint32_t>( sr );
     write.descriptorCount      = 1;
     write.descriptorType       = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -322,7 +342,7 @@ void VoxelPipeline::LoadImage( VkImageView image )
 
     VkWriteDescriptorSet imageWrite = {};
     imageWrite.sType                = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    imageWrite.dstSet               = this->GetDescriptorSet();
+    imageWrite.dstSet               = m_PerFrameResources[ m_uCurFrame ].DescSet;
     imageWrite.dstBinding           = 0;
     imageWrite.dstArrayElement      = 0;
     imageWrite.descriptorCount      = 1;
@@ -385,15 +405,15 @@ VkDescriptorSetLayout VoxelPipeline::CreateDescriptorLayoutImpl()
 VkDescriptorPool VoxelPipeline::CreateDescriptorPoolImpl()
 {
     const vector<VkDescriptorPoolSize> poolSizes = {
-        { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1 },
-        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 4 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, Frame::MAX_FRAMES_IN_FLIGHT * 1 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, Frame::MAX_FRAMES_IN_FLIGHT * 4 },
     };
 
     VkDescriptorPool descriptorPool;
 
     VkDescriptorPoolCreateInfo poolInfo = {};
     poolInfo.sType                      = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    poolInfo.maxSets                    = 1;
+    poolInfo.maxSets                    = Frame::MAX_FRAMES_IN_FLIGHT;
     poolInfo.poolSizeCount              = static_cast<uint32_t>( poolSizes.size() );
     poolInfo.pPoolSizes                 = &poolSizes[ 0 ];
 
@@ -404,7 +424,7 @@ VkDescriptorPool VoxelPipeline::CreateDescriptorPoolImpl()
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-VkDescriptorSet VoxelPipeline::CreateDescriptorSetImpl()
+VkDescriptorSet VoxelPipeline::CreateDescriptorSet()
 {
     VkDescriptorSetLayout descLayout = GetDescriptorLayoutInternal();
     VkDescriptorSet       descriptorSet;

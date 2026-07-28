@@ -287,7 +287,7 @@ void Renderer::RecordCommands( VkCommandBuffer &cmdBuff )
     };
 
     vkCmdPipelineBarrier( cmdBuff,
-                          lastStage,
+                          VK_PIPELINE_STAGE_TRANSFER_BIT,
                           VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
                           0,
                           0,

@@ -80,7 +80,6 @@ class PipelineWrapper
         m_pPushConstants         = pPipeline.GetPushConstants();
         m_DescriptorLayout       = pPipeline.CreateDescriptorLayout();
         m_DescriptorPool         = pPipeline.CreateDescriptorPool();
-        m_DescriptorSet          = pPipeline.CreateDescriptorSet();
         m_PipelineLayout         = pPipeline.CreatePipelineLayout();
         m_Pipeline               = pPipeline.CreatePipeline();
     }
@@ -114,11 +113,6 @@ class PipelineWrapper
     ::VkPipeline GetPipelineHandle() const
     {
         return m_Pipeline;
-    }
-
-    ::VkDescriptorSet &GetDescriptorSet()
-    {
-        return m_DescriptorSet;
     }
 
     ::VkPipelineStageFlagBits GetPipelineStageFlagBits() const
@@ -200,7 +194,6 @@ class PipelineWrapper
 
     ::VkDescriptorSetLayout m_DescriptorLayout = VK_NULL_HANDLE;
     ::VkDescriptorPool      m_DescriptorPool   = VK_NULL_HANDLE;
-    ::VkDescriptorSet       m_DescriptorSet    = VK_NULL_HANDLE;
     ::VkPipelineLayout      m_PipelineLayout   = VK_NULL_HANDLE;
     ::VkPipeline            m_Pipeline         = VK_NULL_HANDLE;
 };

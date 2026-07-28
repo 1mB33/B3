@@ -7,6 +7,7 @@
 #include "Vulkan/SwapChain.hpp"
 #include "Raycaster/PushConstants.hpp"
 #include "Raycaster/VoxelGrid.hpp"
+#include "vulkan/vulkan_core.h"
 
 namespace B33::Rendering
 {
@@ -57,7 +58,7 @@ class VoxelPipeline : public IPipeline<VoxelPipeline>
 
     __B33_API void CreatePipelineResourcesImpl( ::std::shared_ptr<::B33::Rendering::CubeWorld> pWorld );
 
-    __B33_API ::VkDescriptorSet CreateDescriptorSetImpl();
+    __B33_API ::VkDescriptorSet CreateDescriptorSet();
 
     __B33_API ::VkPipelineLayout CreatePipelineLayoutImpl();
 
@@ -91,6 +92,7 @@ class VoxelPipeline : public IPipeline<VoxelPipeline>
         ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> pStageHalfSizesBuffer    = nullptr;
         ::uint32_t                                           uStorageBuffersFlags     = 0;
         ::uint32_t                                           uLastStorageBuffersFlags = 0;
+        ::VkDescriptorSet                                    DescSet                = VK_NULL_HANDLE;
     };
 
     ::std::vector<PerFrame> m_PerFrameResources = {};
