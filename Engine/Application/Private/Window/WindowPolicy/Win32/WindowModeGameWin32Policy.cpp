@@ -63,6 +63,11 @@ void WindowModeGameWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM
             ShowCursor( FALSE );
 
             GetWindowRect( pWd->OS.hWnd, &rect );
+            react.top -= 25;
+            react.bottom -= 25;
+            react.left -= 25;
+            react.rigth -= 25;
+
             ClipCursor( &rect );
             SetCursorPos( static_cast<int>( rect.left + 0.5f * pWd->Data.Width ),
                           static_cast<int>( rect.top + 0.5f * pWd->Data.Height ) );

@@ -218,6 +218,7 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
 
         bufferBarriers.push_back( {
             .sType               = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+            .pNext               = NULL,
             .srcAccessMask       = VK_ACCESS_TRANSFER_WRITE_BIT,
             .dstAccessMask       = VK_ACCESS_SHADER_READ_BIT,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -234,6 +235,7 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
             mmrs.push_back( mmr2 );
             bufferBarriers.push_back( {
                 .sType               = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+                .pNext               = NULL,
                 .srcAccessMask       = VK_ACCESS_TRANSFER_WRITE_BIT,
                 .dstAccessMask       = VK_ACCESS_SHADER_READ_BIT,
                 .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -250,6 +252,7 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
             mmrs.push_back( mmr3 );
             bufferBarriers.push_back( {
                 .sType               = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+                .pNext               = NULL,
                 .srcAccessMask       = VK_ACCESS_TRANSFER_WRITE_BIT,
                 .dstAccessMask       = VK_ACCESS_SHADER_READ_BIT,
                 .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -266,6 +269,7 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
             mmrs.push_back( mmr4 );
             bufferBarriers.push_back( {
                 .sType               = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+                .pNext               = NULL,
                 .srcAccessMask       = VK_ACCESS_TRANSFER_WRITE_BIT,
                 .dstAccessMask       = VK_ACCESS_SHADER_READ_BIT,
                 .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
