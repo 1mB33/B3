@@ -478,7 +478,7 @@ VkPipeline VoxelPipeline::CreatePipelineImpl()
     const VkDevice device   = GetAdaterInternal()->GetAdapterHandle();
     VkPipeline     pipeline = VK_NULL_HANDLE;
     m_ShaderModule =
-        Shaders::LoadShader( ::B33::App::AppResources::Get().GetExecutablePathA() + "/Assets/Shaders/Raycast.spv",
+        Shaders::LoadShader( ::B33::App::AppResources::Get().GetExecutablePathA() + "/../Assets/Shaders/Raycast.spv",
                              GetAdaterInternal().get() );
 
     VkPipelineShaderStageCreateInfo shaderStage = {};
