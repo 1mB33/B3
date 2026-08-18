@@ -2,6 +2,7 @@
 #    define B33_UNKNOWN_COLORS
 
 #    include "B33CoreMinimal.h"
+#    include "Attributes.h"
 
 namespace B33::Core
 {
@@ -25,7 +26,7 @@ class Unknown
         return m_Index;
     }
 
-    template<class DERIVED>
+    template <class DERIVED>
     static void Invoke()
     {
         __B33_ATTRIBUTE_MIGHT_BE_UNUSED DERIVED tmp;
