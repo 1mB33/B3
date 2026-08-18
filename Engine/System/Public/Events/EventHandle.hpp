@@ -15,16 +15,18 @@ class EventHandle
     using WeakDispacherInstance   = ::std::weak_ptr<EventDispatcherInstance>;
 
   public:
-    __B33_API
-    EventHandle( const SharedDispacherInstance pInstance, EventId eventId, EventAddr pAddr, EEventHandleType type );
+    __B33_API EventHandle( const SharedDispacherInstance pInstance = nullptr,
+                           EventId                       eventId   = -1,
+                           EventAddr                     pAddr     = 0,
+                           EEventHandleType              type      = Invalid );
 
     __B33_API ~EventHandle();
 
   public:
     EventHandle( EventHandle && )                 = default;
     EventHandle &operator=( EventHandle && )      = default;
-    EventHandle( const EventHandle & )            = delete;
-    EventHandle &operator=( const EventHandle & ) = delete;
+    EventHandle( const EventHandle & )            = default;
+    EventHandle &operator=( const EventHandle & ) = default;
 
   private:
     EventId               m_EventId    = -1;
