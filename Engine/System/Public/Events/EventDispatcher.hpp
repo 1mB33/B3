@@ -26,9 +26,11 @@ class EventDispatcher
 
   public:
     template <class EVENT, class OBJECT_CLASS_PTR, class OBJECTS_METHOD_PTR>
-    EventHandle Register( OBJECT_CLASS_PTR pObj, OBJECTS_METHOD_PTR pMethod )
+    __B33_ATTRIBUTE_WARN_UNUSED EventHandle Register( OBJECT_CLASS_PTR pObj, OBJECTS_METHOD_PTR pMethod )
     {
         EVENT::template Invoke<EVENT>();
+
+        B33_TRACE( L"Registering event id %d for %p with %p", EVENT::GetGlobalIndex(), pObj, pMethod );
 
         m_pInstance->HandleNewEvent( EVENT::GetGlobalIndex() );
         auto r = m_pInstance->Register( EVENT::GetGlobalIndex(), pObj, pMethod );
@@ -50,6 +52,7 @@ class EventDispatcher
     template <class EVENT>
     void Trigger()
     {
+        B33_TRACE( L"Triggering event id: %d", EVENT::GetGlobalIndex() );
         m_pInstance->Trigger( EVENT::GetGlobalIndex() );
     }
 
