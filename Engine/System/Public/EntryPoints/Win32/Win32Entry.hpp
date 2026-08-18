@@ -7,7 +7,7 @@
 #        include "../../EngineLoop.hpp"
 #        include "Tests/TestMaster.hpp"
 
-int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow )
+int WINAPI wWinMain( HINSTANCE, HINSTANCE, PWSTR, int )
 {
     ::B33::Core::Debug::Logger::Get().Log( ::B33::Core::Debug::Info, L"Starting B33..." );
 #        if defined( _B33_ONLY_TESTS )
