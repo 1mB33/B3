@@ -3,7 +3,6 @@
 
 #include "B33Core.h"
 #include "B33System.hpp"
-#include <atomic>
 
 namespace B33::System
 {
