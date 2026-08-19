@@ -3,7 +3,6 @@
 
 #include "B33Core.h"
 #include "B33System.hpp"
-#include "Debug/Assert.hpp"
 
 namespace B33::System
 {
@@ -11,6 +10,24 @@ namespace B33::System
 template <typename SHARED_DATA, size_t POOL_SIZE = 64, typename... PER_OBJECT>
 class Group
 {
+    template <typename T, typename... Ts>
+    static constexpr size_t CountOccurrences = ( 0 + ... + ::std::is_same_v<T, Ts> );
+
+    template <typename T, typename Tuple>
+    struct TupleIndex;
+
+    template <typename T, typename... Ts>
+    struct TupleIndex<T, ::std::tuple<T, Ts...>>
+    {
+        static constexpr size_t value = 0;
+    };
+
+    template <typename T, typename U, typename... Ts>
+    struct TupleIndex<T, ::std::tuple<U, Ts...>>
+    {
+        static constexpr size_t value = 1 + TupleIndex<T, ::std::tuple<Ts...>>::value;
+    };
+
     struct Metadata
     {
         size_t uByteSize;
@@ -25,19 +42,22 @@ class Group
       : m_SharedData()
       , m_Data()
       , m_Table()
+      , m_uItemsCount( 0 )
+      , m_uReserved( 0 )
     {
         auto alloc = [ this ]<typename T>()
         {
+            B33_ASSERT( ::std::is_trivially_copyable_v<T> );
             Metadata m = { 0 };
 
             m.uByteSize = sizeof( T );
 
             m_Table.push_back( m );
             m_Data.push_back( {} );
-            ReallocatePool( m_Data.back(), m.uByteSize );
         };
 
         ( alloc.template operator()<PER_OBJECT>(), ... );
+        ReallocateAllDataPools();
     }
 
     ~Group() = default;
@@ -61,26 +81,48 @@ class Group
 
     size_t GetEntityCount() const
     {
-        return m_Data.size();
+        return m_uItemsCount;
     }
 
   public:
-    // const DATA &GetEntityData( size_t i ) const
-    // {
-    //     B33_ASSERT( i < m_Data.size() );
-    //     return m_Data[ i ];
-    // }
+    template <typename T>
+    T &GetValue( size_t entityId )
+    {
+        B33_ASSERT_MSG( ( CountOccurrences<T, PER_OBJECT...> == 1 ),
+                        "Group: T appears zero or multiple times in PER_OBJECT — "
+                        "use GetValue<Index>() or wrap duplicate primitive types in distinct tag structs." );
 
-    // DATA &GetEntityData( size_t i )
-    // {
-    //     B33_ASSERT( i < m_Data.size() );
-    //     return m_Data[ i ];
-    // }
+        constexpr size_t uIndex = TupleIndex<T, ::std::tuple<PER_OBJECT...>>::value;
+        B33_ASSERT( entityId >= 0 && entityId < m_uItemsCount );
+
+        char *base = m_Data[ uIndex ].data();
+
+        return *reinterpret_cast<T *>( base + entityId * sizeof( T ) );
+    }
+
+    template <size_t Index>
+    auto &GetValue( size_t entityId )
+    {
+        using T = ::std::tuple_element_t<Index, ::std::tuple<PER_OBJECT...>>;
+
+        B33_ASSERT_MSG( ( Index < sizeof...( PER_OBJECT ) ), "Group: value index out of range" );
+
+        B33_ASSERT( entityId >= 0 && entityId < m_uItemsCount );
+
+        char *base = m_Data[ Index ].data();
+
+        return *reinterpret_cast<T *>( base + entityId * sizeof( T ) );
+    }
 
     size_t CreateNewEntitiy()
     {
-        size_t result = m_Data.size();
-        //m_Data.push_back( DATA() );
+        if ( m_uItemsCount >= m_uReserved )
+        {
+            ReallocateAllDataPools();
+        }
+        auto result = m_uItemsCount;
+        ++m_uItemsCount;
+
         return result;
     }
 
@@ -96,10 +138,21 @@ class Group
         mem.resize( mem.size() + POOL_SIZE * typeSize );
     }
 
+    void ReallocateAllDataPools()
+    {
+        for ( size_t i = 0; i < m_Data.size(); ++i )
+        {
+            ReallocatePool( m_Data[ i ], m_Table[ i ].uByteSize );
+        }
+        m_uReserved += POOL_SIZE;
+    }
+
   private:
-    SHARED_DATA m_SharedData = {};
-    DataVector  m_Data       = {};
-    DataTable   m_Table      = {};
+    SHARED_DATA m_SharedData  = {};
+    DataVector  m_Data        = {};
+    DataTable   m_Table       = {};
+    size_t      m_uItemsCount = -1;
+    size_t      m_uReserved   = -1;
 };
 
 } // namespace B33::System

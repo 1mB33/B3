@@ -12,7 +12,7 @@ struct alignas( 16 ) Vec3
     static constexpr size_t Size = 3;
 
   public:
-    Vec3()
+    Vec3() 
       : x( 0.f )
       , y( 0.f )
       , z( 0.f )
