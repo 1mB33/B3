@@ -50,7 +50,7 @@ void Renderer::Update( float fDelta, ::B33::System::ComponentBridge &bridge )
         .CameraRight   = cameraRight,
         .CameraUp      = cameraUp,
         .fFov          = B33_DEG_TO_RAD( characterHandle.GetFov() ),
-        .uMode         = m_RendererMaster.GetObject().GetDebugMode(),
+        .uMode         = m_RendererMaster.GetObject()->GetDebugMode(),
     };
 
     m_RendererInstance.GetPipeline<Rendering::VoxelPipeline>()->LoadPushConstants( constants );
