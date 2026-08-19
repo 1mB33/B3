@@ -166,16 +166,13 @@ template <typename SHARED_DATA, size_t POOL_SIZE = 64, typename... PER_OBJECT>
 class Group
 {
     using GroupInstanceT    = GroupMemory<SHARED_DATA, POOL_SIZE, PER_OBJECT...>;
-    using InstanceSharedPtr = ::std::shared_ptr<GroupInstanceT>;
 
   public:
+    using InstanceSharedPtr = ::std::shared_ptr<GroupInstanceT>;
+
     Group()
     {
-        if ( m_pInstance == nullptr )
-        {
-            m_pInstance = ::std::make_shared<GroupInstanceT>();
-        }
-        m_pInstanceLocal = m_pInstance;
+        m_pInstanceLocal = GetMemoryGlobal();
         m_uIndex         = m_pInstance->CreateNewEntitiy();
     }
 
@@ -203,6 +200,15 @@ class Group
     GroupInstanceT &GetMemory()
     {
         return *m_pInstanceLocal.get();
+    }
+
+    static InstanceSharedPtr GetMemoryGlobal()
+    {
+        if ( m_pInstance == nullptr )
+        {
+            m_pInstance = ::std::make_shared<GroupInstanceT>();
+        }
+        return m_pInstance;
     }
 
   private:
