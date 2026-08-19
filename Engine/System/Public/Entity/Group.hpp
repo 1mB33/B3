@@ -9,7 +9,7 @@ namespace B33::System
 
 // --------------------------------------------------------------------------------------------------------------------
 template <typename SHARED_DATA, size_t POOL_SIZE = 64, typename... PER_OBJECT>
-class GroupInstance
+class GroupMemory
 {
     template <typename T, typename... Ts>
     static constexpr size_t CountOccurrences = ( 0 + ... + ::std::is_same_v<T, Ts> );
@@ -39,7 +39,7 @@ class GroupInstance
     using DataTable                  = ::std::vector<Metadata>;
 
   public:
-    GroupInstance()
+    GroupMemory()
       : m_SharedData()
       , m_Data()
       , m_Table()
@@ -63,16 +63,16 @@ class GroupInstance
         ReallocateAllDataPools();
     }
 
-    ~GroupInstance()
+    ~GroupMemory()
     {
         B33_TRACE( L"Instance destroyed" );
     }
 
   public:
-    GroupInstance( GroupInstance && )                 = default;
-    GroupInstance &operator=( GroupInstance && )      = default;
-    GroupInstance( const GroupInstance & )            = default;
-    GroupInstance &operator=( const GroupInstance & ) = default;
+    GroupMemory( GroupMemory && )                 = default;
+    GroupMemory &operator=( GroupMemory && )      = default;
+    GroupMemory( const GroupMemory & )            = default;
+    GroupMemory &operator=( const GroupMemory & ) = default;
 
   public:
     const SHARED_DATA &GetSharedData() const
@@ -165,7 +165,7 @@ class GroupInstance
 template <typename SHARED_DATA, size_t POOL_SIZE = 64, typename... PER_OBJECT>
 class Group
 {
-    using GroupInstanceT    = GroupInstance<SHARED_DATA, POOL_SIZE, PER_OBJECT...>;
+    using GroupInstanceT    = GroupMemory<SHARED_DATA, POOL_SIZE, PER_OBJECT...>;
     using InstanceSharedPtr = ::std::shared_ptr<GroupInstanceT>;
 
   public:
