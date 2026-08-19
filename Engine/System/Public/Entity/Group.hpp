@@ -3,11 +3,11 @@
 
 #include "B33Core.h"
 #include "B33System.hpp"
-#include <memory>
 
 namespace B33::System
 {
 
+// --------------------------------------------------------------------------------------------------------------------
 template <typename SHARED_DATA, size_t POOL_SIZE = 64, typename... PER_OBJECT>
 class GroupInstance
 {
@@ -161,6 +161,7 @@ class GroupInstance
     size_t      m_uReserved   = -1;
 };
 
+// --------------------------------------------------------------------------------------------------------------------
 template <typename SHARED_DATA, size_t POOL_SIZE = 64, typename... PER_OBJECT>
 class Group
 {
