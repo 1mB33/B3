@@ -3,12 +3,13 @@
 
 #include "B33Core.h"
 #include "B33System.hpp"
+#include <memory>
 
 namespace B33::System
 {
 
 template <typename SHARED_DATA, size_t POOL_SIZE = 64, typename... PER_OBJECT>
-class Group
+class GroupInstance
 {
     template <typename T, typename... Ts>
     static constexpr size_t CountOccurrences = ( 0 + ... + ::std::is_same_v<T, Ts> );
@@ -38,13 +39,15 @@ class Group
     using DataTable                  = ::std::vector<Metadata>;
 
   public:
-    Group()
+    GroupInstance()
       : m_SharedData()
       , m_Data()
       , m_Table()
       , m_uItemsCount( 0 )
       , m_uReserved( 0 )
     {
+        B33_TRACE( L"Instance created" );
+
         auto alloc = [ this ]<typename T>()
         {
             B33_ASSERT( ::std::is_trivially_copyable_v<T> );
@@ -60,13 +63,16 @@ class Group
         ReallocateAllDataPools();
     }
 
-    ~Group() = default;
+    ~GroupInstance()
+    {
+        B33_TRACE( L"Instance destroyed" );
+    }
 
   public:
-    Group( Group && )                 = default;
-    Group &operator=( Group && )      = default;
-    Group( const Group & )            = default;
-    Group &operator=( const Group & ) = default;
+    GroupInstance( GroupInstance && )                 = default;
+    GroupInstance &operator=( GroupInstance && )      = default;
+    GroupInstance( const GroupInstance & )            = default;
+    GroupInstance &operator=( const GroupInstance & ) = default;
 
   public:
     const SHARED_DATA &GetSharedData() const
@@ -154,6 +160,56 @@ class Group
     size_t      m_uItemsCount = -1;
     size_t      m_uReserved   = -1;
 };
+
+template <typename SHARED_DATA, size_t POOL_SIZE = 64, typename... PER_OBJECT>
+class Group
+{
+    using GroupInstanceT    = GroupInstance<SHARED_DATA, POOL_SIZE, PER_OBJECT...>;
+    using InstanceSharedPtr = ::std::shared_ptr<GroupInstanceT>;
+
+  public:
+    Group()
+    {
+        if ( m_pInstance == nullptr )
+        {
+            m_pInstance = ::std::make_shared<GroupInstanceT>();
+        }
+        m_pInstanceLocal = m_pInstance;
+        m_uIndex         = m_pInstance->CreateNewEntitiy();
+    }
+
+    ~Group()
+    {
+        const size_t uCountWithoutLocal = m_pInstanceLocal.use_count() - 1;
+        if ( uCountWithoutLocal == 1 )
+        {
+            m_pInstance = nullptr;
+        }
+    }
+
+  public:
+    Group( Group && )                 = default;
+    Group &operator=( Group && )      = default;
+    Group( const Group & )            = default;
+    Group &operator=( const Group & ) = default;
+
+  public:
+    size_t GetSelfIndex() const
+    {
+        return m_uIndex;
+    }
+
+    GroupInstanceT &GetMemory()
+    {
+        return *m_pInstanceLocal.get();
+    }
+
+  private:
+    inline static InstanceSharedPtr m_pInstance      = nullptr;
+    InstanceSharedPtr               m_pInstanceLocal = nullptr;
+    size_t                          m_uIndex         = -1;
+};
+
 
 } // namespace B33::System
 
