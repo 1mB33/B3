@@ -1,8 +1,9 @@
 #ifdef _WIN32
 
-#    include <windowsx.h>
 #    include "Window/WindowPolicy/Win32/WindowModeGameWin32Policy.hpp"
 #    include "MinimalWindowsIncludes.h"
+#    include <windowsx.h>
+#    include <hidusage.h>
 
 namespace B33::App
 {
@@ -15,7 +16,7 @@ void WindowModeGameWin32WindowPolicy::OnPreWcex()
 {
     WindowDesc *pWd = this->GetWindowDesc();
 
-    pWd->Data.pwszClassName = L"GameAtlanticClass";
+    pWd->Data.pwszClassName = L"GameB3Class";
 
     memset( &pWd->OS.Wcex, 0, sizeof( WNDCLASSEX ) );
 
@@ -36,6 +37,12 @@ void WindowModeGameWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM
 
     switch ( uMsg )
     {
+        case WM_CREATE:
+        {
+            SetFocus( pWd->OS.hWnd );
+            SetForegroundWindow( pWd->OS.hWnd );
+            break;
+        }
         case WM_SHOWWINDOW:
             // Window is being hidden
             if ( wParam != TRUE )
@@ -43,34 +50,33 @@ void WindowModeGameWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM
                 break;
             }
             [[fallthrough]];
-        case WM_CREATE:
         case WM_SETFOCUS:
         {
             B33_LOG( B33::Core::Debug::Info, L"Capturing focus" );
-            RAWINPUTDEVICE rid;
-            RECT           rect;
 
-            rid.usUsagePage = 0x01;
-            rid.usUsage     = 0x02;
-            rid.dwFlags     = 0;
+            RECT rect;
+            GetWindowRect( pWd->OS.hWnd, &rect );
+            rect.top += 50;
+            rect.bottom -= 15;
+            rect.left += 15;
+            rect.right -= 15;
+            SetCursorPos( static_cast<int>( rect.left + 0.5f * pWd->Data.Width ),
+                          static_cast<int>( rect.top + 0.5f * pWd->Data.Height ) );
+            ClipCursor( &rect );
+
+            ShowCursor( FALSE );
+
+            RAWINPUTDEVICE rid;
+
+            rid.usUsagePage = HID_USAGE_PAGE_GENERIC;
+            rid.usUsage     = HID_USAGE_GENERIC_MOUSE;
+            rid.dwFlags     = RIDEV_INPUTSINK;
             rid.hwndTarget  = pWd->OS.hWnd;
 
             if ( !RegisterRawInputDevices( &rid, 1, sizeof( rid ) ) )
             {
                 B33_LOG( B33::Core::Debug::Error, L"Couldn't register raw input" );
             }
-
-            ShowCursor( FALSE );
-
-            GetWindowRect( pWd->OS.hWnd, &rect );
-            react.top -= 25;
-            react.bottom -= 25;
-            react.left -= 25;
-            react.rigth -= 25;
-
-            ClipCursor( &rect );
-            SetCursorPos( static_cast<int>( rect.left + 0.5f * pWd->Data.Width ),
-                          static_cast<int>( rect.top + 0.5f * pWd->Data.Height ) );
 
             break;
         }
@@ -81,8 +87,8 @@ void WindowModeGameWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM
             B33_LOG( B33::Core::Debug::Info, L"Leaving focus" );
             RAWINPUTDEVICE rid;
 
-            rid.usUsagePage = 0x01;
-            rid.usUsage     = 0x02;
+            rid.usUsagePage = HID_USAGE_PAGE_GENERIC;
+            rid.usUsage     = HID_USAGE_GENERIC_MOUSE;
             rid.dwFlags     = RIDEV_REMOVE;
             rid.hwndTarget  = NULL;
 
@@ -93,6 +99,10 @@ void WindowModeGameWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM
             ClipCursor( NULL );
             break;
         }
+        case WM_MOUSEMOVE:
+        {
+            return;
+        }
 
         case WM_INPUT:
         {
@@ -102,18 +112,19 @@ void WindowModeGameWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM
             UINT                       cbSize2;
             size_t                     uRiRead;
             RAWINPUT                  *pRi;
-            RECT                       clientPos;
 
             if ( GetRawInputBuffer( NULL, &cbSize, sizeof( RAWINPUTHEADER ) ) != 0 )
             {
                 B33_LOG( B33::Core::Debug::Error, L"GetRawInputBuffer error %d", GetLastError() );
-                break;
+                return;
             }
 
-            if ( cbSize == 0 )
-                break;
+            if (cbSize == 0)
+            {
+                return;
+            }
 
-            cbSize2 = cbSize * 16;
+            cbSize2 = (cbSize + 1) * 16;
             if ( vRi.size() < cbSize2 )
                 vRi.resize( cbSize2 );
 
@@ -121,11 +132,10 @@ void WindowModeGameWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM
             if ( uRiRead == static_cast<UINT>( -1 ) )
             {
                 B33_LOG( B33::Core::Debug::Error, L"GetRawInputBuffer error %d", GetLastError() );
-                break;
+                return;
             }
 
             pWd->Data.LastEvent |= EAbWindowEvents::Input;
-
             is.Event = EAbInputEvents::AbMotion;
             pRi      = reinterpret_cast<PRAWINPUT>( &vRi[ 0 ] );
             for ( size_t i = 0; i < uRiRead; ++i, pRi = NEXTRAWINPUTBLOCK( pRi ) )
@@ -138,19 +148,10 @@ void WindowModeGameWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM
                 is.Mouse.MouseX += mouse.lLastX;
                 is.Mouse.MouseY += mouse.lLastY;
             }
-
             pWd->Data.InputStruct.push( is );
-
-            GetWindowRect( this->GetWindowDesc()->OS.hWnd, &clientPos );
-
-            SetCursorPos( clientPos.left + ( ( clientPos.right - clientPos.left ) * 0.5f ),
-                          clientPos.top + ( ( clientPos.bottom - clientPos.top ) * 0.5f ) );
 
             return;
         }
-
-        case WM_MOUSEMOVE:
-            return;
     }
 
     return BasicWin32WindowPolicy::OnUpdate( uMsg, wParam, lParam );

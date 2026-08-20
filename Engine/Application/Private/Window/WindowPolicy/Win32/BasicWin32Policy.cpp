@@ -139,7 +139,13 @@ void BasicWin32WindowPolicy::UpdateImpl( WindowDesc *pWd )
 
 
     MSG msg;
-    while ( PeekMessage( &msg, windowOS.hWnd, 0, 0, PM_REMOVE ) != 0 )
+    while ( PeekMessage( &msg, NULL, WM_INPUT, WM_INPUT, PM_NOREMOVE ) )
+    {
+        TranslateMessage( &msg );
+        DispatchMessage( &msg );
+    }
+    //Process and remove all messages after WM_INPUT
+    while ( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) )
     {
         TranslateMessage( &msg );
         DispatchMessage( &msg );
@@ -228,6 +234,7 @@ void BasicWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM lParam )
             is.Mouse.MouseY = GET_Y_LPARAM( lParam );
 
             m_pWindowDesc->Data.InputStruct.push( is );
+            B33_INFO( L"BASE %d %d", is.Mouse.MouseX, is.Mouse.MouseY );
 
             return;
         }

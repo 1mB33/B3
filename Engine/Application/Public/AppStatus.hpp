@@ -8,8 +8,7 @@
 namespace B33::App
 {
 
-enum EAppStatus
-{
+enum EAppStatus {
     Dead,
     Running,
     Service
@@ -60,7 +59,7 @@ class __B33_API AppStatus
 
     ::std::list<::std::shared_ptr<WindowDesc>> m_WindowHandles;
 
-    static EAppStatus m_AppCurrentStatus;
+    inline static EAppStatus m_AppCurrentStatus = EAppStatus::Dead;
 };
 
 } // namespace B33::App

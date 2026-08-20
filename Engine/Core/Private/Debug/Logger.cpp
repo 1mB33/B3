@@ -253,6 +253,11 @@ void Logger::WriteLoop()
 
         wcout << wstrStringifiedAndColorful << endl;
 
+        #if defined( _MSVC )
+        OutputDebugString( wstrStringified.c_str() );
+        OutputDebugString( L"\n" );
+        #endif
+
         woFile.open( outputPath, ios::app );
         woFile << wstrStringified << endl;
         woFile.close();
