@@ -57,11 +57,6 @@ class IPipeline
         return static_cast<Derived *>( this )->CreateDescriptorPoolImpl();
     }
 
-    ::VkDescriptorSet CreateDescriptorSet()
-    {
-        return static_cast<Derived *>( this )->CreateDescriptorSetImpl();
-    }
-
     ::VkPipelineLayout CreatePipelineLayout()
     {
         return static_cast<Derived *>( this )->CreatePipelineLayoutImpl();

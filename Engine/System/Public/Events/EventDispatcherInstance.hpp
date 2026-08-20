@@ -40,7 +40,11 @@ class EventDispatcherInstance
             B33_WARNING( L"That event isn't handled by this dispatcher! Returning 0 as EventAddr" );
             return 0;
         }
-        m_RegisteredEventsArgs[ eventId ].push_back( UniqueICall( Call<OBJECT_CLASS>::CreateCall( pObj, pCall ) ) );
+        auto c = UniqueICall( Call<OBJECT_CLASS>::CreateCall( pObj, pCall ) );
+        B33_TRACE( L"Call ptr %p", c.get() );
+
+        m_RegisteredEventsArgs[ eventId ].push_back( ::std::move( c ) );
+        B33_TRACE( L"New registered arg events size %d", m_RegisteredEventsArgs[eventId].size() );
 
         return reinterpret_cast<EventAddr>( m_RegisteredEventsArgs[ eventId ].back().get() );
     }

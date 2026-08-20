@@ -8,10 +8,10 @@
 namespace B33::App
 {
 
-enum EAppStatus
-{
+enum EAppStatus {
     Dead,
-    Running
+    Running,
+    Service
 };
 
 class __B33_API AppStatus
@@ -42,6 +42,11 @@ class __B33_API AppStatus
 
     void SendExitSignal();
 
+    void LockInToService()
+    {
+        m_AppCurrentStatus = EAppStatus::Service;
+    }
+
   private:
     uint32_t SendOpenWindowSignal( ::std::shared_ptr<WindowDesc> pWd );
 
@@ -54,7 +59,7 @@ class __B33_API AppStatus
 
     ::std::list<::std::shared_ptr<WindowDesc>> m_WindowHandles;
 
-    static EAppStatus m_AppCurrentStatus;
+    inline static EAppStatus m_AppCurrentStatus = EAppStatus::Dead;
 };
 
 } // namespace B33::App

@@ -1,3 +1,4 @@
+#include "B33Core.h"
 #if !defined( B33_CALL_HPP )
 #    define B33_CALL_HPP
 
@@ -16,6 +17,7 @@ class Call : public ICall
       : m_pObj( *pObj )
       , m_pCall( pCall )
     {
+        B33_TRACE( L"Creating new call for %p %p", pObj, pCall );
     }
 
     static Call *CreateCall( OBJECT_CLASS *pObj, ObjectsMethod pCall )

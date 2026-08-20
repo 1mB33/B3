@@ -35,6 +35,7 @@ Swapchain::Swapchain( weak_ptr<const Instance>        pInst,
                                    m_PresentMode ) )
   , m_uCurrentImageIndex( 0 )
   , m_SwapChainImages( CreateSwapChainImages( m_pDeviceAdapter, m_pSwapChain, m_uImageCount ) )
+  , m_ImageViews( CreateImageViews( m_pDeviceAdapter, m_SwapChainImages, m_uImageCount ) )
 {
 }
 
@@ -44,6 +45,11 @@ Swapchain::~Swapchain()
     B33_INFO( L"Destroying swapChain" );
     if ( auto pAdatper = m_pDeviceAdapter.lock() )
     {
+        for ( auto imageView : m_ImageViews )
+        {
+            vkDestroyImageView( pAdatper->GetAdapterHandle(), imageView, nullptr );
+        }
+
         if ( m_pSwapChain != VK_NULL_HANDLE )
         {
             vkDestroySwapchainKHR( pAdatper->GetAdapterHandle(), m_pSwapChain, NULL );
@@ -77,6 +83,12 @@ Swapchain::~Swapchain()
 {
     B33_TRACE( L"Getting swapchain image with index %d", m_uCurrentImageIndex );
     return m_SwapChainImages[ m_uCurrentImageIndex ];
+}
+
+::VkImageView Swapchain::GetImageView() const
+{
+    B33_TRACE( L"Getting swapchain image VIEW with index %d", m_uCurrentImageIndex );
+    return m_ImageViews[ m_uCurrentImageIndex ];
 }
 
 ::uint32_t Swapchain::GetImageindex() const
@@ -326,6 +338,40 @@ Swapchain::CreateSwapChainImages( weak_ptr<const AdapterWrapper> &pAdapter, VkSw
         vkGetSwapchainImagesKHR( pLockedAdapter->GetAdapterHandle(), swapchain, &uAmount, &swapChainImages[ 0 ] ) );
 
     return swapChainImages;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+vector<VkImageView> Swapchain::CreateImageViews( weak_ptr<const AdapterWrapper> &pAdapter,
+                                                 vector<VkImage>                 swapChainImages,
+                                                 uint32_t                        uAmount )
+{
+    vector<VkImageView> imageViews( uAmount );
+    auto                pLockedAdapter = pAdapter.lock();
+    if ( !pLockedAdapter )
+        throw B33_EXCEPT( "Vulkan adapter is expried, cannot create a swapchain images" );
+
+    for (size_t i = 0; i < imageViews.size(); ++i)
+    {
+        B33_TRACE( L"Creating an image view" );
+        VkImageView           newImageView;
+        VkImageViewCreateInfo viewInfo = {};
+        viewInfo.sType                 = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        viewInfo.image                 = swapChainImages[i];
+        viewInfo.viewType              = VK_IMAGE_VIEW_TYPE_2D;
+        viewInfo.format                = Swapchain::TargetedFormat;
+        viewInfo.subresourceRange      = {
+                 .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
+                 .baseMipLevel   = 0,
+                 .levelCount     = 1,
+                 .baseArrayLayer = 0,
+                 .layerCount     = 1,
+        };
+
+        THROW_IF_FAILED( vkCreateImageView( pLockedAdapter->GetAdapterHandle(), &viewInfo, NULL, &newImageView ) );
+        imageViews[i] = newImageView;
+    }
+
+    return imageViews;
 }
 
 } // namespace B33::Rendering

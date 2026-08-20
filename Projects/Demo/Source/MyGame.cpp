@@ -93,7 +93,7 @@ void MyGame::Initialize( ::B33::System::ComponentBridge &bridge )
             } );
     }
 
-    m_Paper.GetObject().Initialize();
+    m_Paper.GetObject()->Initialize();
 }
 
 void MyGame::Update( float fDelta, ::B33::System::ComponentBridge &bridge )

@@ -10,9 +10,6 @@ using namespace ::B33::Core;
 using namespace ::B33::Core::Debug;
 
 // --------------------------------------------------------------------------------------------------------------------
-EAppStatus AppStatus::m_AppCurrentStatus = EAppStatus::Dead;
-
-// --------------------------------------------------------------------------------------------------------------------
 AppStatus::AppStatus()
   : m_uNumberOfWindows( 0 )
   , m_WindowHandles()

@@ -28,7 +28,6 @@ void Renderer::Initialize( ::B33::System::ComponentBridge &bridge )
     m_RendererInstance.Initialize( windowHandle->GetWindowInstance().GetWindowDesc() );
 
     m_RendererInstance.PushPipeline<::B33::Rendering::VoxelPipeline>( gameHandle->GetGameInstance().GetWorld() );
-    m_RendererInstance.PushPipeline<::B33::Rendering::EditorPipeline>();
 }
 
 void Renderer::Update( float fDelta, ::B33::System::ComponentBridge &bridge )
@@ -50,12 +49,11 @@ void Renderer::Update( float fDelta, ::B33::System::ComponentBridge &bridge )
         .CameraLookDir = rotVec,
         .CameraRight   = cameraRight,
         .CameraUp      = cameraUp,
-        .fFov          = characterHandle.GetFov() * B33_DEG_TO_RAD,
-        .uMode         = m_RendererMaster.GetObject().GetDebugMode(),
+        .fFov          = B33_DEG_TO_RAD( characterHandle.GetFov() ),
+        .uMode         = m_RendererMaster.GetObject()->GetDebugMode(),
     };
 
     m_RendererInstance.GetPipeline<Rendering::VoxelPipeline>()->LoadPushConstants( constants );
-    m_RendererInstance.GetPipeline<Rendering::EditorPipeline>()->LoadPushConstants( constants );
     m_RendererInstance.Update( fDelta );
     m_RendererInstance.Render();
 }

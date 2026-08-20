@@ -7,6 +7,7 @@
 #include "Vulkan/SwapChain.hpp"
 #include "Raycaster/PushConstants.hpp"
 #include "Raycaster/VoxelGrid.hpp"
+#include "vulkan/vulkan_core.h"
 
 namespace B33::Rendering
 {
@@ -28,7 +29,7 @@ class VoxelPipeline : public IPipeline<VoxelPipeline>
   public:
     VoxelPipeline()
       : IPipeline( VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_IMAGE_LAYOUT_GENERAL, VK_PIPELINE_BIND_POINT_COMPUTE )
-      , m_pVoxelGrid( nullptr )
+      , m_PerFrameResources()
       , m_ShaderModule( VK_NULL_HANDLE )
     {
         B33_LOG( Core::Debug::Info, L"Creating a pipeline!" );
@@ -57,7 +58,7 @@ class VoxelPipeline : public IPipeline<VoxelPipeline>
 
     __B33_API void CreatePipelineResourcesImpl( ::std::shared_ptr<::B33::Rendering::CubeWorld> pWorld );
 
-    __B33_API ::VkDescriptorSet CreateDescriptorSetImpl();
+    __B33_API ::VkDescriptorSet CreateDescriptorSet();
 
     __B33_API ::VkPipelineLayout CreatePipelineLayoutImpl();
 
@@ -71,27 +72,34 @@ class VoxelPipeline : public IPipeline<VoxelPipeline>
     UploadDescriptor GetUniformUploadDescriptor( const ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> &outBuffer,
                                                  const EShaderResource                                      &sr );
 
-    void LoadImage( VkImage image );
+    void LoadImage( VkImageView image );
 
   private:
     ::B33::Rendering::VoxelPushConstants m_Vpc = {};
 
     // Shader uniforms
-    ::std::shared_ptr<::B33::Rendering::IWorldGrid>      m_pVoxelGrid           = nullptr;
-    ::std::shared_ptr<::B33::Rendering::GPUBuffer>       m_VoxelBuffer          = nullptr;
-    ::std::shared_ptr<::B33::Rendering::GPUBuffer>       m_PositionsBuffer      = nullptr;
-    ::std::shared_ptr<::B33::Rendering::GPUBuffer>       m_RotationsBuffer      = nullptr;
-    ::std::shared_ptr<::B33::Rendering::GPUBuffer>       m_HalfSizesBuffer      = nullptr;
-    ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> m_StageVoxelBuffer     = nullptr;
-    ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> m_StagePositonsBuffer  = nullptr;
-    ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> m_StageRotationsBuffer = nullptr;
-    ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> m_StageHalfSizesBuffer = nullptr;
+    ::std::shared_ptr<::B33::Rendering::IWorldGrid> m_pVoxelGrid = nullptr;
 
-    ::uint32_t m_uStorageBuffersFlags = 0;
+    struct PerFrame
+    {
+        ::std::shared_ptr<::B33::Rendering::GPUBuffer>       pVoxelBuffer             = nullptr;
+        ::std::shared_ptr<::B33::Rendering::GPUBuffer>       pPositionsBuffer         = nullptr;
+        ::std::shared_ptr<::B33::Rendering::GPUBuffer>       pRotationsBuffer         = nullptr;
+        ::std::shared_ptr<::B33::Rendering::GPUBuffer>       pHalfSizesBuffer         = nullptr;
+        ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> pStageVoxelBuffer        = nullptr;
+        ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> pStagePositonsBuffer     = nullptr;
+        ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> pStageRotationsBuffer    = nullptr;
+        ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> pStageHalfSizesBuffer    = nullptr;
+        ::uint32_t                                           uStorageBuffersFlags     = 0;
+        ::uint32_t                                           uLastStorageBuffersFlags = 0;
+        ::VkDescriptorSet                                    DescSet                = VK_NULL_HANDLE;
+    };
+
+    ::std::vector<PerFrame> m_PerFrameResources = {};
+    ::uint32_t              m_uCurFrame         = -1;
+
 
     ::VkShaderModule m_ShaderModule = VK_NULL_HANDLE;
-
-    ::VkImageView m_ImageView = VK_NULL_HANDLE;
 };
 
 } // namespace B33::Rendering

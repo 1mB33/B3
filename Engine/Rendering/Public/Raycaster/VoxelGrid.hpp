@@ -162,6 +162,7 @@ class WorldGrid : public IWorldGrid
 
         this->RemoveFromGrid( iVec::ToVec( m_StoredObjects.GetPosition( uObjectId ) ), area, uObjectId );
 
+        this->ForceUpload();
         this->SetPositionChanged();
         this->SetRotationChanged();
         this->SetHalfSizeChanged();
@@ -179,7 +180,6 @@ class WorldGrid : public IWorldGrid
         m_StoredObjects.SetPositon( newPos, uObjectId );
         this->PlaceOnGrid( iVec::ToVec( newPos ), area, uObjectId );
 
-        this->ForceUpload();
         this->SetPositionChanged();
     }
 
@@ -192,7 +192,6 @@ class WorldGrid : public IWorldGrid
 
         m_StoredObjects.SetRotation( newRot, uId );
 
-        this->ForceUpload();
         this->SetRotationChanged();
     }
 

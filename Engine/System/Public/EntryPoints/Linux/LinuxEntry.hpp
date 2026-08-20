@@ -7,7 +7,7 @@
 #        include "../../EngineLoop.hpp"
 #        include "Tests/TestMaster.hpp"
 
-int main( int argc, char *pArgv[] )
+int main( int, char *[] )
 {
     ::B33::Core::Debug::Logger::Get().Log( ::B33::Core::Debug::Info, L"Starting B33..." );
 #        if defined( _B33_ONLY_TESTS )

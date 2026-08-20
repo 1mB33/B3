@@ -7,6 +7,9 @@ Build*/
 out/
 Lib/
 
+latex
+html
+
 *.log
 *.o
 *.so
@@ -14,3 +17,5 @@ Lib/
 *.lib
 *.exe
 *.out
+
+Projects/*

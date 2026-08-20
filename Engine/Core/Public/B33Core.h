@@ -31,7 +31,7 @@ static const char szLogPostfix[] = "_AtlanticBeast.log";
 #        define B33_ERROR( ... )                                                                                       \
             ::B33::Core::Debug::Logger::Get().Log( __FILE__, ::B33::Core::Debug::Error, __VA_ARGS__ )
 #    else
-#        define B33_LOG( ... )
+#        define B33_LOG( ... ) ::B33::Core::Debug::Logger::Get().Log( __VA_ARGS__ )
 #        define B33_TRACE( ... )
 #        define B33_INFO( ... ) ::B33::Core::Debug::Logger::Get().Log( __FILE__, ::B33::Core::Debug::Info, __VA_ARGS__ )
 #        define B33_WARNING( ... )                                                                                     \

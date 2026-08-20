@@ -2,13 +2,14 @@
 #    define B33_UNKNOWN_COLORS
 
 #    include "B33CoreMinimal.h"
+#    include "Attributes.h"
 
 namespace B33::Core
 {
 
 typedef ::int64_t UnknownIndex;
 
-__B33_API ::int64_t IncreaseAndGetCounter() noexcept;
+__B33_API UnknownIndex IncreaseAndGetCounter() noexcept;
 
 template <class T>
 class Unknown
@@ -20,12 +21,12 @@ class Unknown
             m_Index = IncreaseAndGetCounter();
     }
 
-    static int GetGlobalIndex()
+    static UnknownIndex GetGlobalIndex()
     {
         return m_Index;
     }
 
-    template<class DERIVED>
+    template <class DERIVED>
     static void Invoke()
     {
         __B33_ATTRIBUTE_MIGHT_BE_UNUSED DERIVED tmp;
@@ -33,7 +34,7 @@ class Unknown
 
 
   private:
-    static inline int m_Index = 0;
+    static inline UnknownIndex m_Index = 0;
 };
 
 } // namespace B33::Core

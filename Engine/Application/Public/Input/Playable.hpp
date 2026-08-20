@@ -9,6 +9,44 @@
 
 namespace B33::App
 {
+template <class PLAYABLE, class OWNER>
+class BorrowedPlayable
+{
+  public:
+    BorrowedPlayable( PLAYABLE &component, OWNER *pOwner )
+      : m_Component( component )
+      , m_pOwner( pOwner )
+    {
+        m_pOwner->Lock();
+    }
+
+    ~BorrowedPlayable()
+    {
+        m_pOwner->Unlock();
+    }
+
+  public:
+    BorrowedPlayable( BorrowedPlayable<PLAYABLE, OWNER> && )            = default;
+    BorrowedPlayable &operator=( BorrowedPlayable<PLAYABLE, OWNER> && ) = default;
+
+    BorrowedPlayable( const BorrowedPlayable<PLAYABLE, OWNER> & )            = delete;
+    BorrowedPlayable &operator=( const BorrowedPlayable<PLAYABLE, OWNER> & ) = delete;
+
+  public:
+    PLAYABLE *operator->()
+    {
+        return &m_Component;
+    }
+
+    PLAYABLE &Get()
+    {
+        return m_Component;
+    }
+
+  private:
+    PLAYABLE &m_Component;
+    OWNER    *m_pOwner;
+};
 
 template <class OBJECT_CLASS, class CONTROLLER>
 class Playable
@@ -50,15 +88,13 @@ class Playable
         return m_Object;
     }
 
-    OBJECT_CLASS &GetObject()
+    BorrowedPlayable<OBJECT_CLASS, Playable> GetObject()
     {
-        ::std::lock_guard lg( m_Used );
-        return m_Object;
+        return BorrowedPlayable( m_Object, this );
     }
 
     const CONTROLLER &GetController() const
     {
-        ::std::lock_guard lg( m_Used );
         return m_Controller;
     }
 
@@ -66,6 +102,16 @@ class Playable
   public:
     using UserInputPtr      = ::std::shared_ptr<::B33::App::UserInput>;
     using ActionInputVector = ::std::vector<::std::pair<::B33::App::Action, AbInputBind>>;
+
+    void Lock()
+    {
+        m_Used.lock();
+    }
+
+    void Unlock()
+    {
+        m_Used.unlock();
+    }
 
     void BindToInput( const UserInputPtr &pInput, const ActionInputVector &binds )
     {

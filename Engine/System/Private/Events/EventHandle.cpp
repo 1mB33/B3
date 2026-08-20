@@ -1,3 +1,4 @@
+#include "B33Core.h"
 #include "B33System.hpp"
 #include "Events/EventHandle.hpp"
 
@@ -19,6 +20,8 @@ EventHandle::~EventHandle()
 {
     if ( auto pLock = m_pInstance.lock() )
     {
+        B33_WARNING( L"Event handle is being unregistered since the handle is no longer alive" );
+
         if ( m_eType == EEventHandleType::Funciton )
         {
             pLock->UnregisterFunctionHandler( m_EventId, m_pEventAddr );

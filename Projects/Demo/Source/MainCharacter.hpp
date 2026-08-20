@@ -11,11 +11,13 @@
 #include "Input/Action.hpp"
 #include "Input/Playable.hpp"
 
+class MyGame;
+
 class PaperCharacter : public ::B33::Rendering::Camera
 {
   public:
     template <class... U>
-    explicit PaperCharacter( class MyGame &vg, U &&...args )
+    explicit PaperCharacter( MyGame &vg, U &&...args )
       : m_g( vg )
       , Camera( ::std::forward<U>( args )... )
       , m_fSpeed( m_fWalk )

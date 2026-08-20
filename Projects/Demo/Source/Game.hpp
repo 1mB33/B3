@@ -17,10 +17,7 @@
 #include <Jolt/Geometry/AABox.h>
 #include <Jolt/Math/Real.h>
 
-#include "B33Core.h"
-
-#include "Primitives/ColoredCube.hpp"
-#include "Raycaster/VoxelGrid.hpp"
+#include "Rot.hpp"
 #include "Vec3.hpp"
 
 namespace Layers
@@ -145,7 +142,6 @@ class Physics
   public:
     B33::Math::Vec3 GetCubePos( const JPH::BodyID &id )
     {
-        B33_ASSERT( m_pPhysicsSystem != nullptr );
 
         auto cubePos = m_pPhysicsSystem->GetBodyInterface().GetCenterOfMassPosition( id );
 
@@ -154,7 +150,6 @@ class Physics
 
     B33::Math::Rot3 GetCubeRot( const JPH::BodyID &id )
     {
-        B33_ASSERT( m_pPhysicsSystem != nullptr );
 
         auto rotEuler = m_pPhysicsSystem->GetBodyInterface().GetRotation( id ).GetEulerAngles();
 
@@ -173,8 +168,9 @@ class Physics
 
         m_pJobSystem = ::std::make_unique<JPH::JobSystemThreadPool>( JPH::cMaxPhysicsJobs,
                                                                      JPH::cMaxPhysicsBarriers,
-                                                                     ::std::thread::hardware_concurrency() - 1 );
+                                                                     ::std::max(1u, ::std::thread::hardware_concurrency() - 1 ));
 
+        
         m_pPhysicsSystem = ::std::make_unique<JPH::PhysicsSystem>();
         m_pPhysicsSystem->Init( m_uMaxBodies, 0, m_uMaxBodiesPairs, m_uMaxContacts, m_Bpii, m_Ovbplfi, m_Olpfi );
 
@@ -196,18 +192,20 @@ class Physics
 
     void DestroyJolt()
     {
-        if ( JPH::Factory::sInstance != nullptr )
-        {
-            delete JPH::Factory::sInstance;
-            JPH::Factory::sInstance = nullptr;
-        }
+        m_pPhysicsSystem.reset();
+        m_pJobSystem.reset();
+        m_pTempAlloc.reset();
+
+        JPH::UnregisterTypes();
+
+        delete JPH::Factory::sInstance;
+        JPH::Factory::sInstance = nullptr;
     }
+
 
   public:
     void PushCube( const JPH::BodyID &bodyId, const B33::Math::Vec3 &normal, const float fForceMul )
     {
-        B33_ASSERT( m_pPhysicsSystem != nullptr );
-
         JPH::Vec3 force = {};
         force.SetX( -normal.x * fForceMul );
         force.SetY( -normal.y * fForceMul );
@@ -220,7 +218,6 @@ class Physics
     {
         using namespace JPH::literals;
 
-        B33_ASSERT( m_pPhysicsSystem != nullptr );
 
         const auto                epsilon = 0.008_r;
         JPH::BodyCreationSettings boxSettings(
@@ -237,7 +234,6 @@ class Physics
     {
         using namespace JPH::literals;
 
-        B33_ASSERT( m_pPhysicsSystem != nullptr );
 
         const auto epsilon  = 0.008_r;
         JPH::RVec3 position = m_pPhysicsSystem->GetBodyInterface().GetPosition( id );
@@ -255,23 +251,12 @@ class Physics
     {
         using namespace JPH::literals;
 
-        B33_ASSERT( m_pPhysicsSystem != nullptr );
+        auto& inter = m_pPhysicsSystem->GetBodyInterface();
 
-        // Next we can create a rigid body to serve as the floor, we make a large box
-        // Create the settings for the collision volume (the shape).
-        // Note that for simple shapes (like boxes) you can also directly construct a BoxShape.
-        JPH::BoxShapeSettings floorShapeSettings( JPH::Vec3( 100.0_r, 1.0_r, 100.0_r ) );
-        floorShapeSettings.SetEmbedded(); // A ref counted object on the stack (base class RefTarget) should be marked
-                                          // as such to prevent it from being freed when its reference count goes to 0.
-
-        // Create the shape
-        JPH::ShapeSettings::ShapeResult floorShapeResult = floorShapeSettings.Create();
-        JPH::ShapeRefC floorShape = floorShapeResult.Get(); // We don't expect an error here, but you can check
-                                                            // floor_shape_result for HasError() / GetError()
 
         // Create the settings for the body itself. Note that here you can also set other properties like the
         // restitution / friction.
-        JPH::BodyCreationSettings floor_settings( floorShape,
+        JPH::BodyCreationSettings floor_settings( new JPH::BoxShape( JPH::Vec3( 100.0f, 1.0f, 100.0f ) ),
                                                   JPH::RVec3( 0.0_r, 1.0_r, 0.0_r ),
                                                   JPH::Quat::sIdentity(),
                                                   JPH::EMotionType::Static,
@@ -279,7 +264,7 @@ class Physics
         floor_settings.mFriction = 0.23;
 
         // Add it to the world
-        m_pPhysicsSystem->GetBodyInterface().CreateAndAddBody( floor_settings, JPH::EActivation::DontActivate );
+        inter.CreateAndAddBody( floor_settings, JPH::EActivation::DontActivate );
     }
 
   private:
@@ -296,6 +281,13 @@ class Physics
     ::std::unique_ptr<JPH::JobSystemThreadPool> m_pJobSystem;
     ::std::unique_ptr<JPH::PhysicsSystem>       m_pPhysicsSystem;
 };
+
+
+#include "B33Core.h"
+
+#include "Primitives/ColoredCube.hpp"
+#include "Raycaster/VoxelGrid.hpp"
+
 
 // --------------------------------------------------------------------------------------------------------------------
 class World : public ::B33::Rendering::CubeWorld
