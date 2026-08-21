@@ -80,11 +80,15 @@ class JobSystem
                                   ::std::condition_variable &condition,
                                   ::std::atomic_bool        &IsWorking,
                                   ::std::atomic_bool        &IsFree,
-                                  Job                       &currentJob );
+#    if defined( _B33_DEBUG )
+                                  ::std::atomic_bool &IsError,
+#    endif
+                                  Job &currentJob );
 
   private:
     ::std::vector<JobProcessor> m_Threads = {};
     ::size_t                    m_uHead   = -1;
+    ::std::atomic_bool          m_IsError = false;
 };
 
 } // namespace B33::Core

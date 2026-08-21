@@ -16,6 +16,7 @@ SET(BEE_RENDERING_SOURCE
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Raycaster/Rays.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Raycaster/VoxelPipeline.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Raycaster/VoxelGrid.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Private/2DSprites/SpritesPipeline.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Editor/EditorPipeline.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/B33Rendering.cpp"
 )
@@ -44,6 +45,7 @@ SET(BEE_RENDERING_HEADRES
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Raycaster/Voxel.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Raycaster/VoxelGrid.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Raycaster/Rays.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/2DSprites/SpritesPipeline.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Editor/EditorPipeline.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/B33Rendering.hpp"
 )

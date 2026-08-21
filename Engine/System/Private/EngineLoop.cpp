@@ -1,5 +1,6 @@
 #include "B33Core.h"
 #include "B33System.hpp"
+#include "AppStatus.hpp"
 #include "ComponentBridge.hpp"
 #include "Debug/Assert.hpp"
 #include "EngineLoop.hpp"
@@ -29,48 +30,59 @@ void EngineLoop::InitializeComponents()
 
 void EngineLoop::UpdateComponents( float fDelta )
 {
-    constexpr auto asyncCall = +[]( ComponentAbstractBase *pComponent, float fDelta, ComponentBridge *pBridge )
+#if defined( _B33_DEBUG )
+    try
     {
-        pComponent->Lock();
-        dynamic_cast<ComponentAsync *>( pComponent )->Update( fDelta, *pBridge );
-        pComponent->DecreaseCount();
-        pComponent->Unlock();
-    };
-
-    B33_TRACE( L"Starting update loop" );
-    for ( auto [ componentType, componentVector ] : m_Components )
-    {
-        B33_TRACE( L"Updateing component type: %d", componentType );
-        switch ( componentType )
+#endif
+        constexpr auto asyncCall = +[]( ComponentAbstractBase *pComponent, float fDelta, ComponentBridge *pBridge )
         {
-            case Default:
-                for ( auto *component : componentVector )
-                {
-                    component->Lock();
-                    dynamic_cast<Component *>( component )->Update( fDelta, m_ComponentBridge );
-                    component->Unlock();
-                }
-                continue;
-            case Async:
-                for ( ComponentAbstractBase *component : componentVector )
-                {
-                    if ( component->GetCount() < 2 )
+            pComponent->Lock();
+            dynamic_cast<ComponentAsync *>( pComponent )->Update( fDelta, *pBridge );
+            pComponent->DecreaseCount();
+            pComponent->Unlock();
+        };
+
+        B33_TRACE( L"Starting update loop" );
+        for ( auto [ componentType, componentVector ] : m_Components )
+        {
+            B33_TRACE( L"Updateing component type: %d", componentType );
+            switch ( componentType )
+            {
+                case Default:
+                    for ( auto *component : componentVector )
                     {
-                        B33_TRACE( L"Queue job for component %p", component );
-                        component->IncreaseCount();
-                        m_JobSystem.PushJob( asyncCall, component, fDelta, &m_ComponentBridge );
+                        component->Lock();
+                        dynamic_cast<Component *>( component )->Update( fDelta, m_ComponentBridge );
+                        component->Unlock();
                     }
-                    else
+                    continue;
+                case Async:
+                    for ( ComponentAbstractBase *component : componentVector )
                     {
-                        B33_TRACE( L"Queued more then 2 jobs for the component, skipping" );
+                        if ( component->GetCount() < 2 )
+                        {
+                            B33_TRACE( L"Queue job for component %p", component );
+                            component->IncreaseCount();
+                            m_JobSystem.PushJob( asyncCall, component, fDelta, &m_ComponentBridge );
+                        }
+                        else
+                        {
+                            B33_TRACE( L"Queued more then 2 jobs for the component, skipping" );
+                        }
                     }
-                }
-                continue;
-            default:
-                B33_ASSERT_MSG( false, "Unknown component type" );
+                    continue;
+                default:
+                    B33_ASSERT_MSG( false, "Unknown component type" );
+            }
         }
+        m_JobSystem.BlockAndWait();
+#if defined( _B33_DEBUG )
     }
-    m_JobSystem.BlockAndWait();
+    catch ( ... )
+    {
+        throw B33_EXCEPT("Error during components update");
+    }
+#endif
 }
 
 void EngineLoop::DestroyComponents()
