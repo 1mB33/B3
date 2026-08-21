@@ -33,9 +33,14 @@ class Memory
 
     __B33_API ::std::shared_ptr<::B33::Rendering::GPUBuffer> ReserveGPUBuffer( const ::size_t uSizeInBytes );
 
-    __B33_API void UploadOnStreamBuffer( const void                               *pUpload,
-                                         const ::size_t                            uUploadSize,
-                                         const ::B33::Rendering::UploadDescriptor &onSet );
+    __B33_API void
+    UploadToStreamBufferRaw( const void                                                 *pUpload,
+                             const ::size_t                                              uUploadSize,
+                             const ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> &gpuStreamBuffer );
+
+    __B33_API void UploadToStreamBufferDescSet( const void                               *pUpload,
+                                                const ::size_t                            uUploadSize,
+                                                const ::B33::Rendering::UploadDescriptor &onSet );
 
   private:
     ::uint32_t FindMemoryType( ::uint32_t typeFilter, ::VkMemoryPropertyFlags properties );

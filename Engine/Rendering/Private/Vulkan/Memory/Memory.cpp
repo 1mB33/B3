@@ -89,7 +89,27 @@ shared_ptr<GPUBuffer> Memory::ReserveGPUBuffer( const size_t uSizeInBytes )
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void Memory::UploadOnStreamBuffer( const void *pUpload, const size_t uUploadSize, const UploadDescriptor &onSet )
+void Memory::UploadToStreamBufferRaw( const void                                                 *pUpload,
+                                      const ::size_t                                              uUploadSize,
+                                      const ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> &gpuStreamBuffer )
+{
+    const VkDevice   da     = m_pAdapter->GetAdapterHandle();
+    GPUStreamBuffer *buffer = gpuStreamBuffer.get();
+
+    if ( buffer->GetDataPointer() == nullptr )
+    {
+        THROW_IF_FAILED( vkMapMemory( da,
+                                      buffer->GetMemoryHandle(),
+                                      0,
+                                      buffer->GetSizeInBytes(),
+                                      0,
+                                      buffer->GetPtrToDataPointer() ) );
+    }
+    memcpy( buffer->GetDataPointer(), pUpload, uUploadSize );
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+void Memory::UploadToStreamBufferDescSet( const void *pUpload, const size_t uUploadSize, const UploadDescriptor &onSet )
 {
     B33_ASSERT( onSet.Buffer->GetMemoryHandle() != VK_NULL_HANDLE );
     B33_ASSERT( onSet.Buffer->GetBufferHandle() != VK_NULL_HANDLE );

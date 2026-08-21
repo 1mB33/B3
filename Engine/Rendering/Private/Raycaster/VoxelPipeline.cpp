@@ -82,7 +82,7 @@ void VoxelPipeline::Update()
     B33_TRACE( L"Staging on GPU" );
     if ( curPerFrame.uStorageBuffersFlags )
     {
-        GetMemoryInternal()->UploadOnStreamBuffer(
+        GetMemoryInternal()->UploadToStreamBufferDescSet(
             m_pVoxelGrid->GetGrid().data(),
             m_pVoxelGrid->GetGrid().size() * sizeof( Voxel ),
             GetUniformUploadDescriptor( curPerFrame.pStageVoxelBuffer, VoxelPipeline::EShaderResource::VoxelGrid ) );
@@ -90,7 +90,7 @@ void VoxelPipeline::Update()
 
     if ( curPerFrame.uStorageBuffersFlags & EGridChanged::Position )
     {
-        GetMemoryInternal()->UploadOnStreamBuffer(
+        GetMemoryInternal()->UploadToStreamBufferDescSet(
             m_pVoxelGrid->GetStoredObjects().GetPositions().data(),
             m_pVoxelGrid->GetStoredObjects().GetPositions().size() * sizeof( Vec3 ),
             GetUniformUploadDescriptor( curPerFrame.pStagePositonsBuffer,
@@ -99,7 +99,7 @@ void VoxelPipeline::Update()
 
     if ( curPerFrame.uStorageBuffersFlags & EGridChanged::Rotation )
     {
-        GetMemoryInternal()->UploadOnStreamBuffer(
+        GetMemoryInternal()->UploadToStreamBufferDescSet(
             m_pVoxelGrid->GetStoredObjects().GetRotations().data(),
             m_pVoxelGrid->GetStoredObjects().GetRotations().size() * sizeof( Vec3 ),
             GetUniformUploadDescriptor( curPerFrame.pStageRotationsBuffer,
@@ -108,7 +108,7 @@ void VoxelPipeline::Update()
 
     if ( curPerFrame.uStorageBuffersFlags & EGridChanged::HalfSize )
     {
-        GetMemoryInternal()->UploadOnStreamBuffer(
+        GetMemoryInternal()->UploadToStreamBufferDescSet(
             ( static_cast<const Cubes &>( m_pVoxelGrid->GetStoredObjects() ) ).GetHalfSizes().data(),
             ( static_cast<const Cubes &>( m_pVoxelGrid->GetStoredObjects() ) ).GetHalfSizes().size() * sizeof( Vec3 ),
             GetUniformUploadDescriptor( curPerFrame.pStageHalfSizesBuffer,
