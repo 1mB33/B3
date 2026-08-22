@@ -32,7 +32,21 @@ class Renderer
 
     // Methods // -----------------------------------------------------------------------------------------------------
   public:
-    __B33_API void Initialize( ::std::shared_ptr<::WindowDesc> wd );
+    template <class HARDWARE, class ADAPTER>
+    void Initialize( ::std::shared_ptr<::WindowDesc> wd )
+    {
+        B33_LOG( Core::Debug::Info, L"Initializing renderer!" );
+
+        m_pInstance = ::std::make_shared<Instance>();
+
+        m_pHardware = ::std::make_shared<HardwareWrapper>();
+        m_pHardware->Initialize( m_pInstance, HARDWARE() );
+
+        m_pDeviceAdapter = ::std::make_shared<AdapterWrapper>();
+        m_pDeviceAdapter->Initialize( m_pHardware, ADAPTER() );
+
+        this->InitializeInternal( wd );
+    }
 
     __B33_API void Update( const float fDelta );
 
@@ -52,7 +66,7 @@ class Renderer
     {
         auto pipeline = new PIPE_LINE();
 
-        pipeline->Initialize( m_pDeviceAdapter, m_pMemory, m_pWindowDesc, m_pSwapChain, *pipeline );
+        pipeline->Initialize( m_pDeviceAdapter, m_pMemory, m_pSwapChain, *pipeline );
         pipeline->CreatePipelineResources( args... );
 
         m_PipelineMap[ PIPE_LINE::GetGlobalIndex() ] = pipeline;
@@ -61,6 +75,8 @@ class Renderer
 
     // Internal // ----------------------------------------------------------------------------------------------------
   private:
+    __B33_API void InitializeInternal( ::std::shared_ptr<::WindowDesc> wd );
+
     ::VkCommandPool CreateCommandPool( ::std::shared_ptr<const ::B33::Rendering::AdapterWrapper> da,
                                        ::uint32_t                                                uQueueFamily );
 

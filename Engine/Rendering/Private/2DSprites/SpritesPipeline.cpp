@@ -6,7 +6,6 @@
 #include "Vulkan/FrameResources.hpp"
 #include "Vulkan/SwapChain.hpp"
 #include "Vulkan/Utility.hpp"
-#include <vulkan/vulkan_core.h>
 
 namespace B33::Rendering
 {
@@ -47,7 +46,7 @@ void SpritesPipeline::CreatePipelineResourcesImpl()
     constexpr size_t unitVerticesSize = sizeof( Vertex ) * g_UnitQuadVertices.size();
 
     m_pStageQuadBuffer = GetMemoryInternal()->ReserveStagingBuffer( unitVerticesSize );
-    m_pQuadBuffer      = GetMemoryInternal()->ReserveGPUBuffer( unitVerticesSize );
+    m_pQuadBuffer      = GetMemoryInternal()->ReserveVertexBuffer( unitVerticesSize );
 
     GetMemoryInternal()->UploadToStreamBufferRaw( g_UnitQuadVertices.data(), unitVerticesSize, m_pStageQuadBuffer );
 
@@ -68,11 +67,10 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                                       VkPipelineStageFlagBits lastStage,
                                       VkImageLayout           lastLayout )
 {
-    auto        swapChain   = GetSwapChainInternal();
-    auto        image       = swapChain->GetImage();
-    auto        imageView   = swapChain->GetImageView();
-    auto       &curPerFrame = m_PerFrameResources[ m_uCurFrame ];
-    const auto &windowData  = GetWindowDescInternal()->Data;
+    auto swapChain = GetSwapChainInternal();
+    auto image     = swapChain->GetImage();
+    auto imageView = swapChain->GetImageView();
+    auto extent    = swapChain->GetExtent();
 
     if ( !m_bUploaded )
     {
@@ -110,8 +108,7 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                               NULL );
 
 
-        lastStage   = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
-        m_bUploaded = true;
+        lastStage = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
     }
 
     VkImageMemoryBarrier toColorAttachment = {};
@@ -150,8 +147,7 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
     VkRenderingInfo renderingInfo = {};
     renderingInfo.sType           = VK_STRUCTURE_TYPE_RENDERING_INFO;
     renderingInfo.renderArea =
-        VkRect2D { { 0, 0 },
-                   { static_cast<uint32_t>( windowData.Width ), static_cast<uint32_t>( windowData.Height ) } };
+        VkRect2D { { 0, 0 }, { static_cast<uint32_t>( extent.width ), static_cast<uint32_t>( extent.height ) } };
     renderingInfo.layerCount           = 1;
     renderingInfo.colorAttachmentCount = 1;
     renderingInfo.pColorAttachments    = &colorAttachment;
@@ -160,20 +156,12 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
 
     vkCmdBindPipeline( cmdBuffer, this->GetPipelineBindPoint(), this->GetPipelineHandle() );
 
-    VkViewport viewport = { 0.0f, 0.0f, float( windowData.Width ), float( windowData.Height ), 0.0f, 1.0f };
-    VkRect2D   scissor  = { { 0, 0 },
-                            { static_cast<uint32_t>( windowData.Width ), static_cast<uint32_t>( windowData.Height ) } };
+    VkViewport viewport = { 0.0f, 0.0f, float( extent.width ), float( extent.height ), 0.0f, 1.0f };
+    VkRect2D scissor = { { 0, 0 }, { static_cast<uint32_t>( extent.width ), static_cast<uint32_t>( extent.height ) } };
     vkCmdSetViewport( cmdBuffer, 0, 1, &viewport );
     vkCmdSetScissor( cmdBuffer, 0, 1, &scissor );
 
-    vkCmdBindDescriptorSets( cmdBuffer,
-                             this->GetPipelineBindPoint(),
-                             this->GetLayoutHandle(),
-                             0,
-                             1,
-                             &curPerFrame.DescSet,
-                             0,
-                             NULL );
+    vkCmdBindDescriptorSets( cmdBuffer, this->GetPipelineBindPoint(), this->GetLayoutHandle(), 0, 0, NULL, 0, NULL );
 
     VkBuffer     vertexBuffers[] = { m_pQuadBuffer->GetBufferHandle() };
     VkDeviceSize offsets[]       = { 0 };

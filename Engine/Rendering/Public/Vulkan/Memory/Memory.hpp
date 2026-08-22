@@ -29,6 +29,8 @@ class Memory
 
     // Methods // -----------------------------------------------------------------------------------------------------
   public:
+    __B33_API ::std::shared_ptr<::B33::Rendering::GPUBuffer> ReserveVertexBuffer( const size_t uSizeInBytes );
+
     __B33_API ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> ReserveStagingBuffer( const ::size_t uSizeInBytes );
 
     __B33_API ::std::shared_ptr<::B33::Rendering::GPUBuffer> ReserveGPUBuffer( const ::size_t uSizeInBytes );

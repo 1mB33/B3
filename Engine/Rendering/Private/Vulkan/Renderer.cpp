@@ -38,18 +38,8 @@ Renderer::~Renderer()
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-void Renderer::Initialize( shared_ptr<WindowDesc> wd )
+void Renderer::InitializeInternal( shared_ptr<WindowDesc> wd )
 {
-    B33_LOG( Core::Debug::Info, L"Initializing renderer!" );
-
-    m_pInstance = make_shared<Instance>();
-
-    m_pHardware = make_shared<HardwareWrapper>();
-    m_pHardware->Initialize( m_pInstance, MinimalHardware() );
-
-    m_pDeviceAdapter = make_shared<AdapterWrapper>();
-    m_pDeviceAdapter->Initialize( m_pHardware, GraphicsComputeAdapter() );
-
     m_pMemory     = make_shared<Memory>( m_pHardware, m_pDeviceAdapter );
     m_pWindowDesc = wd;
 

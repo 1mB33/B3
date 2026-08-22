@@ -1,6 +1,7 @@
 #include "B33Core.h"
 #include "B33Rendering.hpp"
 
+#include "Debug/Assert.hpp"
 #include "Raycaster/VoxelPipeline.hpp"
 #include "Vulkan/ErrorHandling.hpp"
 #include "Vulkan/Buffers/GPUStreamBuffer.hpp"
@@ -168,15 +169,19 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
             .dstOffset = 0,
             .size      = curPerFrame.pStageVoxelBuffer->GetSizeInBytes(),
         };
+
+        B33_ASSERT( copyRegion.size != 0 );
         vkCmdCopyBuffer( cmdBuffer,
                          curPerFrame.pStageVoxelBuffer->GetBufferHandle(),
                          curPerFrame.pVoxelBuffer->GetBufferHandle(),
                          1,
                          &copyRegion );
 
-        if ( curPerFrame.uStorageBuffersFlags & EGridChanged::Position )
+        if ( curPerFrame.uStorageBuffersFlags & EGridChanged::Position &&
+             m_pVoxelGrid->GetStoredObjects().GetPositions().size() )
         {
             copyRegion.size = m_pVoxelGrid->GetStoredObjects().GetPositions().size() * sizeof( Vec3 );
+            B33_ASSERT( copyRegion.size != 0 );
             vkCmdCopyBuffer( cmdBuffer,
                              curPerFrame.pStagePositonsBuffer->GetBufferHandle(),
                              curPerFrame.pPositionsBuffer->GetBufferHandle(),
@@ -184,9 +189,11 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                              &copyRegion );
         }
 
-        if ( curPerFrame.uStorageBuffersFlags & EGridChanged::Rotation )
+        if ( curPerFrame.uStorageBuffersFlags & EGridChanged::Rotation &&
+             m_pVoxelGrid->GetStoredObjects().GetPositions().size() )
         {
             copyRegion.size = m_pVoxelGrid->GetStoredObjects().GetRotations().size() * sizeof( Vec3 );
+            B33_ASSERT( copyRegion.size != 0 );
             vkCmdCopyBuffer( cmdBuffer,
                              curPerFrame.pStageRotationsBuffer->GetBufferHandle(),
                              curPerFrame.pRotationsBuffer->GetBufferHandle(),
@@ -194,10 +201,12 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                              &copyRegion );
         }
 
-        if ( curPerFrame.uStorageBuffersFlags & EGridChanged::HalfSize )
+        if ( curPerFrame.uStorageBuffersFlags & EGridChanged::HalfSize &&
+             m_pVoxelGrid->GetStoredObjects().GetPositions().size() )
         {
             copyRegion.size = ( static_cast<const Cubes &>( m_pVoxelGrid->GetStoredObjects() ) ).GetHalfSizes().size() *
                               sizeof( Vec3 );
+            B33_ASSERT( copyRegion.size != 0 );
             vkCmdCopyBuffer( cmdBuffer,
                              curPerFrame.pStageHalfSizesBuffer->GetBufferHandle(),
                              curPerFrame.pHalfSizesBuffer->GetBufferHandle(),
@@ -228,7 +237,8 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
             .size                = VK_WHOLE_SIZE,
         } );
 
-        if ( curPerFrame.uStorageBuffersFlags & EGridChanged::Position )
+        if ( curPerFrame.uStorageBuffersFlags & EGridChanged::Position &&
+             m_pVoxelGrid->GetStoredObjects().GetPositions().size() )
         {
             VkMappedMemoryRange mmr2 = mmr;
             mmr2.memory              = curPerFrame.pPositionsBuffer->GetMemoryHandle();
@@ -245,7 +255,8 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                 .size                = VK_WHOLE_SIZE,
             } );
         }
-        if ( curPerFrame.uStorageBuffersFlags & EGridChanged::Rotation )
+        if ( curPerFrame.uStorageBuffersFlags & EGridChanged::Rotation &&
+             m_pVoxelGrid->GetStoredObjects().GetPositions().size() )
         {
             VkMappedMemoryRange mmr3 = mmr;
             mmr3.memory              = curPerFrame.pRotationsBuffer->GetMemoryHandle();
@@ -262,7 +273,8 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                 .size                = VK_WHOLE_SIZE,
             } );
         }
-        if ( curPerFrame.uStorageBuffersFlags & EGridChanged::HalfSize )
+        if ( curPerFrame.uStorageBuffersFlags & EGridChanged::HalfSize &&
+             m_pVoxelGrid->GetStoredObjects().GetPositions().size() )
         {
             VkMappedMemoryRange mmr4 = mmr;
             mmr4.memory              = curPerFrame.pHalfSizesBuffer->GetMemoryHandle();
@@ -292,8 +304,8 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                               NULL );
     }
 
-    const uint32_t groupCountX = ( GetWindowDescInternal()->Data.Width + 31 ) >> 5;
-    const uint32_t groupCountY = ( GetWindowDescInternal()->Data.Height + 7 ) >> 3;
+    const uint32_t groupCountX = ( swapChain->GetExtent().width + 31 ) >> 5;
+    const uint32_t groupCountY = ( swapChain->GetExtent().height + 7 ) >> 3;
     vkCmdDispatch( cmdBuffer, groupCountX, groupCountY, 1 );
 }
 

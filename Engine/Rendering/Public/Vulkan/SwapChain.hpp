@@ -42,6 +42,8 @@ class Swapchain
 
     ::VkImageView GetImageView() const;
 
+    ::VkExtent2D GetExtent() const;
+
     ::uint32_t GetImageindex() const;
 
     // Setters // -----------------------------------------------------------------------------------------------------

@@ -10,11 +10,11 @@ class RTXDeviceAdapter : public ::B33::Rendering::IAdapter<::B33::Rendering::RTX
 {
     // Interface implementation // ------------------------------------------------------------------------------------
   public:
-    const ::std::vector<const char *> GetExtensionsImpl() const;
+    __B33_API const ::std::vector<const char *> GetExtensionsImpl() const;
 
-    void *GetFeaturesImpl() const;
+    __B33_API void *GetFeaturesImpl() const;
 
-    uint32_t GetQueueFlagsImpl() const;
+    __B33_API uint32_t GetQueueFlagsImpl() const;
 };
 
 } // namespace B33::Rendering

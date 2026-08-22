@@ -91,6 +91,11 @@ Swapchain::~Swapchain()
     return m_ImageViews[ m_uCurrentImageIndex ];
 }
 
+::VkExtent2D Swapchain::GetExtent() const
+{
+    return m_Extent;
+}
+
 ::uint32_t Swapchain::GetImageindex() const
 {
     B33_TRACE( L"Getting swapchain image index %d", m_uCurrentImageIndex );
@@ -350,13 +355,13 @@ vector<VkImageView> Swapchain::CreateImageViews( weak_ptr<const AdapterWrapper> 
     if ( !pLockedAdapter )
         throw B33_EXCEPT( "Vulkan adapter is expried, cannot create a swapchain images" );
 
-    for (size_t i = 0; i < imageViews.size(); ++i)
+    for ( size_t i = 0; i < imageViews.size(); ++i )
     {
         B33_TRACE( L"Creating an image view" );
         VkImageView           newImageView;
         VkImageViewCreateInfo viewInfo = {};
         viewInfo.sType                 = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        viewInfo.image                 = swapChainImages[i];
+        viewInfo.image                 = swapChainImages[ i ];
         viewInfo.viewType              = VK_IMAGE_VIEW_TYPE_2D;
         viewInfo.format                = Swapchain::TargetedFormat;
         viewInfo.subresourceRange      = {
@@ -368,7 +373,7 @@ vector<VkImageView> Swapchain::CreateImageViews( weak_ptr<const AdapterWrapper> 
         };
 
         THROW_IF_FAILED( vkCreateImageView( pLockedAdapter->GetAdapterHandle(), &viewInfo, NULL, &newImageView ) );
-        imageViews[i] = newImageView;
+        imageViews[ i ] = newImageView;
     }
 
     return imageViews;

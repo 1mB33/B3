@@ -58,6 +58,38 @@ shared_ptr<GPUStreamBuffer> Memory::ReserveStagingBuffer( const size_t uSizeInBy
 }
 
 // --------------------------------------------------------------------------------------------------------------------
+shared_ptr<GPUBuffer> Memory::ReserveVertexBuffer( const size_t uSizeInBytes )
+{
+    B33_LOG( Info, L"Reserving gpu buffer of %llu bytes", uSizeInBytes );
+
+    const VkDevice       da = m_pAdapter->GetAdapterHandle();
+    VkMemoryRequirements memRequirements;
+    VkBuffer             buffer;
+    VkDeviceMemory       deviceMem;
+
+    VkBufferCreateInfo bufferInfo = {};
+    bufferInfo.sType              = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size               = uSizeInBytes;
+    bufferInfo.usage =
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    THROW_IF_FAILED( vkCreateBuffer( da, &bufferInfo, NULL, &buffer ) );
+
+    vkGetBufferMemoryRequirements( da, buffer, &memRequirements );
+
+    VkMemoryAllocateInfo allocInfo = {};
+    allocInfo.sType                = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize       = memRequirements.size;
+    allocInfo.memoryTypeIndex = FindMemoryType( memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT );
+
+    THROW_IF_FAILED( vkAllocateMemory( da, &allocInfo, NULL, &deviceMem ) );
+    THROW_IF_FAILED( vkBindBufferMemory( da, buffer, deviceMem, 0 ) );
+
+    return make_shared<GPUBuffer>( m_pAdapter, deviceMem, buffer, uSizeInBytes );
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 shared_ptr<GPUBuffer> Memory::ReserveGPUBuffer( const size_t uSizeInBytes )
 {
     B33_LOG( Info, L"Reserving gpu buffer of %llu bytes", uSizeInBytes );

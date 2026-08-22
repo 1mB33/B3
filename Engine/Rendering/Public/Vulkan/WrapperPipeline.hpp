@@ -21,7 +21,6 @@ class PipelineWrapper
     PipelineWrapper( VkPipelineStageFlagBits stage, VkImageLayout imgLayout, VkPipelineBindPoint bindPoint )
       : m_pDeviceAdapter()
       , m_pMemory()
-      , m_pWindowDesc()
       , m_pSwapChain()
       , m_StageBits( stage )
       , m_ImageLayout( imgLayout )
@@ -65,7 +64,6 @@ class PipelineWrapper
     template <class T>
     void Initialize( ::std::weak_ptr<const ::B33::Rendering::AdapterWrapper> pDeviceAdapter,
                      ::std::weak_ptr<::B33::Rendering::Memory>               pMemory,
-                     ::std::weak_ptr<const ::WindowDesc>                     pWindowDesc,
                      ::std::weak_ptr<const ::B33::Rendering::Swapchain>      pSwapChain,
                      T                                                      &pPipeline )
     {
@@ -73,7 +71,6 @@ class PipelineWrapper
 
         m_pDeviceAdapter = pDeviceAdapter;
         m_pMemory        = pMemory;
-        m_pWindowDesc    = pWindowDesc;
         m_pSwapChain     = pSwapChain;
 
         m_uPushConstantsByteSize = pPipeline.GetPushConstantsByteSize();
@@ -153,14 +150,6 @@ class PipelineWrapper
         throw B33_EXCEPT( "Cannot lock resources in the PipelineWrapper" );
     }
 
-    ::std::shared_ptr<const ::WindowDesc> GetWindowDescInternal() const
-    {
-        if ( auto result = m_pWindowDesc.lock() )
-            return result;
-
-        throw B33_EXCEPT( "Cannot lock resources in the PipelineWrapper" );
-    }
-
     ::std::shared_ptr<const ::B33::Rendering::Swapchain> GetSwapChainInternal() const
     {
         if ( auto result = m_pSwapChain.lock() )
@@ -182,7 +171,6 @@ class PipelineWrapper
   private:
     ::std::weak_ptr<const ::B33::Rendering::AdapterWrapper> m_pDeviceAdapter = {};
     ::std::weak_ptr<::B33::Rendering::Memory>               m_pMemory        = {};
-    ::std::weak_ptr<const ::WindowDesc>                     m_pWindowDesc    = {};
     ::std::weak_ptr<const ::B33::Rendering::Swapchain>      m_pSwapChain     = {};
 
     ::size_t        m_uPushConstantsByteSize = 0;
