@@ -302,7 +302,7 @@ void Renderer::DestroyFrameResources()
         for ( size_t i = 0; i < frames.size(); ++i )
         {
             B33_TRACE( L"Waiting for fence %d", i );
-            vkWaitForFences( m_pDeviceAdapter->GetAdapterHandle(), 1, &frames[ i ].InFlightFence, VK_TRUE, UINT64_MAX );
+            vkWaitForFences( m_pDeviceAdapter->GetAdapterHandle(), 1, &frames[ i ].InFlightFence, VK_TRUE, 100000 );
         }
         B33_TRACE( L"All fences are done" );
 

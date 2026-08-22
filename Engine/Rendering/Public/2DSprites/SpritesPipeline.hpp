@@ -4,8 +4,6 @@
 #include "Vec2.hpp"
 #include "Vulkan/IPipeline.hpp"
 #include "Vulkan/Buffers/GPUStreamBuffer.hpp"
-#include "Raycaster/PushConstants.hpp"
-#include "Raycaster/VoxelGrid.hpp"
 #include "vulkan/vulkan_core.h"
 
 namespace B33::Rendering
@@ -13,8 +11,9 @@ namespace B33::Rendering
 
 struct alignas( 16 ) SpritesPushConstants : IPushConstants
 {
-    using Vec  = ::B33::Math::Vec3;
-    using iVec = ::B33::Math::iVec3;
+    using Vec2 = ::B33::Math::Vec2;
+
+    Vec2 ScreenDim;
 };
 
 class SpritesPipeline : public IPipeline<SpritesPipeline>
@@ -24,12 +23,13 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
 
     enum EShaderResource
     {
-        Vertices = 0,
+        SpriteInstances = 1,
     };
 
+  public:
     struct alignas( 16 ) SpriteData
     {
-        B22::Math::Vec2 Pos;
+        ::B33::Math::Vec3 Pos;
     };
 
     constexpr static uint32_t MAX_SPRITES = 1024;
@@ -43,6 +43,7 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
       , m_pQuadBuffer( ::std::make_shared<GPUBuffer>() )
       , m_pStageQuadBuffer( ::std::make_shared<GPUStreamBuffer>() )
       , m_PerFrameResources()
+      , m_SpriteData( MAX_SPRITES )
       , m_VertexShader( VK_NULL_HANDLE )
     {
         B33_LOG( Core::Debug::Info, L"Creating a pipeline!" );
@@ -81,6 +82,12 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
 
     __B33_API ::VkDescriptorPool CreateDescriptorPoolImpl();
 
+  public:
+    void UpdateSprite( size_t i, SpriteData sd )
+    {
+        m_SpriteData[ i ] = sd;
+    }
+
   private:
     UploadDescriptor GetUniformUploadDescriptor( const ::std::shared_ptr<GPUStreamBuffer> &outBuffer,
                                                  const EShaderResource                    &sr );
@@ -94,9 +101,11 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
 
     struct PerFrame
     {
-        ::uint32_t        uLastUploadedGeneration;
-        bool              bPendingGpuCopy;
-        ::VkDescriptorSet DescSet = VK_NULL_HANDLE;
+        ::uint32_t                                           uLastUploadedGeneration;
+        bool                                                 bPendingGpuCopy;
+        ::std::shared_ptr<::B33::Rendering::GPUBuffer>       SpriteInstances;
+        ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> StageSpriteInstances;
+        ::VkDescriptorSet                                    DescSet = VK_NULL_HANDLE;
     };
 
     ::std::vector<PerFrame> m_PerFrameResources = {};

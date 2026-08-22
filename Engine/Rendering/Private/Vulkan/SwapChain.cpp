@@ -93,6 +93,7 @@ Swapchain::~Swapchain()
 
 ::VkExtent2D Swapchain::GetExtent() const
 {
+    B33_TRACE(L"Retriving extent: %d %d", m_Extent.width, m_Extent.height);
     return m_Extent;
 }
 

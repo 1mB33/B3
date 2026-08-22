@@ -25,9 +25,14 @@ class Renderer
     // Getters // -----------------------------------------------------------------------------------------------------
   public:
     template <class PIPE_LINE>
-    ::B33::Rendering::PipelineWrapper *GetPipeline()
+    PIPE_LINE *GetPipeline()
     {
-        return m_PipelineMap[ PIPE_LINE::GetGlobalIndex() ];
+        return reinterpret_cast<PIPE_LINE*>(m_PipelineMap[ PIPE_LINE::GetGlobalIndex() ]);
+    }
+
+    ::B33::Rendering::Swapchain *GetSwapchain()
+    {
+        return m_pSwapChain.get();
     }
 
     // Methods // -----------------------------------------------------------------------------------------------------

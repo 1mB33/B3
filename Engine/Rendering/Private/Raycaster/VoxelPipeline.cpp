@@ -1,6 +1,7 @@
 #include "B33Core.h"
 #include "B33Rendering.hpp"
 
+#include "2DSprites/SpritesPipeline.hpp"
 #include "Debug/Assert.hpp"
 #include "Raycaster/VoxelPipeline.hpp"
 #include "Vulkan/ErrorHandling.hpp"
@@ -8,6 +9,7 @@
 #include "Vulkan/FrameResources.hpp"
 #include "Vulkan/Memory/MemoryUploadTracker.hpp"
 #include "Vulkan/Utility.hpp"
+#include "vulkan/vulkan_core.h"
 
 namespace B33::Rendering
 {

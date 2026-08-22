@@ -2,10 +2,12 @@
 #include "B33Rendering.hpp"
 
 #include "2DSprites/SpritesPipeline.hpp"
+#include "Vec2.hpp"
 #include "Vulkan/ErrorHandling.hpp"
 #include "Vulkan/FrameResources.hpp"
 #include "Vulkan/SwapChain.hpp"
 #include "Vulkan/Utility.hpp"
+#include "vulkan/vulkan_core.h"
 
 namespace B33::Rendering
 {
@@ -19,7 +21,14 @@ struct alignas( 16 ) Vertex
     float Y;
 };
 
-const array<Vertex, 3> g_UnitQuadVertices = { Vertex( 0.0f, -0.5f ), Vertex( 0.5f, 0.5f ), Vertex( -0.5f, 0.5f ) };
+const array<Vertex, 6> g_UnitQuadVertices = {
+    Vertex( -1.0f, -1.f ),
+    Vertex( 1.f, -1.f ),
+    Vertex( -1.f, 1.f ),
+    Vertex( 1.f, -1.f ),
+    Vertex( 1.f, 1.f ),
+    Vertex( -1.f, 1.f ),
+};
 
 // ---------------------------------------------------------------------------------------------------------------------
 SpritesPipeline::~SpritesPipeline()
@@ -44,6 +53,7 @@ void SpritesPipeline::CreatePipelineResourcesImpl()
 {
     m_uCurFrame                       = 0;
     constexpr size_t unitVerticesSize = sizeof( Vertex ) * g_UnitQuadVertices.size();
+    constexpr size_t instanceSize     = sizeof( SpriteData ) * MAX_SPRITES;
 
     m_pStageQuadBuffer = GetMemoryInternal()->ReserveStagingBuffer( unitVerticesSize );
     m_pQuadBuffer      = GetMemoryInternal()->ReserveVertexBuffer( unitVerticesSize );
@@ -55,13 +65,23 @@ void SpritesPipeline::CreatePipelineResourcesImpl()
         m_PerFrameResources.push_back( {
             .uLastUploadedGeneration = ~(uint32_t)0,
             .bPendingGpuCopy         = false,
+            .SpriteInstances         = GetMemoryInternal()->ReserveGPUBuffer( instanceSize ),
+            .StageSpriteInstances    = GetMemoryInternal()->ReserveStagingBuffer( instanceSize ),
             .DescSet                 = CreateDescriptorSet(),
         } );
     }
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void SpritesPipeline::Update() {}
+void SpritesPipeline::Update()
+{
+    auto &curFrame = m_PerFrameResources[ m_uCurFrame ];
+
+    GetMemoryInternal()->UploadToStreamBufferDescSet(
+        m_SpriteData.data(),
+        m_SpriteData.size() * sizeof( SpriteData ),
+        GetUniformUploadDescriptor( curFrame.StageSpriteInstances, EShaderResource::SpriteInstances ) );
+}
 
 // --------------------------------------------------------------------------------------------------------------------
 void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
@@ -107,12 +127,44 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                           0,
                           NULL );
 
+    VkBufferCopy copyRegion2 = {
+        .srcOffset = 0,
+        .dstOffset = 0,
+        .size      = curFrame.StageSpriteInstances->GetSizeInBytes(),
+    };
+    vkCmdCopyBuffer( cmdBuffer,
+                     curFrame.StageSpriteInstances->GetBufferHandle(),
+                     curFrame.SpriteInstances->GetBufferHandle(),
+                     1,
+                     &copyRegion2 );
+
+    VkBufferMemoryBarrier memBarier2 = {};
+    memBarier2.sType                 = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+    memBarier2.pNext                 = NULL;
+    memBarier2.srcAccessMask         = VK_ACCESS_TRANSFER_WRITE_BIT;
+    memBarier2.dstAccessMask         = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+    memBarier2.srcQueueFamilyIndex   = VK_QUEUE_FAMILY_IGNORED;
+    memBarier2.dstQueueFamilyIndex   = VK_QUEUE_FAMILY_IGNORED;
+    memBarier2.buffer                = curFrame.SpriteInstances->GetBufferHandle();
+    memBarier2.offset                = 0;
+    memBarier2.size                  = VK_WHOLE_SIZE;
+
+    vkCmdPipelineBarrier( cmdBuffer,
+                          VK_PIPELINE_STAGE_TRANSFER_BIT,
+                          VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                          0,
+                          0,
+                          NULL,
+                          1,
+                          &memBarier2,
+                          0,
+                          NULL );
 
     lastStage = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
 
     VkImageMemoryBarrier toColorAttachment = {};
     toColorAttachment.sType                = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    toColorAttachment.srcAccessMask        = 0;
+    toColorAttachment.srcAccessMask        = lastStage;
     toColorAttachment.dstAccessMask        = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
     toColorAttachment.oldLayout            = lastLayout;
     toColorAttachment.newLayout            = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -133,7 +185,7 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                           &toColorAttachment );
 
     VkClearValue cv = {};
-    cv.color        = VkClearColorValue { { 1.f, 0.f, 1.f, 1.f } };
+    cv.color        = VkClearColorValue { { 0.f, 0.f, 0.f, 0.f } };
 
     VkRenderingAttachmentInfo colorAttachment = {};
     colorAttachment.sType                     = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
@@ -169,12 +221,19 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                              0,
                              NULL );
 
+    vkCmdPushConstants( cmdBuffer,
+                        GetLayoutHandle(),
+                        VK_SHADER_STAGE_VERTEX_BIT,
+                        0,
+                        sizeof( SpritesPushConstants ),
+                        &m_Vpc );
+
     VkBuffer     vertexBuffers[] = { m_pQuadBuffer->GetBufferHandle() };
     VkDeviceSize offsets[]       = { 0 };
     vkCmdBindVertexBuffers( cmdBuffer, 0, 1, vertexBuffers, offsets );
 
-    const uint32_t spriteCount = 1;
-    // static_cast<uint32_t>( min( m_SpriteData.size(), static_cast<size_t>( MAX_SPRITES ) ) );
+    const uint32_t spriteCount =
+        static_cast<uint32_t>( min( m_SpriteData.size(), static_cast<size_t>( MAX_SPRITES ) ) );
 
     if ( spriteCount > 0 )
     {
@@ -197,10 +256,10 @@ VkDescriptorSetLayout SpritesPipeline::CreateDescriptorLayoutImpl()
     VkDescriptorSetLayout                  descriptorSetLayout;
 
     bindings[ 0 ]                 = {};
-    bindings[ 0 ].binding         = 0;
+    bindings[ 0 ].binding         = EShaderResource::SpriteInstances;
     bindings[ 0 ].descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     bindings[ 0 ].descriptorCount = 1;
-    bindings[ 0 ].stageFlags      = VK_SHADER_STAGE_FRAGMENT_BIT;
+    bindings[ 0 ].stageFlags      = VK_SHADER_STAGE_COMPUTE_BIT;
 
     VkDescriptorSetLayoutCreateInfo layoutCreateInfo = {};
     layoutCreateInfo.sType                           = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -279,14 +338,20 @@ VkPipelineLayout SpritesPipeline::CreatePipelineLayoutImpl()
     VkPipelineLayout      pipelineLayout;
     VkDescriptorSetLayout descLayout = GetDescriptorLayoutInternal();
 
+    VkPushConstantRange pushConstantRange = {
+        .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+        .offset     = 0,
+        .size       = sizeof( SpritesPushConstants ),
+    };
+
     VkPipelineLayoutCreateInfo layoutInfo = {
         .sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
         .pNext                  = NULL,
         .flags                  = 0,
         .setLayoutCount         = 1,
         .pSetLayouts            = &descLayout,
-        .pushConstantRangeCount = 0,
-        .pPushConstantRanges    = NULL,
+        .pushConstantRangeCount = 1,
+        .pPushConstantRanges    = &pushConstantRange,
     };
 
     THROW_IF_FAILED(
