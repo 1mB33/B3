@@ -55,6 +55,7 @@ void SpritesPipeline::CreatePipelineResourcesImpl()
         m_PerFrameResources.push_back( {
             .uLastUploadedGeneration = ~(uint32_t)0,
             .bPendingGpuCopy         = false,
+            .DescSet                 = CreateDescriptorSet(),
         } );
     }
 }
@@ -67,49 +68,47 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                                       VkPipelineStageFlagBits lastStage,
                                       VkImageLayout           lastLayout )
 {
-    auto swapChain = GetSwapChainInternal();
-    auto image     = swapChain->GetImage();
-    auto imageView = swapChain->GetImageView();
-    auto extent    = swapChain->GetExtent();
+    auto  swapChain = GetSwapChainInternal();
+    auto  image     = swapChain->GetImage();
+    auto  imageView = swapChain->GetImageView();
+    auto  extent    = swapChain->GetExtent();
+    auto &curFrame  = m_PerFrameResources[ m_uCurFrame ];
 
-    if ( !m_bUploaded )
-    {
-        VkBufferCopy copyRegion = {
-            .srcOffset = 0,
-            .dstOffset = 0,
-            .size      = m_pStageQuadBuffer->GetSizeInBytes(),
-        };
-        vkCmdCopyBuffer( cmdBuffer,
-                         m_pStageQuadBuffer->GetBufferHandle(),
-                         m_pQuadBuffer->GetBufferHandle(),
-                         1,
-                         &copyRegion );
+    VkBufferCopy copyRegion = {
+        .srcOffset = 0,
+        .dstOffset = 0,
+        .size      = m_pStageQuadBuffer->GetSizeInBytes(),
+    };
+    vkCmdCopyBuffer( cmdBuffer,
+                     m_pStageQuadBuffer->GetBufferHandle(),
+                     m_pQuadBuffer->GetBufferHandle(),
+                     1,
+                     &copyRegion );
 
-        VkBufferMemoryBarrier memBarier = {};
-        memBarier.sType                 = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-        memBarier.pNext                 = NULL;
-        memBarier.srcAccessMask         = VK_ACCESS_TRANSFER_WRITE_BIT;
-        memBarier.dstAccessMask         = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-        memBarier.srcQueueFamilyIndex   = VK_QUEUE_FAMILY_IGNORED;
-        memBarier.dstQueueFamilyIndex   = VK_QUEUE_FAMILY_IGNORED;
-        memBarier.buffer                = m_pQuadBuffer->GetBufferHandle();
-        memBarier.offset                = 0;
-        memBarier.size                  = VK_WHOLE_SIZE;
+    VkBufferMemoryBarrier memBarier = {};
+    memBarier.sType                 = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+    memBarier.pNext                 = NULL;
+    memBarier.srcAccessMask         = VK_ACCESS_TRANSFER_WRITE_BIT;
+    memBarier.dstAccessMask         = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+    memBarier.srcQueueFamilyIndex   = VK_QUEUE_FAMILY_IGNORED;
+    memBarier.dstQueueFamilyIndex   = VK_QUEUE_FAMILY_IGNORED;
+    memBarier.buffer                = m_pQuadBuffer->GetBufferHandle();
+    memBarier.offset                = 0;
+    memBarier.size                  = VK_WHOLE_SIZE;
 
-        vkCmdPipelineBarrier( cmdBuffer,
-                              VK_PIPELINE_STAGE_TRANSFER_BIT,
-                              VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-                              0,
-                              0,
-                              NULL,
-                              1,
-                              &memBarier,
-                              0,
-                              NULL );
+    vkCmdPipelineBarrier( cmdBuffer,
+                          VK_PIPELINE_STAGE_TRANSFER_BIT,
+                          VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                          0,
+                          0,
+                          NULL,
+                          1,
+                          &memBarier,
+                          0,
+                          NULL );
 
 
-        lastStage = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
-    }
+    lastStage = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
 
     VkImageMemoryBarrier toColorAttachment = {};
     toColorAttachment.sType                = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -161,7 +160,14 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
     vkCmdSetViewport( cmdBuffer, 0, 1, &viewport );
     vkCmdSetScissor( cmdBuffer, 0, 1, &scissor );
 
-    vkCmdBindDescriptorSets( cmdBuffer, this->GetPipelineBindPoint(), this->GetLayoutHandle(), 0, 0, NULL, 0, NULL );
+    vkCmdBindDescriptorSets( cmdBuffer,
+                             this->GetPipelineBindPoint(),
+                             this->GetLayoutHandle(),
+                             0,
+                             1,
+                             &curFrame.DescSet,
+                             0,
+                             NULL );
 
     VkBuffer     vertexBuffers[] = { m_pQuadBuffer->GetBufferHandle() };
     VkDeviceSize offsets[]       = { 0 };
