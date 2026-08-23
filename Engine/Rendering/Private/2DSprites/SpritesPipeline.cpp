@@ -51,6 +51,8 @@ SpritesPipeline::~SpritesPipeline()
 // Public // -----------------------------------------------------------------------------------------------------------
 void SpritesPipeline::CreatePipelineResourcesImpl()
 {
+    auto swapChain                    = GetSwapChainInternal();
+    auto extent                       = swapChain->GetExtent();
     m_uCurFrame                       = 0;
     constexpr size_t unitVerticesSize = sizeof( Vertex ) * g_UnitQuadVertices.size();
     constexpr size_t instanceSize     = sizeof( SpriteData ) * MAX_SPRITES;
@@ -62,12 +64,19 @@ void SpritesPipeline::CreatePipelineResourcesImpl()
 
     for ( uint32_t i = 0; i < Frame::MAX_FRAMES_IN_FLIGHT; ++i )
     {
+        auto img = GetMemoryInternal()->ReserveImage( extent.width,
+                                                      extent.height,
+                                                      VK_FORMAT_D32_SFLOAT,
+                                                      VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT );
         m_PerFrameResources.push_back( {
             .uLastUploadedGeneration = ~(uint32_t)0,
             .bPendingGpuCopy         = false,
             .SpriteInstances         = GetMemoryInternal()->ReserveGPUBuffer( instanceSize ),
             .StageSpriteInstances    = GetMemoryInternal()->ReserveStagingBuffer( instanceSize ),
-            .DescSet                 = CreateDescriptorSet(),
+            .DepthImg                = img,
+            .DepthImgView =
+                GetMemoryInternal()->ReserveImageView( img, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT ),
+            .DescSet = CreateDescriptorSet(),
         } );
     }
 }
@@ -198,16 +207,9 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
     VkClearValue depthClear       = {};
     depthClear.depthStencil.depth = 1.0f;
 
-    auto depthImg = GetMemoryInternal()->ReserveImage( extent.width,
-                                                       extent.height,
-                                                       VK_FORMAT_D32_SFLOAT,
-                                                       VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT );
-    auto depthImgView =
-        GetMemoryInternal()->ReserveImageView( depthImg, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT );
-
     VkRenderingAttachmentInfo depthAttachment = {};
     depthAttachment.sType                     = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-    depthAttachment.imageView                 = depthImgView;
+    depthAttachment.imageView                 = curFrame.DepthImgView;
     depthAttachment.imageLayout               = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     depthAttachment.resolveMode               = VK_RESOLVE_MODE_NONE;
     depthAttachment.loadOp                    = VK_ATTACHMENT_LOAD_OP_CLEAR;

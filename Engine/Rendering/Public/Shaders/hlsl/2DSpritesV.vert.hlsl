@@ -10,6 +10,10 @@ struct SpriteInstance
 {
     float3 Position;
     uint   _PADDING0;
+    float3 Color;
+    uint   _PADDING1;
+    float3 Scale;
+    uint   _PADDING2;
 };
 
 StructuredBuffer<SpriteInstance> g_Instances : register( t1 );
@@ -48,12 +52,12 @@ VSOutput main( VSInput input )
     normalizedPos.y = -normalizedPos.y;
 
     VSOutput output;
-    output.Position = float4( normalizedPos.x + (input.Position.x * 0.15),
-                              normalizedPos.y + (input.Position.y * 0.15 * aspectRatio),
+    output.Position = float4( normalizedPos.x + (input.Position.x * g_Instances[input.Id].Scale.x),
+                              normalizedPos.y + (input.Position.y * g_Instances[input.Id].Scale.y * aspectRatio),
                               g_Instances[input.Id].Position.z,
                               1.0 );
 
-    output.Color = float4((float)g_Instances[input.Id].Position.x, g_Instances[input.Id].Position.y, 1., 1.);
+    output.Color = float4(g_Instances[input.Id].Color.xyz, 1.);
 
     return output;
 }

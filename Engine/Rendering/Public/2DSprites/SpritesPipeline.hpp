@@ -30,6 +30,8 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
     struct alignas( 16 ) SpriteData
     {
         ::B33::Math::Vec3 Pos;
+        ::B33::Math::Vec3 Color;
+        ::B33::Math::Vec3 Scale;
     };
 
     constexpr static uint32_t MAX_SPRITES = 1024;
@@ -105,6 +107,8 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
         bool                                                 bPendingGpuCopy;
         ::std::shared_ptr<::B33::Rendering::GPUBuffer>       SpriteInstances;
         ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> StageSpriteInstances;
+        VkImage                                              DepthImg;
+        VkImageView                                          DepthImgView;
         ::VkDescriptorSet                                    DescSet = VK_NULL_HANDLE;
     };
 

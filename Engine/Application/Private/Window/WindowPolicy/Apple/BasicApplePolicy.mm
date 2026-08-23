@@ -27,7 +27,7 @@ uint32_t BasicAppleWindowPolicy::CreateImpl( WindowDesc *pWd )
     B33_ASSERT( windowData.Width > 0 );
 
 
-    NSRect     frame   = NSMakeRect( 0, 0, 800, 600 );
+    NSRect     frame   = NSMakeRect( 0, 0, windowData.Width, windowData.Height );
     NSUInteger style   = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskResizable;
     NSWindow  *pHandle = [[NSWindow alloc] initWithContentRect:frame
                                                     styleMask:style
