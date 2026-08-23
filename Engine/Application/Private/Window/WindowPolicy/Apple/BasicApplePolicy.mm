@@ -30,13 +30,12 @@ uint32_t BasicAppleWindowPolicy::CreateImpl( WindowDesc *pWd )
     NSRect     frame   = NSMakeRect( 0, 0, 800, 600 );
     NSUInteger style   = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskResizable;
     NSWindow  *pHandle = [[NSWindow alloc] initWithContentRect:frame
-                                                     styleMask:style
-                                                       backing:NSBackingStoreBuffered
-                                                         defer:NO];
+                                                    styleMask:style
+                                                      backing:NSBackingStoreBuffered
+                                                        defer:NO];
 
     [pHandle setTitle:@"Unknown | fix me"];
     [pHandle center];
-    [pHandle setReleasedWhenClosed:NO];
 
     windowOS.pWindow       = (__bridge void *)pHandle;
     windowOS.pMetalContext = nullptr;

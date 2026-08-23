@@ -48,8 +48,8 @@ VSOutput main( VSInput input )
     normalizedPos.y = -normalizedPos.y;
 
     VSOutput output;
-    output.Position = float4( normalizedPos.x + (input.Position.x * 0.05),
-                              normalizedPos.y + (input.Position.y * 0.05 * aspectRatio),
+    output.Position = float4( normalizedPos.x + (input.Position.x * 0.15),
+                              normalizedPos.y + (input.Position.y * 0.15 * aspectRatio),
                               g_Instances[input.Id].Position.z,
                               1.0 );
 

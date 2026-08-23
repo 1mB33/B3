@@ -195,6 +195,25 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
     colorAttachment.clearValue                = cv;
     colorAttachment.storeOp                   = VK_ATTACHMENT_STORE_OP_STORE;
 
+    VkClearValue depthClear       = {};
+    depthClear.depthStencil.depth = 1.0f;
+
+    auto depthImg = GetMemoryInternal()->ReserveImage( extent.width,
+                                                       extent.height,
+                                                       VK_FORMAT_D32_SFLOAT,
+                                                       VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT );
+    auto depthImgView =
+        GetMemoryInternal()->ReserveImageView( depthImg, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT );
+
+    VkRenderingAttachmentInfo depthAttachment = {};
+    depthAttachment.sType                     = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    depthAttachment.imageView                 = depthImgView;
+    depthAttachment.imageLayout               = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    depthAttachment.resolveMode               = VK_RESOLVE_MODE_NONE;
+    depthAttachment.loadOp                    = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    depthAttachment.storeOp                   = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachment.clearValue                = depthClear;
+
     VkRenderingInfo renderingInfo = {};
     renderingInfo.sType           = VK_STRUCTURE_TYPE_RENDERING_INFO;
     renderingInfo.renderArea =
@@ -202,6 +221,7 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
     renderingInfo.layerCount           = 1;
     renderingInfo.colorAttachmentCount = 1;
     renderingInfo.pColorAttachments    = &colorAttachment;
+    renderingInfo.pDepthAttachment     = &depthAttachment;
 
     vkCmdBeginRendering( cmdBuffer, &renderingInfo );
 
@@ -436,9 +456,9 @@ VkPipeline SpritesPipeline::CreatePipelineImpl()
 
     VkPipelineDepthStencilStateCreateInfo depthStencilState = {};
     depthStencilState.sType            = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-    depthStencilState.depthTestEnable  = VK_FALSE;
-    depthStencilState.depthWriteEnable = VK_FALSE;
-    depthStencilState.depthCompareOp   = VK_COMPARE_OP_ALWAYS;
+    depthStencilState.depthTestEnable  = VK_TRUE;
+    depthStencilState.depthWriteEnable = VK_TRUE;
+    depthStencilState.depthCompareOp   = VK_COMPARE_OP_LESS;
 
     VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
     colorBlendAttachment.blendEnable                         = VK_TRUE;
@@ -461,6 +481,7 @@ VkPipeline SpritesPipeline::CreatePipelineImpl()
     renderingInfo.sType                         = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
     renderingInfo.colorAttachmentCount          = 1;
     renderingInfo.pColorAttachmentFormats       = &Swapchain::TargetedFormat;
+    renderingInfo.depthAttachmentFormat         = VK_FORMAT_D32_SFLOAT;
 
     VkGraphicsPipelineCreateInfo pipelineInfo = {};
     pipelineInfo.sType                        = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;

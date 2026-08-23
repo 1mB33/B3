@@ -2,6 +2,7 @@
 
 #include "Vulkan/ErrorHandling.hpp"
 #include "Vulkan/Memory/Memory.hpp"
+#include "vulkan/vulkan_core.h"
 
 namespace B33::Rendering
 {
@@ -118,6 +119,62 @@ shared_ptr<GPUBuffer> Memory::ReserveGPUBuffer( const size_t uSizeInBytes )
     THROW_IF_FAILED( vkBindBufferMemory( da, buffer, deviceMem, 0 ) );
 
     return make_shared<GPUBuffer>( m_pAdapter, deviceMem, buffer, uSizeInBytes );
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+VkImage Memory::ReserveImage( const ::uint32_t        uWidth,
+                              const ::uint32_t        uHeigth,
+                              const VkFormat          format,
+                              const VkImageUsageFlags usage )
+{
+    const VkDevice    da   = m_pAdapter->GetAdapterHandle();
+    VkImageCreateInfo info = {};
+    VkImage           result;
+
+    info.sType       = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    info.imageType   = VK_IMAGE_TYPE_2D;
+    info.format      = format;
+    info.extent      = VkExtent3D { uWidth, uHeigth, 1 };
+    info.usage       = usage;
+    info.mipLevels   = 1;
+    info.arrayLayers = 1;
+    info.samples     = VK_SAMPLE_COUNT_1_BIT;
+
+    THROW_IF_FAILED( vkCreateImage( da, &info, NULL, &result ) );
+
+    VkMemoryRequirements memReq;
+    vkGetImageMemoryRequirements( da, result, &memReq );
+
+    VkMemoryAllocateInfo allocInfo = {};
+    allocInfo.sType                = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize       = memReq.size;
+    allocInfo.memoryTypeIndex      = FindMemoryType( memReq.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT );
+
+    VkDeviceMemory memory;
+    THROW_IF_FAILED( vkAllocateMemory( da, &allocInfo, NULL, &memory ) );
+    THROW_IF_FAILED( vkBindImageMemory( da, result, memory, 0 ) );
+
+    return result;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+VkImageView Memory::ReserveImageView( const VkImage image, const VkFormat format, const VkImageAspectFlags aspectMask )
+{
+    const VkDevice        da   = m_pAdapter->GetAdapterHandle();
+    VkImageViewCreateInfo info = {};
+    VkImageView           result;
+
+    info.sType                       = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    info.image                       = image;
+    info.viewType                    = VK_IMAGE_VIEW_TYPE_2D;
+    info.format                      = format;
+    info.subresourceRange.aspectMask = aspectMask;
+    info.subresourceRange.levelCount = 1;
+    info.subresourceRange.layerCount = 1;
+
+    THROW_IF_FAILED( vkCreateImageView( da, &info, NULL, &result ) );
+
+    return result;
 }
 
 // --------------------------------------------------------------------------------------------------------------------

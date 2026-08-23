@@ -35,10 +35,19 @@ class Memory
 
     __B33_API ::std::shared_ptr<::B33::Rendering::GPUBuffer> ReserveGPUBuffer( const ::size_t uSizeInBytes );
 
-    __B33_API void
-    UploadToStreamBufferRaw( const void                                                 *pUpload,
-                             const ::size_t                                              uUploadSize,
-                             const ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> &gpuStreamBuffer );
+    __B33_API VkImage ReserveImage( const ::uint32_t        uWidth,
+                                    const ::uint32_t        uHeigth,
+                                    const VkFormat          format,
+                                    const VkImageUsageFlags usage );
+
+    __B33_API VkImageView ReserveImageView( const VkImage            image,
+                                           const VkFormat           format,
+                                           const VkImageAspectFlags aspectMask );
+
+    __B33_API
+    void UploadToStreamBufferRaw( const void                                                 *pUpload,
+                                  const ::size_t                                              uUploadSize,
+                                  const ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> &gpuStreamBuffer );
 
     __B33_API void UploadToStreamBufferDescSet( const void                               *pUpload,
                                                 const ::size_t                            uUploadSize,
