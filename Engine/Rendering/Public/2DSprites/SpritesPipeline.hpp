@@ -41,7 +41,6 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
       : IPipeline( VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                    VK_PIPELINE_BIND_POINT_GRAPHICS )
-      , m_bUploaded( true )
       , m_pQuadBuffer( ::std::make_shared<GPUBuffer>() )
       , m_pStageQuadBuffer( ::std::make_shared<GPUStreamBuffer>() )
       , m_PerFrameResources()
@@ -97,7 +96,6 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
   private:
     ::B33::Rendering::SpritesPushConstants m_Vpc = {};
 
-    bool                                                 m_bUploaded = false;
     ::std::shared_ptr<::B33::Rendering::GPUBuffer>       m_pQuadBuffer;
     ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> m_pStageQuadBuffer;
 
