@@ -269,11 +269,11 @@ void Renderer::RecordCommands( VkCommandBuffer &cmdBuff )
     presentBarrier.dstQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
     presentBarrier.image                = m_pSwapChain->GetImage();
     presentBarrier.subresourceRange     = {
-            .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
-            .baseMipLevel   = 0,
-            .levelCount     = 1,
-            .baseArrayLayer = 0,
-            .layerCount     = 1,
+        .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
+        .baseMipLevel   = 0,
+        .levelCount     = 1,
+        .baseArrayLayer = 0,
+        .layerCount     = 1,
     };
 
     vkCmdPipelineBarrier( cmdBuff,
@@ -338,15 +338,15 @@ void Renderer::RecreateSwapChain()
                                            static_pointer_cast<AdapterWrapper>( m_pDeviceAdapter ),
                                            m_pWindowDesc );
 
-    m_vFrames = make_unique<FramesArray>(
-        CreateFrameResources( m_pDeviceAdapter, m_pMemory, m_CommandPool, Frame::MAX_FRAMES_IN_FLIGHT ) );
-    m_uCurrentFrame = 0;
-    B33_TRACE( L"Swapchain recreated" );
-
     for ( auto &pipeline : m_PipelineMap )
     {
         pipeline.second->SetNewSwapChain( m_pSwapChain );
     }
+
+    m_vFrames = make_unique<FramesArray>(
+        CreateFrameResources( m_pDeviceAdapter, m_pMemory, m_CommandPool, Frame::MAX_FRAMES_IN_FLIGHT ) );
+    m_uCurrentFrame = 0;
+    B33_TRACE( L"Swapchain recreated" );
 }
 
 } // namespace B33::Rendering

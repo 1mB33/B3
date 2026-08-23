@@ -216,10 +216,11 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
     depthAttachment.storeOp                   = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     depthAttachment.clearValue                = depthClear;
 
-    VkRenderingInfo renderingInfo = {};
-    renderingInfo.sType           = VK_STRUCTURE_TYPE_RENDERING_INFO;
-    renderingInfo.renderArea =
-        VkRect2D { { 0, 0 }, { static_cast<uint32_t>( extent.width ), static_cast<uint32_t>( extent.height ) } };
+    B33_TRACE( L"Extent w%d h%d", extent.width, extent.height );
+
+    VkRenderingInfo renderingInfo      = {};
+    renderingInfo.sType                = VK_STRUCTURE_TYPE_RENDERING_INFO;
+    renderingInfo.renderArea           = VkRect2D { { 0, 0 }, extent };
     renderingInfo.layerCount           = 1;
     renderingInfo.colorAttachmentCount = 1;
     renderingInfo.pColorAttachments    = &colorAttachment;
@@ -230,7 +231,7 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
     vkCmdBindPipeline( cmdBuffer, this->GetPipelineBindPoint(), this->GetPipelineHandle() );
 
     VkViewport viewport = { 0.0f, 0.0f, float( extent.width ), float( extent.height ), 0.0f, 1.0f };
-    VkRect2D scissor = { { 0, 0 }, { static_cast<uint32_t>( extent.width ), static_cast<uint32_t>( extent.height ) } };
+    VkRect2D   scissor  = { { 0, 0 }, extent };
     vkCmdSetViewport( cmdBuffer, 0, 1, &viewport );
     vkCmdSetScissor( cmdBuffer, 0, 1, &scissor );
 
@@ -257,6 +258,8 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
     const uint32_t spriteCount =
         static_cast<uint32_t>( min( m_SpriteData.size(), static_cast<size_t>( MAX_SPRITES ) ) );
 
+    B33_TRACE( L"Drawing %d sprites", spriteCount );
+
     if ( spriteCount > 0 )
     {
         vkCmdDraw( cmdBuffer, static_cast<uint32_t>( g_UnitQuadVertices.size() ), spriteCount, 0, 0 );
@@ -268,7 +271,22 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
 // --------------------------------------------------------------------------------------------------------------------
 void SpritesPipeline::Reset()
 {
-    m_bUploaded = false;
+    auto swapChain = GetSwapChainInternal();
+    auto extent    = swapChain->GetExtent();
+
+    for ( auto &resources : m_PerFrameResources )
+    {
+        vkDestroyImageView( GetAdaterInternal()->GetAdapterHandle(), resources.DepthImgView, NULL );
+        vkDestroyImage( GetAdaterInternal()->GetAdapterHandle(), resources.DepthImg, NULL );
+
+        auto img           = GetMemoryInternal()->ReserveImage( extent.width,
+                                                                extent.height,
+                                                                VK_FORMAT_D32_SFLOAT,
+                                                                VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT );
+        resources.DepthImg = img;
+        resources.DepthImgView =
+            GetMemoryInternal()->ReserveImageView( img, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT );
+    }
 }
 
 // Private // ----------------------------------------------------------------------------------------------------------
