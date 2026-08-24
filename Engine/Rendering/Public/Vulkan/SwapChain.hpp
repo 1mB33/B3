@@ -46,6 +46,8 @@ class Swapchain
 
     ::uint32_t GetImageindex() const;
 
+    ::uint32_t GetImageCount() const;
+
     // Setters // -----------------------------------------------------------------------------------------------------
   public:
     void SetCurrentImage( uint32_t uImageIndex )

@@ -38,7 +38,7 @@ shared_ptr<GPUStreamBuffer> Memory::ReserveStagingBuffer( const size_t uSizeInBy
     VkBufferCreateInfo bufferInfo = {};
     bufferInfo.sType              = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferInfo.size               = uSizeInBytes;
-    bufferInfo.usage              = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    bufferInfo.usage              = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     bufferInfo.sharingMode        = VK_SHARING_MODE_EXCLUSIVE;
 
     THROW_IF_FAILED( vkCreateBuffer( da, &bufferInfo, NULL, &voxelBuffer ) );
@@ -212,7 +212,6 @@ void Memory::UploadToStreamBufferDescSet( const void *pUpload, const size_t uUpl
 
     const VkDevice   da             = m_pAdapter->GetAdapterHandle();
     GPUStreamBuffer *buffer         = reinterpret_cast<GPUStreamBuffer *>( onSet.Buffer.get() );
-    const bool       updateDescSets = buffer->GetDataPointer() == nullptr ? true : false;
 
     if ( buffer->GetDataPointer() == nullptr )
     {
@@ -224,10 +223,7 @@ void Memory::UploadToStreamBufferDescSet( const void *pUpload, const size_t uUpl
                                       buffer->GetPtrToDataPointer() ) );
     }
     memcpy( buffer->GetDataPointer(), pUpload, uUploadSize );
-    if ( updateDescSets )
-    {
-        vkUpdateDescriptorSets( da, 1, &onSet.Write, 0, NULL );
-    }
+    vkUpdateDescriptorSets( da, 1, &onSet.Write, 0, NULL );
 }
 
 // ---------------------------------------------------------------------------------------------------------------------

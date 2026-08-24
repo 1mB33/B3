@@ -3,6 +3,7 @@
 
 #include "B33Core.h"
 #include "B33System.hpp"
+#include "Synchronization/DeltaTime.hpp"
 
 namespace B33::System
 {
@@ -34,6 +35,7 @@ class ComponentAbstractBase
       , m_mUsed()
       , m_bFree( true )
       , m_Conditional()
+      , m_LocalDelta()
     {
     }
 
@@ -62,6 +64,16 @@ class ComponentAbstractBase
         B33_TRACE( L"Component unlocked %p", this );
     }
 
+    float GetLocalDelta()
+    {
+        return m_LocalDelta.FetchMs();
+    }
+
+    void SetDeltaRefrenceFrame()
+    {
+        m_LocalDelta.SetReferenceFrame();
+    }
+
   private:
     void IncreaseCount()
     {
@@ -83,6 +95,7 @@ class ComponentAbstractBase
     ::std::mutex              m_mUsed;
     ::std::atomic_bool        m_bFree;
     ::std::condition_variable m_Conditional;
+    ::B33::Core::DeltaTime    m_LocalDelta;
 };
 
 class Component : public ComponentAbstractBase

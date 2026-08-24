@@ -63,7 +63,7 @@ void EngineLoop::UpdateComponents( float fDelta )
                         {
                             B33_TRACE( L"Queue job for component %p", component );
                             component->IncreaseCount();
-                            m_JobSystem.PushJob( asyncCall, component, fDelta, &m_ComponentBridge );
+                            m_JobSystem.PushJob( asyncCall, component, component->GetLocalDelta(), &m_ComponentBridge );
                         }
                         else
                         {
@@ -80,7 +80,7 @@ void EngineLoop::UpdateComponents( float fDelta )
     }
     catch ( ... )
     {
-        throw B33_EXCEPT("Error during components update");
+        throw B33_EXCEPT( "Error during components update" );
     }
 #endif
 }
@@ -152,6 +152,8 @@ void EngineLoop::AddComponentInternal( ::std::string_view componentName )
         {
             if ( m_bInitialized )
                 m_JobSystem.PushJob( asyncCall, component, &m_ComponentBridge );
+
+            component->SetDeltaRefrenceFrame();
 
             m_Components[::B33::System::EComponentType::Async ].push_back( component );
             break;

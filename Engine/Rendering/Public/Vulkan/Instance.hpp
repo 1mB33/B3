@@ -33,6 +33,9 @@ class Instance
 
   private:
     ::VkInstance m_Instance = VK_NULL_HANDLE;
+#ifdef _B33_DEBUG
+    VkDebugUtilsMessengerEXT m_DebugExt = VK_NULL_HANDLE;
+#endif
 };
 
 } // namespace B33::Rendering

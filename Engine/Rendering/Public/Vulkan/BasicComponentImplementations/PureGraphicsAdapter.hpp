@@ -15,7 +15,8 @@ class PureGraphicsAdapter : public ::B33::Rendering::IAdapter<::B33::Rendering::
     __B33_API uint32_t                           GetQueueFlagsImpl() const;
 
   private:
-    ::std::vector<const char *> m_vExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+    ::std::vector<const char *> m_vExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+                                                  VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME };
 };
 
 } // namespace B33::Rendering

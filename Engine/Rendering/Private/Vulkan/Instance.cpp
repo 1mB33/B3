@@ -55,7 +55,7 @@ debugCallback( __B33_ATTRIBUTE_MIGHT_BE_UNUSED VkDebugUtilsMessageSeverityFlagBi
 #endif // !_WIN32
 
     ::B33::Core::Debug::Logger::Get().Log( "Vulkan", Core::Debug::Info, pwszFormat, pCallbackData->pMessage );
-    return VK_FALSE;
+    return VK_TRUE;
 }
 
 // Private // ----------------------------------------------------------------------------------------------------------
@@ -67,21 +67,14 @@ VkInstance Instance::CreateInstance()
 #ifdef _B33_DEBUG
     vector<VkValidationFeatureEnableEXT> enabledVaditationFeatures = {
         VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT,
-        VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT,
-        VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
-        VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
-        VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT,
+        //VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT,
+        //VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
+        //VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
+        //VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT,
     };
-
-    VkValidationFeaturesEXT validationFeatures        = {};
-    validationFeatures.sType                          = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
-    validationFeatures.enabledValidationFeatureCount  = static_cast<uint32_t>( enabledVaditationFeatures.size() );
-    validationFeatures.pEnabledValidationFeatures     = &enabledVaditationFeatures[ 0 ];
-    ;
 
     VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = {};
     debugCreateInfo.sType                              = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    debugCreateInfo.pNext                              = &validationFeatures;
     debugCreateInfo.messageSeverity =
         VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
         VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -89,6 +82,13 @@ VkInstance Instance::CreateInstance()
                                       VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
                                       VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
     debugCreateInfo.pfnUserCallback = debugCallback;
+
+    VkValidationFeaturesEXT validationFeatures       = {};
+    validationFeatures.sType                         = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
+    validationFeatures.pNext                         = &debugCreateInfo;
+    validationFeatures.enabledValidationFeatureCount = static_cast<uint32_t>( enabledVaditationFeatures.size() );
+    validationFeatures.pEnabledValidationFeatures    = &enabledVaditationFeatures[ 0 ];
+
 #endif // !_B33_DEBUG
 
     const vector<const char *> vpszValidationLayers = {
@@ -126,7 +126,7 @@ VkInstance Instance::CreateInstance()
     createInfo.sType                = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
     createInfo.pNext =
 #ifdef _B33_DEBUG
-        &debugCreateInfo,
+        &validationFeatures,
 #else
         NULL,
 #endif
@@ -143,6 +143,14 @@ VkInstance Instance::CreateInstance()
         B33_LOG( B33::Core::Debug::Error, L"Ohh nooo... Vulkan isn't working!!! Error code is: %d", result );
         throw B33_EXCEPT( "Ohh nooo... Vulkan isn't working!!!" );
     }
+
+#ifdef _B33_DEBUG
+    PFN_vkCreateDebugUtilsMessengerEXT myvkCreateDebugUtilsMessengerEXT =
+        reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
+            vkGetInstanceProcAddr( instance, "vkCreateDebugUtilsMessengerEXT" ) );
+
+    myvkCreateDebugUtilsMessengerEXT( instance, &debugCreateInfo, nullptr, &m_DebugExt );
+#endif
 
     return instance;
 }

@@ -1,8 +1,7 @@
 #include "B33Rendering.hpp"
+#include "B33Core.h"
 
 #include "Vulkan/Renderer.hpp"
-#include "Vulkan/BasicComponentImplementations/GraphicsComputeAdapter.hpp"
-#include "Vulkan/BasicComponentImplementations/MinimalHardware.hpp"
 #include "Vulkan/Memory/Memory.hpp"
 #include "Vulkan/ErrorHandling.hpp"
 #include "Vulkan/FrameResources.hpp"
@@ -28,6 +27,7 @@ Renderer::Renderer()
   , m_CommandPool( VK_NULL_HANDLE )
   , m_uCurrentFrame( 0 )
   , m_vFrames()
+  , m_vRenderFinished()
 {
 }
 
@@ -73,29 +73,42 @@ void Renderer::Render()
         return;
     }
 
-    uint32_t uImageIndex;
-    VkDevice device = m_pDeviceAdapter->GetAdapterHandle();
-    Frame   &frame  = ( *m_vFrames.get() )[ m_uCurrentFrame ];
-    VkResult result;
+    uint32_t       uImageIndex;
+    const VkDevice device     = m_pDeviceAdapter->GetAdapterHandle();
+    Frame         &frame      = ( *m_vFrames.get() )[ m_uCurrentFrame ];
+    const auto     swapchains = m_pSwapChain->GetSwapChainHandle();
+    VkResult       result;
 
     THROW_IF_FAILED( vkWaitForFences( device, 1, &frame.InFlightFence, VK_TRUE, UINT64_MAX ) );
-    THROW_IF_FAILED( vkResetFences( device, 1, &frame.InFlightFence ) );
-
     result = vkAcquireNextImageKHR( device,
                                     m_pSwapChain->GetSwapChainHandle(),
-                                    UINT64_MAX,
+                                    1000000000,
                                     frame.ImageAvailable,
                                     VK_NULL_HANDLE,
                                     &uImageIndex );
 
-    if ( result == VK_SUBOPTIMAL_KHR || result == VK_ERROR_OUT_OF_DATE_KHR )
+    if ( result != VK_SUCCESS )
     {
-        B33_ERROR( L"On update, after vkAcquireNextImageKHR got %d", result );
-        RecreateSwapChain();
-        return;
+        if ( result == VK_SUBOPTIMAL_KHR || result == VK_ERROR_OUT_OF_DATE_KHR )
+        {
+            B33_WARNING( L"On update, after vkAcquireNextImageKHR got %d", result );
+            RecreateSwapChain();
+            return;
+        }
+
+        if ( result == VK_TIMEOUT )
+        {
+            return;
+        }
+
+        B33_ERROR( L"Coulnd Acquire next image %d", result );
+        throw B33_EXCEPT( "Coulnd Acquire next image" );
     }
 
+    THROW_IF_FAILED( vkResetFences( device, 1, &frame.InFlightFence ) );
+
     m_pSwapChain->SetCurrentImage( uImageIndex );
+    const auto imagesIndices = m_pSwapChain->GetImageindex();
 
     RecordCommands( frame.CommandBuffer );
 
@@ -109,19 +122,14 @@ void Renderer::Render()
     submitInfo.commandBufferCount   = 1;
     submitInfo.pCommandBuffers      = &frame.CommandBuffer;
     submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores    = &frame.RenderFinished;
+    submitInfo.pSignalSemaphores    = &m_vRenderFinished[ uImageIndex ];
 
     THROW_IF_FAILED( vkQueueSubmit( m_pDeviceAdapter->GetQueueHandle(), 1, &submitInfo, frame.InFlightFence ) );
-
-    static auto swapchains    = m_pSwapChain->GetSwapChainHandle();
-    swapchains                = m_pSwapChain->GetSwapChainHandle();
-    static auto imagesIndices = m_pSwapChain->GetImageindex();
-    imagesIndices             = m_pSwapChain->GetImageindex();
 
     VkPresentInfoKHR presentInfo   = {};
     presentInfo.sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores    = &frame.RenderFinished;
+    presentInfo.pWaitSemaphores    = &m_vRenderFinished[ uImageIndex ];
     presentInfo.swapchainCount     = 1;
     presentInfo.pSwapchains        = &swapchains;
     presentInfo.pImageIndices      = &imagesIndices;
@@ -129,7 +137,7 @@ void Renderer::Render()
     result = vkQueuePresentKHR( m_pDeviceAdapter->GetQueueHandle(), &presentInfo );
     if ( result == VK_SUBOPTIMAL_KHR || result == VK_ERROR_OUT_OF_DATE_KHR )
     {
-        B33_ERROR( L"On render, after present got %d", result );
+        B33_WARNING( L"On render, after present got %d", result );
         RecreateSwapChain();
         return;
     }
@@ -221,7 +229,6 @@ Renderer::FramesArray Renderer::CreateFrameResources( const shared_ptr<const Ada
     for ( size_t i = 0; i < result.size(); ++i )
     {
         if ( vkCreateSemaphore( device, &semaphoreInfo, NULL, &result[ i ].ImageAvailable ) != VK_SUCCESS ||
-             vkCreateSemaphore( device, &semaphoreInfo, NULL, &result[ i ].RenderFinished ) != VK_SUCCESS ||
              vkCreateFence( device, &fenceInfo, NULL, &result[ i ].InFlightFence ) != VK_SUCCESS )
         {
             throw B33_EXCEPT( "Failed to create frame resources!" );
@@ -259,34 +266,6 @@ void Renderer::RecordCommands( VkCommandBuffer &cmdBuff )
         lastImgLayout = pPipeline->GetImageLayout();
     }
 
-    VkImageMemoryBarrier presentBarrier = {};
-    presentBarrier.sType                = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    presentBarrier.srcAccessMask        = VK_ACCESS_SHADER_WRITE_BIT;
-    presentBarrier.dstAccessMask        = 0;
-    presentBarrier.oldLayout            = lastImgLayout;
-    presentBarrier.newLayout            = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-    presentBarrier.srcQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
-    presentBarrier.dstQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
-    presentBarrier.image                = m_pSwapChain->GetImage();
-    presentBarrier.subresourceRange     = {
-        .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
-        .baseMipLevel   = 0,
-        .levelCount     = 1,
-        .baseArrayLayer = 0,
-        .layerCount     = 1,
-    };
-
-    vkCmdPipelineBarrier( cmdBuff,
-                          VK_PIPELINE_STAGE_TRANSFER_BIT,
-                          VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-                          0,
-                          0,
-                          NULL,
-                          0,
-                          NULL,
-                          1,
-                          &presentBarrier );
-
     THROW_IF_FAILED( vkEndCommandBuffer( cmdBuff ) );
 }
 
@@ -306,15 +285,20 @@ void Renderer::DestroyFrameResources()
         }
         B33_TRACE( L"All fences are done" );
 
+        for ( auto &sem : m_vRenderFinished )
+        {
+            vkDestroySemaphore( m_pDeviceAdapter->GetAdapterHandle(), sem, nullptr );
+        }
         for ( size_t i = 0; i < frames.size(); ++i )
         {
             B33_TRACE( L"Destroying frame %d", i );
-            vkDestroySemaphore( m_pDeviceAdapter->GetAdapterHandle(), frames[ i ].RenderFinished, nullptr );
             vkDestroySemaphore( m_pDeviceAdapter->GetAdapterHandle(), frames[ i ].ImageAvailable, nullptr );
             vkDestroyFence( m_pDeviceAdapter->GetAdapterHandle(), frames[ i ].InFlightFence, nullptr );
             vkFreeCommandBuffers( m_pDeviceAdapter->GetAdapterHandle(), m_CommandPool, 1, &frames[ i ].CommandBuffer );
         }
     }
+
+    m_vRenderFinished.clear();
     B33_TRACE( L"All frames are destroyed" );
 }
 
@@ -343,6 +327,17 @@ void Renderer::RecreateSwapChain()
         pipeline.second->SetNewSwapChain( m_pSwapChain );
     }
 
+    VkSemaphoreCreateInfo semaphoreInfo = {};
+    semaphoreInfo.sType                 = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+    m_vRenderFinished.resize( m_pSwapChain->GetImageCount() );
+    for ( auto &sem : m_vRenderFinished )
+    {
+        if ( vkCreateSemaphore( m_pDeviceAdapter->GetAdapterHandle(), &semaphoreInfo, NULL, &sem ) != VK_SUCCESS )
+        {
+            throw B33_EXCEPT( "Failed to create frame resources!" );
+        }
+    }
     m_vFrames = make_unique<FramesArray>(
         CreateFrameResources( m_pDeviceAdapter, m_pMemory, m_CommandPool, Frame::MAX_FRAMES_IN_FLIGHT ) );
     m_uCurrentFrame = 0;

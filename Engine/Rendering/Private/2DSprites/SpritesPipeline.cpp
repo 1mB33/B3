@@ -182,19 +182,8 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
     toColorAttachment.image                = image;
     toColorAttachment.subresourceRange     = VkImageSubresourceRange { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 
-    vkCmdPipelineBarrier( cmdBuffer,
-                          lastStage,
-                          VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                          0,
-                          0,
-                          NULL,
-                          0,
-                          NULL,
-                          1,
-                          &toColorAttachment );
-
     VkClearValue cv = {};
-    cv.color        = VkClearColorValue { { 0.f, 0.f, 0.f, 0.f } };
+    cv.color        = VkClearColorValue { { 0.f, 0.f, 0.f, 1.f } };
 
     VkRenderingAttachmentInfo colorAttachment = {};
     colorAttachment.sType                     = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
@@ -215,6 +204,31 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
     depthAttachment.loadOp                    = VK_ATTACHMENT_LOAD_OP_CLEAR;
     depthAttachment.storeOp                   = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     depthAttachment.clearValue                = depthClear;
+
+    VkImageMemoryBarrier toDepthAttachment = {};
+    toDepthAttachment.sType                = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    toDepthAttachment.srcAccessMask        = 0;
+    toDepthAttachment.dstAccessMask =
+        VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+    toDepthAttachment.oldLayout           = VK_IMAGE_LAYOUT_UNDEFINED;
+    toDepthAttachment.newLayout           = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    toDepthAttachment.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    toDepthAttachment.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    toDepthAttachment.image               = curFrame.DepthImg;
+    toDepthAttachment.subresourceRange    = VkImageSubresourceRange { VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1 };
+
+    VkImageMemoryBarrier attachmentBarriers[] = { toColorAttachment, toDepthAttachment };
+
+    vkCmdPipelineBarrier( cmdBuffer,
+                          lastStage,
+                          VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+                          0,
+                          0,
+                          NULL,
+                          0,
+                          NULL,
+                          2,
+                          attachmentBarriers );
 
     B33_TRACE( L"Extent w%d h%d", extent.width, extent.height );
 
@@ -266,6 +280,34 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
     }
 
     vkCmdEndRendering( cmdBuffer );
+
+    VkImageMemoryBarrier presentBarrier = {};
+    presentBarrier.sType                = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    presentBarrier.srcAccessMask        = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    presentBarrier.dstAccessMask        = 0;
+    presentBarrier.oldLayout            = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    presentBarrier.newLayout            = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    presentBarrier.srcQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
+    presentBarrier.dstQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
+    presentBarrier.image                = image;
+    presentBarrier.subresourceRange     = {
+        .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
+        .baseMipLevel   = 0,
+        .levelCount     = 1,
+        .baseArrayLayer = 0,
+        .layerCount     = 1,
+    };
+
+    vkCmdPipelineBarrier( cmdBuffer,
+                          VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                          VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+                          0,
+                          0,
+                          NULL,
+                          0,
+                          NULL,
+                          1,
+                          &presentBarrier );
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -299,12 +341,21 @@ VkDescriptorSetLayout SpritesPipeline::CreateDescriptorLayoutImpl()
     bindings[ 0 ].binding         = EShaderResource::SpriteInstances;
     bindings[ 0 ].descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     bindings[ 0 ].descriptorCount = 1;
-    bindings[ 0 ].stageFlags      = VK_SHADER_STAGE_COMPUTE_BIT;
+    bindings[ 0 ].stageFlags      = VK_SHADER_STAGE_VERTEX_BIT;
+
+    array<VkDescriptorBindingFlags, 1> bindingFlags = { VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT };
+
+    VkDescriptorSetLayoutBindingFlagsCreateInfo bindingCreateInfo = {};
+    bindingCreateInfo.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+    bindingCreateInfo.bindingCount  = bindingFlags.size();
+    bindingCreateInfo.pBindingFlags = bindingFlags.data();
 
     VkDescriptorSetLayoutCreateInfo layoutCreateInfo = {};
     layoutCreateInfo.sType                           = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layoutCreateInfo.pNext                           = &bindingCreateInfo;
     layoutCreateInfo.bindingCount                    = bindings.size();
     layoutCreateInfo.pBindings                       = bindings.data();
+    layoutCreateInfo.flags                           = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
 
     THROW_IF_FAILED( vkCreateDescriptorSetLayout( GetAdaterInternal()->GetAdapterHandle(),
                                                   &layoutCreateInfo,
@@ -348,6 +399,7 @@ VkDescriptorPool SpritesPipeline::CreateDescriptorPoolImpl()
     poolInfo.maxSets                    = Frame::MAX_FRAMES_IN_FLIGHT;
     poolInfo.poolSizeCount              = poolSizes.size();
     poolInfo.pPoolSizes                 = poolSizes.data();
+    poolInfo.flags                      = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
 
     THROW_IF_FAILED(
         vkCreateDescriptorPool( GetAdaterInternal()->GetAdapterHandle(), &poolInfo, NULL, &descriptorPool ) );

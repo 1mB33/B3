@@ -309,6 +309,34 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
     const uint32_t groupCountX = ( swapChain->GetExtent().width + 31 ) >> 5;
     const uint32_t groupCountY = ( swapChain->GetExtent().height + 7 ) >> 3;
     vkCmdDispatch( cmdBuffer, groupCountX, groupCountY, 1 );
+
+    VkImageMemoryBarrier presentBarrier = {};
+    presentBarrier.sType                = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    presentBarrier.srcAccessMask        = VK_ACCESS_SHADER_WRITE_BIT;
+    presentBarrier.dstAccessMask        = 0;
+    presentBarrier.oldLayout            = VK_IMAGE_LAYOUT_GENERAL;
+    presentBarrier.newLayout            = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    presentBarrier.srcQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
+    presentBarrier.dstQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
+    presentBarrier.image                = image;
+    presentBarrier.subresourceRange     = {
+        .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
+        .baseMipLevel   = 0,
+        .levelCount     = 1,
+        .baseArrayLayer = 0,
+        .layerCount     = 1,
+    };
+
+    vkCmdPipelineBarrier( cmdBuffer,
+                          VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                          VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+                          0,
+                          0,
+                          NULL,
+                          0,
+                          NULL,
+                          1,
+                          &presentBarrier );
 }
 
 // --------------------------------------------------------------------------------------------------------------------

@@ -10,7 +10,6 @@ struct Frame
 
     ::VkFence         InFlightFence;
     ::VkSemaphore     ImageAvailable;
-    ::VkSemaphore     RenderFinished;
     ::VkCommandBuffer CommandBuffer;
 };
 

@@ -27,7 +27,7 @@ class Renderer
     template <class PIPE_LINE>
     PIPE_LINE *GetPipeline()
     {
-        return reinterpret_cast<PIPE_LINE*>(m_PipelineMap[ PIPE_LINE::GetGlobalIndex() ]);
+        return reinterpret_cast<PIPE_LINE *>( m_PipelineMap[ PIPE_LINE::GetGlobalIndex() ] );
     }
 
     ::B33::Rendering::Swapchain *GetSwapchain()
@@ -114,6 +114,7 @@ class Renderer
 
     ::size_t                       m_uCurrentFrame;
     ::std::unique_ptr<FramesArray> m_vFrames = nullptr;
+    ::std::vector<VkSemaphore>     m_vRenderFinished;
 };
 
 } // namespace B33::Rendering
