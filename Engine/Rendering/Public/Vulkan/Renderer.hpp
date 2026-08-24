@@ -71,7 +71,7 @@ class Renderer
     {
         auto pipeline = new PIPE_LINE();
 
-        pipeline->Initialize( m_pDeviceAdapter, m_pMemory, m_pSwapChain, *pipeline );
+        pipeline->Initialize( m_pDeviceAdapter, m_pMemory, m_pSwapChain.get(), *pipeline );
         pipeline->CreatePipelineResources( args... );
 
         m_PipelineMap[ PIPE_LINE::GetGlobalIndex() ] = pipeline;
@@ -93,6 +93,10 @@ class Renderer
                                       ::VkCommandPool                                                  cmdPool,
                                       ::size_t                                                         uFrames );
 
+    void CreateRenederSyncResources( const ::std::shared_ptr<const ::B33::Rendering::AdapterWrapper> &da,
+                                     const ::B33::Rendering::Swapchain                               *sc,
+                                     ::std::vector<VkSemaphore>                                      &out );
+
     void RecordCommands( ::VkCommandBuffer &cmdBuff );
 
     void DestroyFrameResources();
@@ -104,7 +108,7 @@ class Renderer
     ::std::shared_ptr<::B33::Rendering::Instance>        m_pInstance      = nullptr;
     ::std::shared_ptr<::B33::Rendering::HardwareWrapper> m_pHardware      = nullptr;
     ::std::shared_ptr<::B33::Rendering::AdapterWrapper>  m_pDeviceAdapter = nullptr;
-    ::std::shared_ptr<::B33::Rendering::Swapchain>       m_pSwapChain     = nullptr;
+    ::std::unique_ptr<::B33::Rendering::Swapchain>       m_pSwapChain     = nullptr;
     ::std::shared_ptr<::B33::Rendering::Memory>          m_pMemory        = nullptr;
 
     ::std::unordered_map<::B33::Core::UnknownIndex, ::B33::Rendering::PipelineWrapper *> m_PipelineMap = {};

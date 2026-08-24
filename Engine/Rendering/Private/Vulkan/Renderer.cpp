@@ -311,37 +311,51 @@ void Renderer::RecreateSwapChain()
         B33_ERROR( L"RecreateSwapChain with dead window!!!" );
         return;
     }
+
+    // Sync with GPU
     if ( m_pDeviceAdapter != nullptr )
         vkDeviceWaitIdle( m_pDeviceAdapter->GetAdapterHandle() );
 
     DestroyFrameResources();
-
     m_pSwapChain = nullptr;
-    m_pSwapChain = make_shared<Swapchain>( m_pInstance,
+
+
+    m_pSwapChain = make_unique<Swapchain>( m_pInstance,
                                            static_pointer_cast<HardwareWrapper>( m_pHardware ),
                                            static_pointer_cast<AdapterWrapper>( m_pDeviceAdapter ),
                                            m_pWindowDesc );
 
     for ( auto &pipeline : m_PipelineMap )
-    {
-        pipeline.second->SetNewSwapChain( m_pSwapChain );
-    }
+        pipeline.second->SetNewSwapChain( m_pSwapChain.get() );
 
+    CreateRenederSyncResources( m_pDeviceAdapter, m_pSwapChain.get(), m_vRenderFinished );
+
+    m_vFrames = make_unique<FramesArray>(
+        CreateFrameResources( m_pDeviceAdapter, m_pMemory, m_CommandPool, Frame::MAX_FRAMES_IN_FLIGHT ) );
+    m_uCurrentFrame = 0;
+
+
+    B33_TRACE( L"Swapchain recreated" );
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+void Renderer::CreateRenederSyncResources( const ::std::shared_ptr<const ::B33::Rendering::AdapterWrapper> &da,
+                                           const ::B33::Rendering::Swapchain                               *sc,
+                                           ::std::vector<VkSemaphore>                                      &out )
+{
     VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType                 = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-    m_vRenderFinished.resize( m_pSwapChain->GetImageCount() );
-    for ( auto &sem : m_vRenderFinished )
+    out.resize( sc->GetImageCount() );
+    for ( auto &sem : out )
     {
-        if ( vkCreateSemaphore( m_pDeviceAdapter->GetAdapterHandle(), &semaphoreInfo, NULL, &sem ) != VK_SUCCESS )
+        if ( vkCreateSemaphore( da->GetAdapterHandle(), &semaphoreInfo, NULL, &sem ) != VK_SUCCESS )
         {
             throw B33_EXCEPT( "Failed to create frame resources!" );
         }
     }
-    m_vFrames = make_unique<FramesArray>(
-        CreateFrameResources( m_pDeviceAdapter, m_pMemory, m_CommandPool, Frame::MAX_FRAMES_IN_FLIGHT ) );
-    m_uCurrentFrame = 0;
-    B33_TRACE( L"Swapchain recreated" );
+
+    B33_TRACE( L"Created sync resources for rendering" );
 }
 
 } // namespace B33::Rendering

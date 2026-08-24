@@ -1,6 +1,7 @@
 #ifndef B33_WRAPPER_PIPELINE_H
 #define B33_WRAPPER_PIPELINE_H
 
+#include "B33Core.h"
 #include "Attributes.h"
 #include "Vulkan/IPushConstants.hpp"
 #include "Vulkan/Memory/Memory.hpp"
@@ -64,7 +65,7 @@ class PipelineWrapper
     template <class T>
     void Initialize( ::std::weak_ptr<const ::B33::Rendering::AdapterWrapper> pDeviceAdapter,
                      ::std::weak_ptr<::B33::Rendering::Memory>               pMemory,
-                     ::std::weak_ptr<const ::B33::Rendering::Swapchain>      pSwapChain,
+                     const ::B33::Rendering::Swapchain                      *pSwapChain,
                      T                                                      &pPipeline )
     {
         B33_LOG( Core::Debug::Info, L"Initializing pipeline" );
@@ -128,8 +129,9 @@ class PipelineWrapper
     }
 
   public:
-    void SetNewSwapChain( ::std::weak_ptr<const ::B33::Rendering::Swapchain> pSwapChain )
+    void SetNewSwapChain( const ::B33::Rendering::Swapchain *pSwapChain )
     {
+        B33_TRACE( L"Setting new swapchain for pipeline %p", this );
         m_pSwapChain = pSwapChain;
     }
 
@@ -150,12 +152,9 @@ class PipelineWrapper
         throw B33_EXCEPT( "Cannot lock resources in the PipelineWrapper" );
     }
 
-    ::std::shared_ptr<const ::B33::Rendering::Swapchain> GetSwapChainInternal() const
+    const ::B33::Rendering::Swapchain *GetSwapChainInternal() const
     {
-        if ( auto result = m_pSwapChain.lock() )
-            return result;
-
-        throw B33_EXCEPT( "Cannot lock resources in the PipelineWrapper" );
+        return m_pSwapChain;
     }
 
     ::VkDescriptorSetLayout GetDescriptorLayoutInternal()
@@ -171,7 +170,7 @@ class PipelineWrapper
   private:
     ::std::weak_ptr<const ::B33::Rendering::AdapterWrapper> m_pDeviceAdapter = {};
     ::std::weak_ptr<::B33::Rendering::Memory>               m_pMemory        = {};
-    ::std::weak_ptr<const ::B33::Rendering::Swapchain>      m_pSwapChain     = {};
+    const ::B33::Rendering::Swapchain                      *m_pSwapChain     = {};
 
     ::size_t        m_uPushConstantsByteSize = 0;
     IPushConstants *m_pPushConstants         = nullptr;
