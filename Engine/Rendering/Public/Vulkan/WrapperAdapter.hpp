@@ -9,9 +9,9 @@ namespace B33::Rendering
 class AdapterWrapper
 {
   public:
-    AdapterWrapper();
+    __B33_API AdapterWrapper();
 
-    ~AdapterWrapper();
+    __B33_API ~AdapterWrapper();
 
   public:
     AdapterWrapper( AdapterWrapper && ) noexcept = default;
@@ -59,14 +59,14 @@ class AdapterWrapper
 
     // Internal // ----------------------------------------------------------------------------------------------------
   private:
-    uint32_t ChooseQueueFamily( VkPhysicalDevice gpu, const uint32_t uFlags ) const;
+    __B33_API uint32_t ChooseQueueFamily( VkPhysicalDevice gpu, const uint32_t uFlags ) const;
 
-    VkDevice CreateDevice( VkPhysicalDevice                 gpu,
-                           const std::vector<const char *> &vExtensions,
-                           const void                      *pFeatures,
-                           const uint32_t                   uFamilyIndex ) const;
+    __B33_API VkDevice CreateDevice( VkPhysicalDevice                 gpu,
+                                     const std::vector<const char *> &vExtensions,
+                                     const void                      *pFeatures,
+                                     const uint32_t                   uFamilyIndex ) const;
 
-    VkQueue CreateQueue( VkDevice dv, uint32_t uQueueIndex ) const;
+    __B33_API VkQueue CreateQueue( VkDevice dv, uint32_t uQueueIndex ) const;
 
   private:
     uint32_t m_uFlags       = 0;
