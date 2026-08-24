@@ -9,6 +9,7 @@
 
 int main( int, char *[] )
 {
+    ::B33::Core::Debug::Logger::Get().Log( ::B33::Core::Debug::Info, L"---------------------------------------------" );
     ::B33::Core::Debug::Logger::Get().Log( ::B33::Core::Debug::Info, L"Starting B33..." );
 #        if defined( _B33_ONLY_TESTS )
     ::B33::Core::Tests::TestMaster::Get().Run();
@@ -24,18 +25,29 @@ int main( int, char *[] )
     ::B33::System::EngineLoop engineLoop = {};
     ::B33::Core::DeltaTime    dt         = {};
 
-
-    engineLoop.InitializeComponents();
-
-    ::B33::Core::Debug::Logger::Get().Log( ::B33::Core::Debug::Info, L"B33 started..." );
-    dt.SetReferenceFrame();
-    while ( ::B33::App::AppStatus::GetAppCurrentStatus() )
+#        if defined( _B33_DEBUG )
+    ::B33::Core::Debug::Logger::Get().Flush();
+    try
     {
-        engineLoop.UpdateComponents( dt.FetchMs() );
+#        endif
+        engineLoop.InitializeComponents();
+
+        ::B33::Core::Debug::Logger::Get().Log( ::B33::Core::Debug::Info, L"B33 started..." );
+        dt.SetReferenceFrame();
+        while ( ::B33::App::AppStatus::GetAppCurrentStatus() )
+        {
+            engineLoop.UpdateComponents( dt.FetchMs() );
+        }
+
+        engineLoop.DestroyComponents();
+
+#        if defined( _B33_DEBUG )
     }
-
-    engineLoop.DestroyComponents();
-
+    catch ( ... )
+    {
+        ::B33::Core::Debug::Logger::Get().Log( ::B33::Core::Debug::Error, L"Internal error, closing!" );
+    }
+#        endif
 
     ::B33::Core::Debug::Logger::Get().Log( ::B33::Core::Debug::Info, L"Closing B33..." );
     ::B33::Core::Debug::Logger::Get().Flush();

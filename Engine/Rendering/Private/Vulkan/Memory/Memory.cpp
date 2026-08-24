@@ -2,6 +2,7 @@
 
 #include "Vulkan/ErrorHandling.hpp"
 #include "Vulkan/Memory/Memory.hpp"
+#include "vulkan/vulkan_core.h"
 
 namespace B33::Rendering
 {
@@ -37,7 +38,7 @@ shared_ptr<GPUStreamBuffer> Memory::ReserveStagingBuffer( const size_t uSizeInBy
     VkBufferCreateInfo bufferInfo = {};
     bufferInfo.sType              = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferInfo.size               = uSizeInBytes;
-    bufferInfo.usage              = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    bufferInfo.usage              = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     bufferInfo.sharingMode        = VK_SHARING_MODE_EXCLUSIVE;
 
     THROW_IF_FAILED( vkCreateBuffer( da, &bufferInfo, NULL, &voxelBuffer ) );
@@ -55,6 +56,38 @@ shared_ptr<GPUStreamBuffer> Memory::ReserveStagingBuffer( const size_t uSizeInBy
     THROW_IF_FAILED( vkBindBufferMemory( da, voxelBuffer, voxelBufferMemory, 0 ) );
 
     return make_shared<GPUStreamBuffer>( m_pAdapter, voxelBufferMemory, voxelBuffer, nullptr, uSizeInBytes );
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+shared_ptr<GPUBuffer> Memory::ReserveVertexBuffer( const size_t uSizeInBytes )
+{
+    B33_LOG( Info, L"Reserving gpu buffer of %llu bytes", uSizeInBytes );
+
+    const VkDevice       da = m_pAdapter->GetAdapterHandle();
+    VkMemoryRequirements memRequirements;
+    VkBuffer             buffer;
+    VkDeviceMemory       deviceMem;
+
+    VkBufferCreateInfo bufferInfo = {};
+    bufferInfo.sType              = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size               = uSizeInBytes;
+    bufferInfo.usage =
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    THROW_IF_FAILED( vkCreateBuffer( da, &bufferInfo, NULL, &buffer ) );
+
+    vkGetBufferMemoryRequirements( da, buffer, &memRequirements );
+
+    VkMemoryAllocateInfo allocInfo = {};
+    allocInfo.sType                = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize       = memRequirements.size;
+    allocInfo.memoryTypeIndex = FindMemoryType( memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT );
+
+    THROW_IF_FAILED( vkAllocateMemory( da, &allocInfo, NULL, &deviceMem ) );
+    THROW_IF_FAILED( vkBindBufferMemory( da, buffer, deviceMem, 0 ) );
+
+    return make_shared<GPUBuffer>( m_pAdapter, deviceMem, buffer, uSizeInBytes );
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -89,7 +122,83 @@ shared_ptr<GPUBuffer> Memory::ReserveGPUBuffer( const size_t uSizeInBytes )
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void Memory::UploadOnStreamBuffer( const void *pUpload, const size_t uUploadSize, const UploadDescriptor &onSet )
+VkImage Memory::ReserveImage( const ::uint32_t        uWidth,
+                              const ::uint32_t        uHeigth,
+                              const VkFormat          format,
+                              const VkImageUsageFlags usage )
+{
+    const VkDevice    da   = m_pAdapter->GetAdapterHandle();
+    VkImageCreateInfo info = {};
+    VkImage           result;
+
+    info.sType       = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    info.imageType   = VK_IMAGE_TYPE_2D;
+    info.format      = format;
+    info.extent      = VkExtent3D { uWidth, uHeigth, 1 };
+    info.usage       = usage;
+    info.mipLevels   = 1;
+    info.arrayLayers = 1;
+    info.samples     = VK_SAMPLE_COUNT_1_BIT;
+
+    THROW_IF_FAILED( vkCreateImage( da, &info, NULL, &result ) );
+
+    VkMemoryRequirements memReq;
+    vkGetImageMemoryRequirements( da, result, &memReq );
+
+    VkMemoryAllocateInfo allocInfo = {};
+    allocInfo.sType                = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize       = memReq.size;
+    allocInfo.memoryTypeIndex      = FindMemoryType( memReq.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT );
+
+    VkDeviceMemory memory;
+    THROW_IF_FAILED( vkAllocateMemory( da, &allocInfo, NULL, &memory ) );
+    THROW_IF_FAILED( vkBindImageMemory( da, result, memory, 0 ) );
+
+    return result;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+VkImageView Memory::ReserveImageView( const VkImage image, const VkFormat format, const VkImageAspectFlags aspectMask )
+{
+    const VkDevice        da   = m_pAdapter->GetAdapterHandle();
+    VkImageViewCreateInfo info = {};
+    VkImageView           result;
+
+    info.sType                       = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    info.image                       = image;
+    info.viewType                    = VK_IMAGE_VIEW_TYPE_2D;
+    info.format                      = format;
+    info.subresourceRange.aspectMask = aspectMask;
+    info.subresourceRange.levelCount = 1;
+    info.subresourceRange.layerCount = 1;
+
+    THROW_IF_FAILED( vkCreateImageView( da, &info, NULL, &result ) );
+
+    return result;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+void Memory::UploadToStreamBufferRaw( const void                                                 *pUpload,
+                                      const ::size_t                                              uUploadSize,
+                                      const ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> &gpuStreamBuffer )
+{
+    const VkDevice   da     = m_pAdapter->GetAdapterHandle();
+    GPUStreamBuffer *buffer = gpuStreamBuffer.get();
+
+    if ( buffer->GetDataPointer() == nullptr )
+    {
+        THROW_IF_FAILED( vkMapMemory( da,
+                                      buffer->GetMemoryHandle(),
+                                      0,
+                                      buffer->GetSizeInBytes(),
+                                      0,
+                                      buffer->GetPtrToDataPointer() ) );
+    }
+    memcpy( buffer->GetDataPointer(), pUpload, uUploadSize );
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+void Memory::UploadToStreamBufferDescSet( const void *pUpload, const size_t uUploadSize, const UploadDescriptor &onSet )
 {
     B33_ASSERT( onSet.Buffer->GetMemoryHandle() != VK_NULL_HANDLE );
     B33_ASSERT( onSet.Buffer->GetBufferHandle() != VK_NULL_HANDLE );
@@ -103,7 +212,6 @@ void Memory::UploadOnStreamBuffer( const void *pUpload, const size_t uUploadSize
 
     const VkDevice   da             = m_pAdapter->GetAdapterHandle();
     GPUStreamBuffer *buffer         = reinterpret_cast<GPUStreamBuffer *>( onSet.Buffer.get() );
-    const bool       updateDescSets = buffer->GetDataPointer() == nullptr ? true : false;
 
     if ( buffer->GetDataPointer() == nullptr )
     {
@@ -115,10 +223,7 @@ void Memory::UploadOnStreamBuffer( const void *pUpload, const size_t uUploadSize
                                       buffer->GetPtrToDataPointer() ) );
     }
     memcpy( buffer->GetDataPointer(), pUpload, uUploadSize );
-    if ( updateDescSets )
-    {
-        vkUpdateDescriptorSets( da, 1, &onSet.Write, 0, NULL );
-    }
+    vkUpdateDescriptorSets( da, 1, &onSet.Write, 0, NULL );
 }
 
 // ---------------------------------------------------------------------------------------------------------------------

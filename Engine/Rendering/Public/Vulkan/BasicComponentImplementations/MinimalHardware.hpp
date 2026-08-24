@@ -10,7 +10,7 @@ namespace B33::Rendering
 class MinimalHardware : public ::B33::Rendering::IHardware<MinimalHardware>
 {
   public:
-    ::VkPhysicalDevice ChooseHardwareImpl( VkInstance Instance ) const;
+    __B33_API ::VkPhysicalDevice ChooseHardwareImpl( VkInstance Instance ) const;
 };
 
 } // namespace B33::Rendering

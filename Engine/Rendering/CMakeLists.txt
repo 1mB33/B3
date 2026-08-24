@@ -5,6 +5,7 @@ SET(BEE_RENDERING_SOURCE
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Vulkan/BasicComponentImplementations/RTXHardware.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Vulkan/BasicComponentImplementations/GraphicsComputeAdapter.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Vulkan/BasicComponentImplementations/RTXDeviceAdapter.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Private/Vulkan/BasicComponentImplementations/PureGraphicsAdapter.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Vulkan/Buffers/GPUBuffer.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Vulkan/Buffers/GPUStreamBuffer.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Vulkan/Memory/Memory.cpp"
@@ -16,6 +17,7 @@ SET(BEE_RENDERING_SOURCE
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Raycaster/Rays.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Raycaster/VoxelPipeline.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Raycaster/VoxelGrid.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Private/2DSprites/SpritesPipeline.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Editor/EditorPipeline.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/B33Rendering.cpp"
 )
@@ -26,6 +28,7 @@ SET(BEE_RENDERING_HEADRES
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Vulkan/BasicComponentImplementations/RTXHardware.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Vulkan/BasicComponentImplementations/GraphicsComputeAdapter.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Vulkan/BasicComponentImplementations/RTXDeviceAdapter.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Vulkan/BasicComponentImplementations/PureGraphicsAdapter.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Vulkan/Buffers/GPUBuffer.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Vulkan/Buffers/GPUStreamBuffer.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Vulkan/Memory/Memory.hpp"
@@ -44,6 +47,7 @@ SET(BEE_RENDERING_HEADRES
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Raycaster/Voxel.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Raycaster/VoxelGrid.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Raycaster/Rays.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/2DSprites/SpritesPipeline.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Editor/EditorPipeline.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/B33Rendering.hpp"
 )

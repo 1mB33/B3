@@ -15,7 +15,22 @@ namespace B33::Rendering
 
 class Renderer
 {
+    static inline uint64_t TIMEOUT_MAX = 1000000000;
+
     using FramesArray = ::std::array<::B33::Rendering::Frame, ::B33::Rendering::Frame::MAX_FRAMES_IN_FLIGHT>;
+    template <typename T>
+    using SharedPtr = ::std::shared_ptr<T>;
+    template <typename T>
+    using UniquePtr = ::std::unique_ptr<T>;
+    template <typename T, typename U>
+    using UnorderedMap = ::std::unordered_map<T, U>;
+    template <typename T>
+    using Vector          = ::std::vector<T>;
+    using size_t          = ::size_t;
+    using Instance        = ::B33::Rendering::Instance;
+    using HardwareWrapper = ::B33::Rendering::HardwareWrapper;
+    using AdapterWrapper  = ::B33::Rendering::AdapterWrapper;
+    using Swapchain       = ::B33::Rendering::Swapchain;
 
   public:
     __B33_API Renderer();
@@ -25,14 +40,35 @@ class Renderer
     // Getters // -----------------------------------------------------------------------------------------------------
   public:
     template <class PIPE_LINE>
-    ::B33::Rendering::PipelineWrapper *GetPipeline()
+    PIPE_LINE *GetPipeline()
     {
-        return m_PipelineMap[ PIPE_LINE::GetGlobalIndex() ];
+        return reinterpret_cast<PIPE_LINE *>( m_PipelineMap[ PIPE_LINE::GetGlobalIndex() ] );
+    }
+
+    Swapchain *GetSwapchain()
+    {
+        return m_pSwapChain.get();
     }
 
     // Methods // -----------------------------------------------------------------------------------------------------
   public:
-    __B33_API void Initialize( ::std::shared_ptr<::WindowDesc> wd );
+    template <class HARDWARE, class ADAPTER>
+    void Initialize( SharedPtr<::WindowDesc> wd )
+    {
+        using ::std::make_shared;
+
+        B33_LOG( Core::Debug::Info, L"Initializing renderer!" );
+
+        m_pInstance = make_shared<Instance>();
+
+        m_pHardware = make_shared<HardwareWrapper>();
+        m_pHardware->Initialize( m_pInstance, HARDWARE() );
+
+        m_pDeviceAdapter = make_shared<AdapterWrapper>();
+        m_pDeviceAdapter->Initialize( m_pHardware, ADAPTER() );
+
+        this->InitializeInternal( wd );
+    }
 
     __B33_API void Update( const float fDelta );
 
@@ -52,7 +88,7 @@ class Renderer
     {
         auto pipeline = new PIPE_LINE();
 
-        pipeline->Initialize( m_pDeviceAdapter, m_pMemory, m_pWindowDesc, m_pSwapChain, *pipeline );
+        pipeline->Initialize( m_pDeviceAdapter, m_pMemory, m_pSwapChain.get(), *pipeline );
         pipeline->CreatePipelineResources( args... );
 
         m_PipelineMap[ PIPE_LINE::GetGlobalIndex() ] = pipeline;
@@ -61,16 +97,20 @@ class Renderer
 
     // Internal // ----------------------------------------------------------------------------------------------------
   private:
-    ::VkCommandPool CreateCommandPool( ::std::shared_ptr<const ::B33::Rendering::AdapterWrapper> da,
-                                       ::uint32_t                                                uQueueFamily );
+    __B33_API void InitializeInternal( SharedPtr<::WindowDesc> wd );
 
-    ::VkCommandBuffer CreateCommandBuffer( ::std::shared_ptr<const ::B33::Rendering::AdapterWrapper> da,
-                                           ::VkCommandPool                                           cmdPool );
+    ::VkCommandPool CreateCommandPool( SharedPtr<const AdapterWrapper> da, ::uint32_t uQueueFamily );
 
-    FramesArray CreateFrameResources( const ::std::shared_ptr<const ::B33::Rendering::AdapterWrapper> &da,
-                                      const ::std::shared_ptr<::B33::Rendering::Memory>               &memory,
-                                      ::VkCommandPool                                                  cmdPool,
-                                      ::size_t                                                         uFrames );
+    ::VkCommandBuffer CreateCommandBuffer( SharedPtr<const AdapterWrapper> da, ::VkCommandPool cmdPool );
+
+    FramesArray CreateFrameResources( const SharedPtr<const AdapterWrapper> &da,
+                                      const SharedPtr<Memory>               &memory,
+                                      ::VkCommandPool                        cmdPool,
+                                      size_t                                 uFrames );
+
+    void CreateRenederSyncResources( const SharedPtr<const AdapterWrapper> &da,
+                                     const Swapchain                       *sc,
+                                     Vector<VkSemaphore>                   &out );
 
     void RecordCommands( ::VkCommandBuffer &cmdBuff );
 
@@ -79,20 +119,21 @@ class Renderer
     void RecreateSwapChain();
 
   private:
-    ::std::shared_ptr<::WindowDesc>                      m_pWindowDesc    = nullptr;
-    ::std::shared_ptr<::B33::Rendering::Instance>        m_pInstance      = nullptr;
-    ::std::shared_ptr<::B33::Rendering::HardwareWrapper> m_pHardware      = nullptr;
-    ::std::shared_ptr<::B33::Rendering::AdapterWrapper>  m_pDeviceAdapter = nullptr;
-    ::std::shared_ptr<::B33::Rendering::Swapchain>       m_pSwapChain     = nullptr;
-    ::std::shared_ptr<::B33::Rendering::Memory>          m_pMemory        = nullptr;
+    SharedPtr<::WindowDesc>    m_pWindowDesc    = nullptr;
+    SharedPtr<Instance>        m_pInstance      = nullptr;
+    SharedPtr<HardwareWrapper> m_pHardware      = nullptr;
+    SharedPtr<AdapterWrapper>  m_pDeviceAdapter = nullptr;
+    UniquePtr<Swapchain>       m_pSwapChain     = nullptr;
+    SharedPtr<Memory>          m_pMemory        = nullptr;
 
-    ::std::unordered_map<::B33::Core::UnknownIndex, ::B33::Rendering::PipelineWrapper *> m_PipelineMap = {};
-    ::std::vector<::B33::Rendering::PipelineWrapper *>                                   m_vPipelines  = {};
+    UnorderedMap<::B33::Core::UnknownIndex, PipelineWrapper *> m_PipelineMap = {};
+    Vector<PipelineWrapper *>                                  m_vPipelines  = {};
 
     ::VkCommandPool m_CommandPool = VK_NULL_HANDLE;
 
-    ::size_t                       m_uCurrentFrame;
-    ::std::unique_ptr<FramesArray> m_vFrames = nullptr;
+    size_t                 m_uCurrentFrame;
+    UniquePtr<FramesArray> m_vFrames = nullptr;
+    Vector<VkSemaphore>    m_vRenderFinished;
 };
 
 } // namespace B33::Rendering

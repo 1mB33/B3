@@ -106,6 +106,20 @@ class GroupMemory
         return *reinterpret_cast<T *>( base + entityId * sizeof( T ) );
     }
 
+    template <typename T>
+    T *GetData()
+    {
+        B33_ASSERT_MSG( ( CountOccurrences<T, PER_OBJECT...> == 1 ),
+                        "Group: T appears zero or multiple times in PER_OBJECT — "
+                        "use GetValue<Index>() or wrap duplicate primitive types in distinct tag structs." );
+
+        constexpr size_t uIndex = TupleIndex<T, ::std::tuple<PER_OBJECT...>>::value;
+
+        char *base = m_Data[ uIndex ].data();
+
+        return reinterpret_cast<T *>( base );
+    }
+
     template <size_t Index>
     auto &GetValue( size_t entityId )
     {
@@ -165,7 +179,7 @@ class GroupMemory
 template <typename SHARED_DATA, size_t POOL_SIZE = 64, typename... PER_OBJECT>
 class Group
 {
-    using GroupInstanceT    = GroupMemory<SHARED_DATA, POOL_SIZE, PER_OBJECT...>;
+    using GroupInstanceT = GroupMemory<SHARED_DATA, POOL_SIZE, PER_OBJECT...>;
 
   public:
     using InstanceSharedPtr = ::std::shared_ptr<GroupInstanceT>;

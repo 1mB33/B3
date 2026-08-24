@@ -3,6 +3,8 @@
 #include "Raycaster/VoxelPipeline.hpp"
 #include "Editor/EditorPipeline.hpp"
 #include "MainWindow.hpp"
+#include "Vulkan/BasicComponentImplementations/GraphicsComputeAdapter.hpp"
+#include "Vulkan/BasicComponentImplementations/MinimalHardware.hpp"
 
 using namespace B33;
 using namespace B33::Math;
@@ -25,7 +27,8 @@ void Renderer::Initialize( ::B33::System::ComponentBridge &bridge )
             } );
     }
 
-    m_RendererInstance.Initialize( windowHandle->GetWindowInstance().GetWindowDesc() );
+    m_RendererInstance.Initialize<Rendering::MinimalHardware, Rendering::GraphicsComputeAdapter>(
+        windowHandle->GetWindowInstance().GetWindowDesc() );
 
     m_RendererInstance.PushPipeline<::B33::Rendering::VoxelPipeline>( gameHandle->GetGameInstance().GetWorld() );
 }

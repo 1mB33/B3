@@ -6,6 +6,7 @@
 #include "Consts.hpp"
 #include "Operations.hpp"
 #include "Rot.hpp"
+#include "Vec2.hpp"
 #include "Vec3.hpp"
 #include "Vec3Operators.hpp"
 #include "Vec4.hpp"

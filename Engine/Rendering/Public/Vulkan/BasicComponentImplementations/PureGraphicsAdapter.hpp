@@ -1,13 +1,12 @@
-#ifndef B33_COMPUTE_DEVICE_ADAPTER_H
-#define B33_COMPUTE_DEVICE_ADAPTER_H
+#ifndef B33_PURE_GRAPHICS_DEVICE_ADAPTER_H
+#define B33_PURE_GRAPHICS_DEVICE_ADAPTER_H
 
-#include "ExportImport.h"
 #include "Vulkan/IAdapter.hpp"
 
 namespace B33::Rendering
 {
 
-class GraphicsComputeAdapter : public ::B33::Rendering::IAdapter<::B33::Rendering::GraphicsComputeAdapter>
+class PureGraphicsAdapter : public ::B33::Rendering::IAdapter<::B33::Rendering::PureGraphicsAdapter>
 {
     // Interface Implementation // ------------------------------------------------------------------------------------
   public:
@@ -16,8 +15,9 @@ class GraphicsComputeAdapter : public ::B33::Rendering::IAdapter<::B33::Renderin
     __B33_API uint32_t                           GetQueueFlagsImpl() const;
 
   private:
-    ::std::vector<const char *> m_vExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+    ::std::vector<const char *> m_vExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+                                                  VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME };
 };
 
 } // namespace B33::Rendering
-#endif // !B33_COMPUTE_DEVICE_ADAPTER_H
+#endif // !B33_PURE_GRAPHICS_DEVICE_ADAPTER_H

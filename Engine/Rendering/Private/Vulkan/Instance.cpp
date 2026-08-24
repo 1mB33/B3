@@ -51,11 +51,11 @@ debugCallback( __B33_ATTRIBUTE_MIGHT_BE_UNUSED VkDebugUtilsMessageSeverityFlagBi
 #if defined( _WIN32 )
         L"%S";
 #elif defined( __linux__ ) || defined( __APPLE__ )
-        L"%s";
+        L"Message: %s";
 #endif // !_WIN32
 
     ::B33::Core::Debug::Logger::Get().Log( "Vulkan", Core::Debug::Info, pwszFormat, pCallbackData->pMessage );
-    return VK_FALSE;
+    return VK_TRUE;
 }
 
 // Private // ----------------------------------------------------------------------------------------------------------
@@ -64,28 +64,17 @@ VkInstance Instance::CreateInstance()
     VkInstance instance;
     VkResult   result;
 
-#ifdef _DEBUG
+#ifdef _B33_DEBUG
     vector<VkValidationFeatureEnableEXT> enabledVaditationFeatures = {
         VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT,
-        VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT,
-        VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
-        VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
-        VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT,
+        //VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT,
+        //VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
+        //VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
+        //VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT,
     };
-    vector<VkValidationFeatureDisableEXT> disabledVaditationFeatures = {
-        VK_VALIDATION_FEATURE_DISABLE_CORE_CHECKS_EXT,
-    };
-
-    VkValidationFeaturesEXT validationFeatures        = {};
-    validationFeatures.sType                          = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
-    validationFeatures.enabledValidationFeatureCount  = static_cast<uint32_t>( enabledVaditationFeatures.size() );
-    validationFeatures.pEnabledValidationFeatures     = &enabledVaditationFeatures[ 0 ];
-    validationFeatures.disabledValidationFeatureCount = static_cast<uint32_t>( disabledVaditationFeatures.size() );
-    validationFeatures.pDisabledValidationFeatures    = &disabledVaditationFeatures[ 0 ];
 
     VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = {};
     debugCreateInfo.sType                              = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    debugCreateInfo.pNext                              = &validationFeatures;
     debugCreateInfo.messageSeverity =
         VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
         VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -93,14 +82,21 @@ VkInstance Instance::CreateInstance()
                                       VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
                                       VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
     debugCreateInfo.pfnUserCallback = debugCallback;
-#endif // !_DEBUG
+
+    VkValidationFeaturesEXT validationFeatures       = {};
+    validationFeatures.sType                         = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
+    validationFeatures.pNext                         = &debugCreateInfo;
+    validationFeatures.enabledValidationFeatureCount = static_cast<uint32_t>( enabledVaditationFeatures.size() );
+    validationFeatures.pEnabledValidationFeatures    = &enabledVaditationFeatures[ 0 ];
+
+#endif // !_B33_DEBUG
 
     const vector<const char *> vpszValidationLayers = {
 // This layer is present in Lunar SDK for windows and linux, but doesn't seem to be working on apple.
 // I don't have energy to deal with it rigth now
-#if defined( _DEBUG ) && ( defined( _WIN32 ) || defined( __linux__ ) )
+#if defined( _B33_DEBUG ) && ( defined( _WIN32 ) || defined( __linux__ ) )
         "VK_LAYER_KHRONOS_validation",
-#endif // !_DEBUG
+#endif // !_B33_DEBUG
     };
 
     const vector<const char *> vpszExtensions = {
@@ -113,7 +109,7 @@ VkInstance Instance::CreateInstance()
         VK_EXT_METAL_SURFACE_EXTENSION_NAME,
 #endif // !_WIN32
 
-#ifdef _DEBUG
+#ifdef _B33_DEBUG
         VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
 #endif
     };
@@ -124,13 +120,13 @@ VkInstance Instance::CreateInstance()
     appInfo.applicationVersion = VK_MAKE_VERSION( 0, 1, 5 );
     appInfo.pEngineName        = "AtlanticBeast";
     appInfo.engineVersion      = VK_MAKE_VERSION( 0, 2, 0 );
-    appInfo.apiVersion         = VK_API_VERSION_1_1;
+    appInfo.apiVersion         = VK_API_VERSION_1_3;
 
     VkInstanceCreateInfo createInfo = {};
     createInfo.sType                = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
     createInfo.pNext =
-#ifdef _DEBUG
-        &debugCreateInfo,
+#ifdef _B33_DEBUG
+        &validationFeatures,
 #else
         NULL,
 #endif
@@ -147,6 +143,14 @@ VkInstance Instance::CreateInstance()
         B33_LOG( B33::Core::Debug::Error, L"Ohh nooo... Vulkan isn't working!!! Error code is: %d", result );
         throw B33_EXCEPT( "Ohh nooo... Vulkan isn't working!!!" );
     }
+
+#ifdef _B33_DEBUG
+    PFN_vkCreateDebugUtilsMessengerEXT myvkCreateDebugUtilsMessengerEXT =
+        reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
+            vkGetInstanceProcAddr( instance, "vkCreateDebugUtilsMessengerEXT" ) );
+
+    myvkCreateDebugUtilsMessengerEXT( instance, &debugCreateInfo, nullptr, &m_DebugExt );
+#endif
 
     return instance;
 }

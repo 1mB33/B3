@@ -1,12 +1,15 @@
 #include "B33Core.h"
 #include "B33Rendering.hpp"
 
+#include "2DSprites/SpritesPipeline.hpp"
+#include "Debug/Assert.hpp"
 #include "Raycaster/VoxelPipeline.hpp"
 #include "Vulkan/ErrorHandling.hpp"
 #include "Vulkan/Buffers/GPUStreamBuffer.hpp"
 #include "Vulkan/FrameResources.hpp"
 #include "Vulkan/Memory/MemoryUploadTracker.hpp"
 #include "Vulkan/Utility.hpp"
+#include "vulkan/vulkan_core.h"
 
 namespace B33::Rendering
 {
@@ -82,7 +85,7 @@ void VoxelPipeline::Update()
     B33_TRACE( L"Staging on GPU" );
     if ( curPerFrame.uStorageBuffersFlags )
     {
-        GetMemoryInternal()->UploadOnStreamBuffer(
+        GetMemoryInternal()->UploadToStreamBufferDescSet(
             m_pVoxelGrid->GetGrid().data(),
             m_pVoxelGrid->GetGrid().size() * sizeof( Voxel ),
             GetUniformUploadDescriptor( curPerFrame.pStageVoxelBuffer, VoxelPipeline::EShaderResource::VoxelGrid ) );
@@ -90,7 +93,7 @@ void VoxelPipeline::Update()
 
     if ( curPerFrame.uStorageBuffersFlags & EGridChanged::Position )
     {
-        GetMemoryInternal()->UploadOnStreamBuffer(
+        GetMemoryInternal()->UploadToStreamBufferDescSet(
             m_pVoxelGrid->GetStoredObjects().GetPositions().data(),
             m_pVoxelGrid->GetStoredObjects().GetPositions().size() * sizeof( Vec3 ),
             GetUniformUploadDescriptor( curPerFrame.pStagePositonsBuffer,
@@ -99,7 +102,7 @@ void VoxelPipeline::Update()
 
     if ( curPerFrame.uStorageBuffersFlags & EGridChanged::Rotation )
     {
-        GetMemoryInternal()->UploadOnStreamBuffer(
+        GetMemoryInternal()->UploadToStreamBufferDescSet(
             m_pVoxelGrid->GetStoredObjects().GetRotations().data(),
             m_pVoxelGrid->GetStoredObjects().GetRotations().size() * sizeof( Vec3 ),
             GetUniformUploadDescriptor( curPerFrame.pStageRotationsBuffer,
@@ -108,7 +111,7 @@ void VoxelPipeline::Update()
 
     if ( curPerFrame.uStorageBuffersFlags & EGridChanged::HalfSize )
     {
-        GetMemoryInternal()->UploadOnStreamBuffer(
+        GetMemoryInternal()->UploadToStreamBufferDescSet(
             ( static_cast<const Cubes &>( m_pVoxelGrid->GetStoredObjects() ) ).GetHalfSizes().data(),
             ( static_cast<const Cubes &>( m_pVoxelGrid->GetStoredObjects() ) ).GetHalfSizes().size() * sizeof( Vec3 ),
             GetUniformUploadDescriptor( curPerFrame.pStageHalfSizesBuffer,
@@ -122,8 +125,8 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                                     VkImageLayout           lastLayout )
 {
     auto  swapChain   = GetSwapChainInternal();
-    auto  image       = swapChain->GetImage();
-    auto  imageView   = swapChain->GetImageView();
+    auto  image       = swapChain->GetCurrentImage();
+    auto  imageView   = swapChain->GetCurrentImageView();
     auto &curPerFrame = m_PerFrameResources[ m_uCurFrame ];
 
     this->LoadImage( imageView );
@@ -168,15 +171,19 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
             .dstOffset = 0,
             .size      = curPerFrame.pStageVoxelBuffer->GetSizeInBytes(),
         };
+
+        B33_ASSERT( copyRegion.size != 0 );
         vkCmdCopyBuffer( cmdBuffer,
                          curPerFrame.pStageVoxelBuffer->GetBufferHandle(),
                          curPerFrame.pVoxelBuffer->GetBufferHandle(),
                          1,
                          &copyRegion );
 
-        if ( curPerFrame.uStorageBuffersFlags & EGridChanged::Position )
+        if ( curPerFrame.uStorageBuffersFlags & EGridChanged::Position &&
+             m_pVoxelGrid->GetStoredObjects().GetPositions().size() )
         {
             copyRegion.size = m_pVoxelGrid->GetStoredObjects().GetPositions().size() * sizeof( Vec3 );
+            B33_ASSERT( copyRegion.size != 0 );
             vkCmdCopyBuffer( cmdBuffer,
                              curPerFrame.pStagePositonsBuffer->GetBufferHandle(),
                              curPerFrame.pPositionsBuffer->GetBufferHandle(),
@@ -184,9 +191,11 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                              &copyRegion );
         }
 
-        if ( curPerFrame.uStorageBuffersFlags & EGridChanged::Rotation )
+        if ( curPerFrame.uStorageBuffersFlags & EGridChanged::Rotation &&
+             m_pVoxelGrid->GetStoredObjects().GetPositions().size() )
         {
             copyRegion.size = m_pVoxelGrid->GetStoredObjects().GetRotations().size() * sizeof( Vec3 );
+            B33_ASSERT( copyRegion.size != 0 );
             vkCmdCopyBuffer( cmdBuffer,
                              curPerFrame.pStageRotationsBuffer->GetBufferHandle(),
                              curPerFrame.pRotationsBuffer->GetBufferHandle(),
@@ -194,10 +203,12 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                              &copyRegion );
         }
 
-        if ( curPerFrame.uStorageBuffersFlags & EGridChanged::HalfSize )
+        if ( curPerFrame.uStorageBuffersFlags & EGridChanged::HalfSize &&
+             m_pVoxelGrid->GetStoredObjects().GetPositions().size() )
         {
             copyRegion.size = ( static_cast<const Cubes &>( m_pVoxelGrid->GetStoredObjects() ) ).GetHalfSizes().size() *
                               sizeof( Vec3 );
+            B33_ASSERT( copyRegion.size != 0 );
             vkCmdCopyBuffer( cmdBuffer,
                              curPerFrame.pStageHalfSizesBuffer->GetBufferHandle(),
                              curPerFrame.pHalfSizesBuffer->GetBufferHandle(),
@@ -228,7 +239,8 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
             .size                = VK_WHOLE_SIZE,
         } );
 
-        if ( curPerFrame.uStorageBuffersFlags & EGridChanged::Position )
+        if ( curPerFrame.uStorageBuffersFlags & EGridChanged::Position &&
+             m_pVoxelGrid->GetStoredObjects().GetPositions().size() )
         {
             VkMappedMemoryRange mmr2 = mmr;
             mmr2.memory              = curPerFrame.pPositionsBuffer->GetMemoryHandle();
@@ -245,7 +257,8 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                 .size                = VK_WHOLE_SIZE,
             } );
         }
-        if ( curPerFrame.uStorageBuffersFlags & EGridChanged::Rotation )
+        if ( curPerFrame.uStorageBuffersFlags & EGridChanged::Rotation &&
+             m_pVoxelGrid->GetStoredObjects().GetPositions().size() )
         {
             VkMappedMemoryRange mmr3 = mmr;
             mmr3.memory              = curPerFrame.pRotationsBuffer->GetMemoryHandle();
@@ -262,7 +275,8 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                 .size                = VK_WHOLE_SIZE,
             } );
         }
-        if ( curPerFrame.uStorageBuffersFlags & EGridChanged::HalfSize )
+        if ( curPerFrame.uStorageBuffersFlags & EGridChanged::HalfSize &&
+             m_pVoxelGrid->GetStoredObjects().GetPositions().size() )
         {
             VkMappedMemoryRange mmr4 = mmr;
             mmr4.memory              = curPerFrame.pHalfSizesBuffer->GetMemoryHandle();
@@ -292,9 +306,37 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                               NULL );
     }
 
-    const uint32_t groupCountX = ( GetWindowDescInternal()->Data.Width + 31 ) >> 5;
-    const uint32_t groupCountY = ( GetWindowDescInternal()->Data.Height + 7 ) >> 3;
+    const uint32_t groupCountX = ( swapChain->GetExtent().width + 31 ) >> 5;
+    const uint32_t groupCountY = ( swapChain->GetExtent().height + 7 ) >> 3;
     vkCmdDispatch( cmdBuffer, groupCountX, groupCountY, 1 );
+
+    VkImageMemoryBarrier presentBarrier = {};
+    presentBarrier.sType                = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    presentBarrier.srcAccessMask        = VK_ACCESS_SHADER_WRITE_BIT;
+    presentBarrier.dstAccessMask        = 0;
+    presentBarrier.oldLayout            = VK_IMAGE_LAYOUT_GENERAL;
+    presentBarrier.newLayout            = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    presentBarrier.srcQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
+    presentBarrier.dstQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
+    presentBarrier.image                = image;
+    presentBarrier.subresourceRange     = {
+        .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
+        .baseMipLevel   = 0,
+        .levelCount     = 1,
+        .baseArrayLayer = 0,
+        .layerCount     = 1,
+    };
+
+    vkCmdPipelineBarrier( cmdBuffer,
+                          VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                          VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+                          0,
+                          0,
+                          NULL,
+                          0,
+                          NULL,
+                          1,
+                          &presentBarrier );
 }
 
 // --------------------------------------------------------------------------------------------------------------------

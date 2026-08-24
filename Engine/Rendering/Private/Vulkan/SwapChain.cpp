@@ -79,22 +79,33 @@ Swapchain::~Swapchain()
     return m_SwapChainImages[ i ];
 }
 
-::VkImage Swapchain::GetImage() const
+::VkImage Swapchain::GetCurrentImage() const
 {
     B33_TRACE( L"Getting swapchain image with index %d", m_uCurrentImageIndex );
     return m_SwapChainImages[ m_uCurrentImageIndex ];
 }
 
-::VkImageView Swapchain::GetImageView() const
+::VkImageView Swapchain::GetCurrentImageView() const
 {
     B33_TRACE( L"Getting swapchain image VIEW with index %d", m_uCurrentImageIndex );
     return m_ImageViews[ m_uCurrentImageIndex ];
 }
 
-::uint32_t Swapchain::GetImageindex() const
+::VkExtent2D Swapchain::GetExtent() const
+{
+    B33_TRACE( L"Retriving extent: %d %d", m_Extent.width, m_Extent.height );
+    return m_Extent;
+}
+
+::uint32_t Swapchain::GetCurrentImageIndex() const
 {
     B33_TRACE( L"Getting swapchain image index %d", m_uCurrentImageIndex );
     return m_uCurrentImageIndex;
+}
+
+::uint32_t Swapchain::GetImageCount() const
+{
+    return m_SwapChainImages.size();
 }
 
 // Private // ---------------------------------------------------------------------------------------------------------
@@ -350,25 +361,25 @@ vector<VkImageView> Swapchain::CreateImageViews( weak_ptr<const AdapterWrapper> 
     if ( !pLockedAdapter )
         throw B33_EXCEPT( "Vulkan adapter is expried, cannot create a swapchain images" );
 
-    for (size_t i = 0; i < imageViews.size(); ++i)
+    for ( size_t i = 0; i < imageViews.size(); ++i )
     {
         B33_TRACE( L"Creating an image view" );
         VkImageView           newImageView;
         VkImageViewCreateInfo viewInfo = {};
         viewInfo.sType                 = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        viewInfo.image                 = swapChainImages[i];
+        viewInfo.image                 = swapChainImages[ i ];
         viewInfo.viewType              = VK_IMAGE_VIEW_TYPE_2D;
         viewInfo.format                = Swapchain::TargetedFormat;
         viewInfo.subresourceRange      = {
-                 .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
-                 .baseMipLevel   = 0,
-                 .levelCount     = 1,
-                 .baseArrayLayer = 0,
-                 .layerCount     = 1,
+            .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
+            .baseMipLevel   = 0,
+            .levelCount     = 1,
+            .baseArrayLayer = 0,
+            .layerCount     = 1,
         };
 
         THROW_IF_FAILED( vkCreateImageView( pLockedAdapter->GetAdapterHandle(), &viewInfo, NULL, &newImageView ) );
-        imageViews[i] = newImageView;
+        imageViews[ i ] = newImageView;
     }
 
     return imageViews;

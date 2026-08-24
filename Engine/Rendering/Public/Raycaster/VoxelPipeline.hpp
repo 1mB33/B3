@@ -3,8 +3,6 @@
 
 #include "Vulkan/IPipeline.hpp"
 #include "Vulkan/Buffers/GPUStreamBuffer.hpp"
-#include "Vulkan/Memory/Memory.hpp"
-#include "Vulkan/SwapChain.hpp"
 #include "Raycaster/PushConstants.hpp"
 #include "Raycaster/VoxelGrid.hpp"
 #include "vulkan/vulkan_core.h"
