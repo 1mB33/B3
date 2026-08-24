@@ -17,9 +17,9 @@ Instance::Instance()
 // ---------------------------------------------------------------------------------------------------------------------
 Instance::~Instance()
 {
-    B33_LOG( B33::Core::Debug::Info, L"Destroying instance" );
     if ( m_Instance != VK_NULL_HANDLE )
     {
+        B33_LOG( B33::Core::Debug::Info, L"Destroying instance" );
         vkDestroyInstance( m_Instance, NULL );
         m_Instance = VK_NULL_HANDLE;
     }

@@ -28,6 +28,8 @@ class Logger
         wchar_t       *pwszMessage;
     };
 
+    const ::uint32_t MAX_TRACE_MESSAGES = 15;
+
     __B33_API Logger();
 
     Logger( const Logger & ) = delete;
@@ -90,7 +92,6 @@ class Logger
     ::std::condition_variable m_FlushCondition;
 
     ::std::unordered_map<::std::wstring, ::uint32_t> m_Messages;
-    const ::uint32_t                                 m_uMaxTraceMessages = 60;
 };
 
 } // namespace B33::Core::Debug

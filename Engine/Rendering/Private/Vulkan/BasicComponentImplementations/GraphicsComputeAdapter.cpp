@@ -16,7 +16,11 @@ const vector<const char *> &GraphicsComputeAdapter::GetExtensionsImpl() const
 // --------------------------------------------------------------------------------------------------------------------
 void *GraphicsComputeAdapter::GetFeaturesImpl() const
 {
-    return NULL;
+    static VkPhysicalDeviceVulkan12Features indexFeatures       = {};
+    indexFeatures.sType                                         = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+    indexFeatures.descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE;
+
+    return &indexFeatures;
 }
 
 // --------------------------------------------------------------------------------------------------------------------

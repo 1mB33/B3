@@ -233,7 +233,7 @@ void Logger::WriteLoop()
         {
             ++m_Messages[ stamp.pwszFmt ];
         }
-        if ( stamp.Sev == ESeverity::Trace && m_Messages[ stamp.pwszFmt ] > m_uMaxTraceMessages )
+        if ( stamp.Sev == ESeverity::Trace && m_Messages[ stamp.pwszFmt ] > MAX_TRACE_MESSAGES )
         {
             delete[] stamp.pwszMessage;
             continue;
@@ -241,13 +241,13 @@ void Logger::WriteLoop()
 
         wstring wstrStringified            = Stringify( stamp );
         wstring wstrStringifiedAndColorful = StringifyAndColorize( stamp );
-        if ( stamp.Sev == ESeverity::Trace && m_Messages[ stamp.pwszFmt ] == m_uMaxTraceMessages )
+        if ( stamp.Sev == ESeverity::Trace && m_Messages[ stamp.pwszFmt ] == MAX_TRACE_MESSAGES )
         {
             wstrStringified += ColorizeTerminal::Colorize(
-                L" [Message was logged " + to_wstring( m_uMaxTraceMessages ) + L" times and won't be logged anymore]",
+                L" [Message was logged " + to_wstring( MAX_TRACE_MESSAGES ) + L" times and won't be logged anymore]",
                 EColors::BrigthYellow );
             wstrStringifiedAndColorful += ColorizeTerminal::Colorize(
-                L" [Message was logged " + to_wstring( m_uMaxTraceMessages ) + L" times and won't be logged anymore]",
+                L" [Message was logged " + to_wstring( MAX_TRACE_MESSAGES ) + L" times and won't be logged anymore]",
                 EColors::BrigthYellow );
         }
 

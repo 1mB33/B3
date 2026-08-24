@@ -93,8 +93,10 @@ class Swapchain
     Vector<::VkImage>
     CreateSwapChainImages( WeakPtr<const AdapterWrapper> &pAdapter, ::VkSwapchainKHR swapchain, ::uint32_t uAmount );
 
-    Vector<::VkImageView>
-    CreateImageViews( WeakPtr<const AdapterWrapper> &pAdapter, Vector<::VkImage> swapChainImages, ::uint32_t uAmount );
+    Vector<::VkImageView> CreateImageViews( WeakPtr<const AdapterWrapper> &pAdapter,
+                                            Vector<::VkImage>              swapChainImages,
+                                            VkFormat                       format,
+                                            ::uint32_t                     uAmount );
 
   private:
     WeakPtr<const Instance>        m_pInstance      = {};

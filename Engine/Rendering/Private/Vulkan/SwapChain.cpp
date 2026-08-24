@@ -35,7 +35,7 @@ Swapchain::Swapchain( weak_ptr<const Instance>        pInst,
                                    m_PresentMode ) )
   , m_uCurrentImageIndex( 0 )
   , m_SwapChainImages( CreateSwapChainImages( m_pDeviceAdapter, m_pSwapChain, m_uImageCount ) )
-  , m_ImageViews( CreateImageViews( m_pDeviceAdapter, m_SwapChainImages, m_uImageCount ) )
+  , m_ImageViews( CreateImageViews( m_pDeviceAdapter, m_SwapChainImages, m_SurfaceFormat.format, m_uImageCount ) )
 {
 }
 
@@ -273,6 +273,7 @@ VkSurfaceFormatKHR Swapchain::PickFormat( weak_ptr<const HardwareWrapper> &pHard
 
         if ( format.format == Swapchain::TargetedFormat && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR )
         {
+            B33_TRACE( L"Choosen format 0x%x", format.format );
             return vFormats[ i ];
         }
 
@@ -354,6 +355,7 @@ Swapchain::CreateSwapChainImages( weak_ptr<const AdapterWrapper> &pAdapter, VkSw
 // --------------------------------------------------------------------------------------------------------------------
 vector<VkImageView> Swapchain::CreateImageViews( weak_ptr<const AdapterWrapper> &pAdapter,
                                                  vector<VkImage>                 swapChainImages,
+                                                 VkFormat                        format,
                                                  uint32_t                        uAmount )
 {
     vector<VkImageView> imageViews( uAmount );
@@ -369,7 +371,7 @@ vector<VkImageView> Swapchain::CreateImageViews( weak_ptr<const AdapterWrapper> 
         viewInfo.sType                 = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         viewInfo.image                 = swapChainImages[ i ];
         viewInfo.viewType              = VK_IMAGE_VIEW_TYPE_2D;
-        viewInfo.format                = Swapchain::TargetedFormat;
+        viewInfo.format                = format;
         viewInfo.subresourceRange      = {
             .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
             .baseMipLevel   = 0,
