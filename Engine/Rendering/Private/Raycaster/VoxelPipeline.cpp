@@ -125,8 +125,8 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                                     VkImageLayout           lastLayout )
 {
     auto  swapChain   = GetSwapChainInternal();
-    auto  image       = swapChain->GetImage();
-    auto  imageView   = swapChain->GetImageView();
+    auto  image       = swapChain->GetCurrentImage();
+    auto  imageView   = swapChain->GetCurrentImageView();
     auto &curPerFrame = m_PerFrameResources[ m_uCurFrame ];
 
     this->LoadImage( imageView );

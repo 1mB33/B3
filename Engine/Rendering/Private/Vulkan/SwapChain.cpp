@@ -79,13 +79,13 @@ Swapchain::~Swapchain()
     return m_SwapChainImages[ i ];
 }
 
-::VkImage Swapchain::GetImage() const
+::VkImage Swapchain::GetCurrentImage() const
 {
     B33_TRACE( L"Getting swapchain image with index %d", m_uCurrentImageIndex );
     return m_SwapChainImages[ m_uCurrentImageIndex ];
 }
 
-::VkImageView Swapchain::GetImageView() const
+::VkImageView Swapchain::GetCurrentImageView() const
 {
     B33_TRACE( L"Getting swapchain image VIEW with index %d", m_uCurrentImageIndex );
     return m_ImageViews[ m_uCurrentImageIndex ];
@@ -97,7 +97,7 @@ Swapchain::~Swapchain()
     return m_Extent;
 }
 
-::uint32_t Swapchain::GetImageindex() const
+::uint32_t Swapchain::GetCurrentImageIndex() const
 {
     B33_TRACE( L"Getting swapchain image index %d", m_uCurrentImageIndex );
     return m_uCurrentImageIndex;

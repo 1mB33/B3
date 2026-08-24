@@ -79,10 +79,10 @@ void Renderer::Render()
     const auto     swapchains = m_pSwapChain->GetSwapChainHandle();
     VkResult       result;
 
-    THROW_IF_FAILED( vkWaitForFences( device, 1, &frame.InFlightFence, VK_TRUE, UINT64_MAX ) );
+    THROW_IF_FAILED( vkWaitForFences( device, 1, &frame.InFlightFence, VK_TRUE, TIMEOUT_MAX ) );
     result = vkAcquireNextImageKHR( device,
                                     m_pSwapChain->GetSwapChainHandle(),
-                                    1000000000,
+                                    TIMEOUT_MAX,
                                     frame.ImageAvailable,
                                     VK_NULL_HANDLE,
                                     &uImageIndex );
@@ -108,7 +108,7 @@ void Renderer::Render()
     THROW_IF_FAILED( vkResetFences( device, 1, &frame.InFlightFence ) );
 
     m_pSwapChain->SetCurrentImage( uImageIndex );
-    const auto imagesIndices = m_pSwapChain->GetImageindex();
+    const auto imagesIndices = m_pSwapChain->GetCurrentImageIndex();
 
     RecordCommands( frame.CommandBuffer );
 
@@ -153,6 +153,8 @@ void Renderer::Destroy()
     if ( m_pDeviceAdapter != nullptr )
         vkDeviceWaitIdle( m_pDeviceAdapter->GetAdapterHandle() );
 
+    m_PipelineMap.clear();
+    m_vPipelines.clear();
     if ( m_pDeviceAdapter != nullptr )
         DestroyFrameResources();
 
@@ -164,8 +166,6 @@ void Renderer::Destroy()
         delete pPipeline;
         B33_TRACE( L"Deleted pipeline from renderer" );
     }
-    m_PipelineMap.clear();
-    m_vPipelines.clear();
 
     m_CommandPool    = VK_NULL_HANDLE;
     m_pMemory        = nullptr;

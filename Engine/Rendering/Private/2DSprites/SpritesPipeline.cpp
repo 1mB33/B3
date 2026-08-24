@@ -98,8 +98,8 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                                       VkImageLayout           lastLayout )
 {
     auto  swapChain = GetSwapChainInternal();
-    auto  image     = swapChain->GetImage();
-    auto  imageView = swapChain->GetImageView();
+    auto  image     = swapChain->GetCurrentImage();
+    auto  imageView = swapChain->GetCurrentImageView();
     auto  extent    = swapChain->GetExtent();
     auto &curFrame  = m_PerFrameResources[ m_uCurFrame ];
 
