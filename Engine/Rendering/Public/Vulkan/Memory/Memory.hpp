@@ -3,6 +3,7 @@
 
 #include "Vulkan/Buffers/GPUBuffer.hpp"
 #include "Vulkan/Buffers/GPUStreamBuffer.hpp"
+#include "Vulkan/Buffers/ImgBuffer.hpp"
 #include "Vulkan/Memory/UploadDescriptor.hpp"
 #include "Vulkan/WrapperAdapter.hpp"
 #include "Vulkan/WrapperHardware.hpp"
@@ -35,14 +36,13 @@ class Memory
 
     __B33_API ::std::shared_ptr<::B33::Rendering::GPUBuffer> ReserveGPUBuffer( const ::size_t uSizeInBytes );
 
-    __B33_API VkImage ReserveImage( const ::uint32_t        uWidth,
-                                    const ::uint32_t        uHeigth,
-                                    const VkFormat          format,
-                                    const VkImageUsageFlags usage );
+    __B33_API ImgBuffer ReserveImage( const ::uint32_t          uWidth,
+                                      const ::uint32_t          uHeigth,
+                                      const ::VkFormat          format,
+                                      const ::VkImageUsageFlags usage );
 
-    __B33_API VkImageView ReserveImageView( const VkImage            image,
-                                           const VkFormat           format,
-                                           const VkImageAspectFlags aspectMask );
+    __B33_API
+    void ReserveImageView( ImgBuffer &image, const ::VkFormat format, const ::VkImageAspectFlags aspectMask );
 
     __B33_API
     void UploadToStreamBufferRaw( const void                                                 *pUpload,

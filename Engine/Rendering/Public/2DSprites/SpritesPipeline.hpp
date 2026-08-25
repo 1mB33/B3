@@ -2,6 +2,7 @@
 #define B33_PIPELINE_SPRITES_H
 
 #include "Vec2.hpp"
+#include "Vulkan/Buffers/ImgBuffer.hpp"
 #include "Vulkan/IPipeline.hpp"
 #include "Vulkan/Buffers/GPUStreamBuffer.hpp"
 #include "vulkan/vulkan_core.h"
@@ -18,8 +19,8 @@ struct alignas( 16 ) SpritesPushConstants : IPushConstants
 
 class SpritesPipeline : public IPipeline<SpritesPipeline>
 {
-    using Vec  = ::B33::Math::Vec3;
-    using iVec = ::B33::Math::iVec3;
+    using Vec3  = ::B33::Math::Vec3;
+    using iVec3 = ::B33::Math::iVec3;
 
     enum EShaderResource
     {
@@ -29,9 +30,9 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
   public:
     struct alignas( 16 ) SpriteData
     {
-        ::B33::Math::Vec3 Pos;
-        ::B33::Math::Vec3 Color;
-        ::B33::Math::Vec3 Scale;
+        Vec3 Pos;
+        Vec3 Color;
+        Vec3 Scale;
     };
 
     constexpr static uint32_t MAX_SPRITES = 1024;
@@ -105,8 +106,7 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
         bool                                                 bPendingGpuCopy;
         ::std::shared_ptr<::B33::Rendering::GPUBuffer>       SpriteInstances;
         ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> StageSpriteInstances;
-        VkImage                                              DepthImg;
-        VkImageView                                          DepthImgView;
+        ImgBuffer                                            DepthImg;
         ::VkDescriptorSet                                    DescSet = VK_NULL_HANDLE;
     };
 

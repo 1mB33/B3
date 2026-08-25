@@ -1,5 +1,6 @@
 #include "B33Rendering.hpp"
 
+#include "Vulkan/Buffers/ImgBuffer.hpp"
 #include "Vulkan/ErrorHandling.hpp"
 #include "Vulkan/Memory/Memory.hpp"
 #include "vulkan/vulkan_core.h"
@@ -122,10 +123,10 @@ shared_ptr<GPUBuffer> Memory::ReserveGPUBuffer( const size_t uSizeInBytes )
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-VkImage Memory::ReserveImage( const ::uint32_t        uWidth,
-                              const ::uint32_t        uHeigth,
-                              const VkFormat          format,
-                              const VkImageUsageFlags usage )
+ImgBuffer Memory::ReserveImage( const ::uint32_t        uWidth,
+                                const ::uint32_t        uHeigth,
+                                const VkFormat          format,
+                                const VkImageUsageFlags usage )
 {
     const VkDevice    da   = m_pAdapter->GetAdapterHandle();
     VkImageCreateInfo info = {};
@@ -154,18 +155,18 @@ VkImage Memory::ReserveImage( const ::uint32_t        uWidth,
     THROW_IF_FAILED( vkAllocateMemory( da, &allocInfo, NULL, &memory ) );
     THROW_IF_FAILED( vkBindImageMemory( da, result, memory, 0 ) );
 
-    return result;
+    return ImgBuffer( m_pAdapter, result, VK_NULL_HANDLE );
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-VkImageView Memory::ReserveImageView( const VkImage image, const VkFormat format, const VkImageAspectFlags aspectMask )
+void Memory::ReserveImageView( ImgBuffer &image, const VkFormat format, const VkImageAspectFlags aspectMask )
 {
     const VkDevice        da   = m_pAdapter->GetAdapterHandle();
     VkImageViewCreateInfo info = {};
     VkImageView           result;
 
     info.sType                       = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    info.image                       = image;
+    info.image                       = image.GetImage();
     info.viewType                    = VK_IMAGE_VIEW_TYPE_2D;
     info.format                      = format;
     info.subresourceRange.aspectMask = aspectMask;
@@ -174,7 +175,7 @@ VkImageView Memory::ReserveImageView( const VkImage image, const VkFormat format
 
     THROW_IF_FAILED( vkCreateImageView( da, &info, NULL, &result ) );
 
-    return result;
+    image = ImgBuffer( m_pAdapter, image.DetachImage(), result );
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -210,8 +211,8 @@ void Memory::UploadToStreamBufferDescSet( const void *pUpload, const size_t uUpl
         return;
     }
 
-    const VkDevice   da             = m_pAdapter->GetAdapterHandle();
-    GPUStreamBuffer *buffer         = reinterpret_cast<GPUStreamBuffer *>( onSet.Buffer.get() );
+    const VkDevice   da     = m_pAdapter->GetAdapterHandle();
+    GPUStreamBuffer *buffer = reinterpret_cast<GPUStreamBuffer *>( onSet.Buffer.get() );
 
     if ( buffer->GetDataPointer() == nullptr )
     {

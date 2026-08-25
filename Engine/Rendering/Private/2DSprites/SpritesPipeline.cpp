@@ -1,8 +1,7 @@
-#include "B33Core.h"
 #include "B33Rendering.hpp"
 
 #include "2DSprites/SpritesPipeline.hpp"
-#include "Vec2.hpp"
+#include "Vulkan/Buffers/ImgBuffer.hpp"
 #include "Vulkan/ErrorHandling.hpp"
 #include "Vulkan/FrameResources.hpp"
 #include "Vulkan/SwapChain.hpp"
@@ -68,15 +67,15 @@ void SpritesPipeline::CreatePipelineResourcesImpl()
                                                       extent.height,
                                                       VK_FORMAT_D32_SFLOAT,
                                                       VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT );
+        GetMemoryInternal()->ReserveImageView( img, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT );
+
         m_PerFrameResources.push_back( {
             .uLastUploadedGeneration = ~(uint32_t)0,
             .bPendingGpuCopy         = false,
             .SpriteInstances         = GetMemoryInternal()->ReserveGPUBuffer( instanceSize ),
             .StageSpriteInstances    = GetMemoryInternal()->ReserveStagingBuffer( instanceSize ),
-            .DepthImg                = img,
-            .DepthImgView =
-                GetMemoryInternal()->ReserveImageView( img, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT ),
-            .DescSet = CreateDescriptorSet(),
+            .DepthImg                = std::move( img ),
+            .DescSet                 = CreateDescriptorSet(),
         } );
     }
 }
@@ -114,16 +113,16 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                      1,
                      &copyRegion );
 
-    VkBufferMemoryBarrier memBarier = {};
-    memBarier.sType                 = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-    memBarier.pNext                 = NULL;
-    memBarier.srcAccessMask         = VK_ACCESS_TRANSFER_WRITE_BIT;
-    memBarier.dstAccessMask         = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-    memBarier.srcQueueFamilyIndex   = VK_QUEUE_FAMILY_IGNORED;
-    memBarier.dstQueueFamilyIndex   = VK_QUEUE_FAMILY_IGNORED;
-    memBarier.buffer                = m_pQuadBuffer->GetBufferHandle();
-    memBarier.offset                = 0;
-    memBarier.size                  = VK_WHOLE_SIZE;
+    VkBufferMemoryBarrier buffersBarrier = {};
+    buffersBarrier.sType                 = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+    buffersBarrier.pNext                 = NULL;
+    buffersBarrier.srcAccessMask         = VK_ACCESS_TRANSFER_WRITE_BIT;
+    buffersBarrier.dstAccessMask         = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+    buffersBarrier.srcQueueFamilyIndex   = VK_QUEUE_FAMILY_IGNORED;
+    buffersBarrier.dstQueueFamilyIndex   = VK_QUEUE_FAMILY_IGNORED;
+    buffersBarrier.buffer                = m_pQuadBuffer->GetBufferHandle();
+    buffersBarrier.offset                = 0;
+    buffersBarrier.size                  = VK_WHOLE_SIZE;
 
     vkCmdPipelineBarrier( cmdBuffer,
                           VK_PIPELINE_STAGE_TRANSFER_BIT,
@@ -132,7 +131,7 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                           0,
                           NULL,
                           1,
-                          &memBarier,
+                          &buffersBarrier,
                           0,
                           NULL );
 
@@ -147,16 +146,16 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                      1,
                      &copyRegion2 );
 
-    VkBufferMemoryBarrier memBarier2 = {};
-    memBarier2.sType                 = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-    memBarier2.pNext                 = NULL;
-    memBarier2.srcAccessMask         = VK_ACCESS_TRANSFER_WRITE_BIT;
-    memBarier2.dstAccessMask         = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-    memBarier2.srcQueueFamilyIndex   = VK_QUEUE_FAMILY_IGNORED;
-    memBarier2.dstQueueFamilyIndex   = VK_QUEUE_FAMILY_IGNORED;
-    memBarier2.buffer                = curFrame.SpriteInstances->GetBufferHandle();
-    memBarier2.offset                = 0;
-    memBarier2.size                  = VK_WHOLE_SIZE;
+    VkBufferMemoryBarrier imgMemBarrier = {};
+    imgMemBarrier.sType                 = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+    imgMemBarrier.pNext                 = NULL;
+    imgMemBarrier.srcAccessMask         = VK_ACCESS_TRANSFER_WRITE_BIT;
+    imgMemBarrier.dstAccessMask         = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+    imgMemBarrier.srcQueueFamilyIndex   = VK_QUEUE_FAMILY_IGNORED;
+    imgMemBarrier.dstQueueFamilyIndex   = VK_QUEUE_FAMILY_IGNORED;
+    imgMemBarrier.buffer                = curFrame.SpriteInstances->GetBufferHandle();
+    imgMemBarrier.offset                = 0;
+    imgMemBarrier.size                  = VK_WHOLE_SIZE;
 
     vkCmdPipelineBarrier( cmdBuffer,
                           VK_PIPELINE_STAGE_TRANSFER_BIT,
@@ -165,7 +164,7 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                           0,
                           NULL,
                           1,
-                          &memBarier2,
+                          &imgMemBarrier,
                           0,
                           NULL );
 
@@ -198,7 +197,7 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
 
     VkRenderingAttachmentInfo depthAttachment = {};
     depthAttachment.sType                     = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-    depthAttachment.imageView                 = curFrame.DepthImgView;
+    depthAttachment.imageView                 = curFrame.DepthImg.GetImageView();
     depthAttachment.imageLayout               = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     depthAttachment.resolveMode               = VK_RESOLVE_MODE_NONE;
     depthAttachment.loadOp                    = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -214,7 +213,7 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
     toDepthAttachment.newLayout           = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     toDepthAttachment.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     toDepthAttachment.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    toDepthAttachment.image               = curFrame.DepthImg;
+    toDepthAttachment.image               = curFrame.DepthImg.GetImage();
     toDepthAttachment.subresourceRange    = VkImageSubresourceRange { VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1 };
 
     VkImageMemoryBarrier attachmentBarriers[] = { toColorAttachment, toDepthAttachment };
@@ -318,16 +317,13 @@ void SpritesPipeline::Reset()
 
     for ( auto &resources : m_PerFrameResources )
     {
-        vkDestroyImageView( GetAdaterInternal()->GetAdapterHandle(), resources.DepthImgView, NULL );
-        vkDestroyImage( GetAdaterInternal()->GetAdapterHandle(), resources.DepthImg, NULL );
+        auto img = GetMemoryInternal()->ReserveImage( extent.width,
+                                                      extent.height,
+                                                      VK_FORMAT_D32_SFLOAT,
+                                                      VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT );
+        GetMemoryInternal()->ReserveImageView( img, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT );
 
-        auto img           = GetMemoryInternal()->ReserveImage( extent.width,
-                                                                extent.height,
-                                                                VK_FORMAT_D32_SFLOAT,
-                                                                VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT );
-        resources.DepthImg = img;
-        resources.DepthImgView =
-            GetMemoryInternal()->ReserveImageView( img, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT );
+        resources.DepthImg = std::move( img );
     }
 }
 

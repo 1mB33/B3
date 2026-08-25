@@ -47,7 +47,6 @@ cbuffer PushConstantsBuffer : register( b1 )
 VSOutput main( VSInput input )
 {
     float aspectRatio = pc.Dims.x / pc.Dims.y;
-    printf("My float is %f", aspectRatio);
 
     float2 normalizedPos = (g_Instances[input.Id].Position.xy * 2) - 1;
     normalizedPos.y = -normalizedPos.y;
