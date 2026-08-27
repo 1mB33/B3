@@ -1,12 +1,9 @@
 #include "B33Rendering.hpp"
-#include "B33Core.h"
 
 #include "Vulkan/Renderer.hpp"
 #include "Vulkan/Memory/Memory.hpp"
 #include "Vulkan/ErrorHandling.hpp"
 #include "Vulkan/FrameResources.hpp"
-#include "Vulkan/WrapperAdapter.hpp"
-#include "Vulkan/WrapperHardware.hpp"
 
 namespace B33::Rendering
 {

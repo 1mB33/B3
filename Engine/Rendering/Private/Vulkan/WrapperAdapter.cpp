@@ -14,6 +14,7 @@ AdapterWrapper::AdapterWrapper()
   , m_uQueueFamily()
   , m_Device()
   , m_Queue()
+  , m_PushConstantsLimit( 0 )
 {
 }
 

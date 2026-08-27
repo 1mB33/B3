@@ -2,19 +2,22 @@
 #define B33_PIPELINE_SPRITES_H
 
 #include "Vec2.hpp"
+#include "Mat44.hpp"
 #include "Vulkan/Buffers/ImgBuffer.hpp"
 #include "Vulkan/IPipeline.hpp"
 #include "Vulkan/Buffers/GPUStreamBuffer.hpp"
-#include "vulkan/vulkan_core.h"
 
 namespace B33::Rendering
 {
 
 struct alignas( 16 ) SpritesPushConstants : IPushConstants
 {
-    using Vec2 = ::B33::Math::Vec2;
+    using Vec2  = ::B33::Math::Vec2;
+    using Mat44 = ::B33::Math::Mat44;
 
-    Vec2 ScreenDim;
+    Vec2  ScreenDim;
+    Mat44 Proj;
+    Mat44 Cam;
 };
 
 class SpritesPipeline : public IPipeline<SpritesPipeline>

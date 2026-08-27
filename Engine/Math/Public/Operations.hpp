@@ -1,6 +1,7 @@
 #ifndef B33_OPERATIONS_H
 #define B33_OPERATIONS_H
 
+#include "Mat44.hpp"
 #include "Vec3.hpp"
 
 namespace B33::Math
@@ -32,7 +33,7 @@ Vector Normalize( const Vector &v )
 
 // ---------------------------------------------------------------------------------------------------------------------
 template <class Vector>
-constexpr inline Vector Cross( const Vector &vA, const Vector &vB )
+constexpr inline Vector Cross( const Vector &, const Vector & )
 {
     static_assert( Core::TypeIsAlwaysFalse<Vector>,
                    "This size of a vector doesn't have impementation of cross product yet" );
@@ -51,7 +52,23 @@ inline Vec3 Cross( const Vec3 &vA, const Vec3 &vB )
 
 // ---------------------------------------------------------------------------------------------------------------------
 template <class Vector>
-constexpr inline Vector RotateX( const Vector &v, float angleRad )
+constexpr inline float Dot( const Vector &, const Vector & )
+{
+    static_assert( Core::TypeIsAlwaysFalse<Vector>,
+                   "This size of a vector doesn't have impementation of dot product yet" );
+    return 0;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+template <>
+constexpr inline float Dot( const Vec3 &vA, const Vec3 &vB )
+{
+    return ( vA.x * vB.x ) + ( vA.y * vB.y ) + ( vA.z * vB.z );
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+template <class Vector>
+constexpr inline Vector RotateX( const Vector &, float )
 {
     static_assert( Core::TypeIsAlwaysFalse<Vector>,
                    "This size of a vector doesn't have impementation of rotate x yet" );
@@ -74,7 +91,7 @@ inline Vec3 RotateX( const Vec3 &v, float angleRad )
 
 // ---------------------------------------------------------------------------------------------------------------------
 template <class Vector>
-constexpr inline Vector RotateY( const Vector &v, float angleRad )
+constexpr inline Vector RotateY( const Vector &, float )
 {
     static_assert( Core::TypeIsAlwaysFalse<Vector>,
                    "This size of a vector doesn't have impementation of rotate y yet" );
@@ -97,7 +114,7 @@ inline Vec3 RotateY( const Vec3 &v, float angleRad )
 
 // ---------------------------------------------------------------------------------------------------------------------
 template <class Vector>
-constexpr inline Vector RotateZ( const Vector &v, float angleRad )
+constexpr inline Vector RotateZ( const Vector &, float )
 {
     static_assert( Core::TypeIsAlwaysFalse<Vector>,
                    "This size of a vector doesn't have impementation of rotate z yet" );
@@ -120,7 +137,7 @@ inline Vec3 RotateZ( const Vec3 &v, float angleRad )
 
 // ---------------------------------------------------------------------------------------------------------------------
 template <class Vector>
-inline Vector &AddAssign( Vector &vA, const Vector &vB )
+inline Vector &AddAssign( Vector &, const Vector & )
 {
     static_assert( Core::TypeIsAlwaysFalse<Vector>,
                    "This size of a vector doesn't have impementation of add assign yet" );
@@ -148,7 +165,7 @@ inline iVec3 &AddAssign( iVec3 &vA, const iVec3 &vB )
 
 // ---------------------------------------------------------------------------------------------------------------------
 template <class Vector>
-inline Vector &SubtractAssign( Vector &vA, const Vector &vB )
+inline Vector &SubtractAssign( Vector &, const Vector & )
 {
     static_assert( Core::TypeIsAlwaysFalse<Vector>,
                    "This size of a vector doesn't have impementation of subtract assign yet" );
@@ -176,7 +193,7 @@ inline iVec3 &SubtractAssign( iVec3 &vA, const iVec3 &vB )
 
 // ---------------------------------------------------------------------------------------------------------------------
 template <class Vector>
-inline Vector Multiply( const Vector &vA, const Vector &vB )
+inline Vector Multiply( const Vector &, const Vector & )
 {
     static_assert( Core::TypeIsAlwaysFalse<Vector>,
                    "This size of a vector doesn't have impementation of multiply yet" );
@@ -210,7 +227,7 @@ inline iVec3 Multiply( const iVec3 &vA, const iVec3 &vB )
 
 // ---------------------------------------------------------------------------------------------------------------------
 template <class Vector>
-constexpr inline Vector MultiplyScalar( const Vector &vA, const float vB )
+constexpr inline Vector MultiplyScalar( const Vector &, const float )
 {
     static_assert( Core::TypeIsAlwaysFalse<Vector>,
                    "This size of a vector doesn't have impementation of multiply by scalar yet" );
@@ -240,6 +257,34 @@ inline iVec3 MultiplyScalar( const iVec3 &vA, const float vB )
     r.z = vA.z * vB;
 
     return r;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+inline Mat44 PerspectiveProjection( float fFovY, float width, float height, float fNear, float fFar )
+{
+    const float fInvAspectRatio = height / width;
+    const float fFocal          = 1.0f / tan( fFovY * 0.5f );
+    const float rangeInv        = 1.0f / ( fFar - fNear );
+    Mat44       result          = {};
+
+    result[ 0 ]  = fInvAspectRatio * fFocal;
+    result[ 1 ]  = 0.f;
+    result[ 2 ]  = 0.f;
+    result[ 3 ]  = 0.f;
+    result[ 4 ]  = 0.f;
+    result[ 5 ]  = -fFocal;
+    result[ 6 ]  = 0.f;
+    result[ 7 ]  = 0.f;
+    result[ 8 ]  = 0.f;
+    result[ 9 ]  = 0.f;
+    result[ 10 ] = fFar * rangeInv;
+    result[ 11 ] = -fNear * fFar * rangeInv;
+    result[ 12 ] = 0.f;
+    result[ 13 ] = 0.f;
+    result[ 14 ] = 1.f;
+    result[ 15 ] = 0.f;
+
+    return result;
 }
 
 } // namespace B33::Math

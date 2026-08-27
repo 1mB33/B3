@@ -28,6 +28,8 @@ struct PushConstants
 {
     float2 Dims;
     float2 _PADDING0;
+    row_major matrix<float, 4,4> Proj;
+    row_major matrix<float, 4,4> LookAt;
 };
 
 #if defined( VULKAN )
@@ -46,19 +48,15 @@ cbuffer PushConstantsBuffer : register( b1 )
 
 VSOutput main( VSInput input )
 {
-    float aspectRatio = pc.Dims.x / pc.Dims.y;
+    float4 viewPos = mul(pc.LookAt, float4(g_Instances[input.Id].Position, 1.0f));
+    viewPos.x += input.Position.x * g_Instances[input.Id].Scale.x;
+    viewPos.y += input.Position.y * g_Instances[input.Id].Scale.y;
 
-    float2 normalizedPos = (g_Instances[input.Id].Position.xy * 2) - 1;
-    normalizedPos.y = -normalizedPos.y;
+    float4 clipPos = mul(pc.Proj, viewPos);
 
     VSOutput output;
-    output.Position = float4( normalizedPos.x + (input.Position.x * g_Instances[input.Id].Scale.x),
-                              normalizedPos.y + (input.Position.y * g_Instances[input.Id].Scale.y * aspectRatio),
-                              g_Instances[input.Id].Position.z,
-                              1.0 );
-
-    output.Color = float4(g_Instances[input.Id].Color.xyz, 1.);
+    output.Position = clipPos;
+    output.Color = float4(g_Instances[input.Id].Color.xyz, 1.0);
 
     return output;
 }
-

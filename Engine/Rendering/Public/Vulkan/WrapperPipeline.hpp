@@ -91,7 +91,7 @@ class PipelineWrapper
 
     void LoadPushConstants( const IPushConstants &constants, __B33_ATTRIBUTE_MIGHT_BE_UNUSED ::size_t uByteSize )
     {
-        B33_ASSERT( uByteSize == m_uPushConstantsByteSize );
+        B33_ASSERT( uByteSize == m_uPushConstantsByteSize && uByteSize < m_pDeviceAdapter.lock()->GetPushConstantsLimit() );
 
         memcpy( m_pPushConstants, &constants, m_uPushConstantsByteSize );
     }

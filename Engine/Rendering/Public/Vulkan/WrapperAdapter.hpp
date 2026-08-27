@@ -2,6 +2,7 @@
 #define B33_WRAPPER_ADAPTER_H
 
 #include "Vulkan/WrapperHardware.hpp"
+#include <vulkan/vulkan_core.h>
 
 namespace B33::Rendering
 {
@@ -37,6 +38,11 @@ class AdapterWrapper
         return m_Queue;
     }
 
+    size_t GetPushConstantsLimit() const
+    {
+        return m_PushConstantsLimit;
+    }
+
     // Methods // -----------------------------------------------------------------------------------------------------
   public:
     template <class T>
@@ -55,6 +61,11 @@ class AdapterWrapper
                                        adapter.GetFeatures(),
                                        m_uQueueFamily );
         m_Queue        = CreateQueue( m_Device, m_uQueueFamily );
+
+        VkPhysicalDeviceProperties pProperties;
+        vkGetPhysicalDeviceProperties( pLockedHardware->GetPhysicalDevice(), &pProperties );
+
+        m_PushConstantsLimit = pProperties.limits.maxPushConstantsSize;
     }
 
     // Internal // ----------------------------------------------------------------------------------------------------
@@ -74,6 +85,8 @@ class AdapterWrapper
 
     VkDevice m_Device = VK_NULL_HANDLE;
     VkQueue  m_Queue  = VK_NULL_HANDLE;
+
+    size_t m_PushConstantsLimit = -1;
 };
 
 } // namespace B33::Rendering

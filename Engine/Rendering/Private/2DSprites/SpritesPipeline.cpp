@@ -182,7 +182,7 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
     toColorAttachment.subresourceRange     = VkImageSubresourceRange { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 
     VkClearValue cv = {};
-    cv.color        = VkClearColorValue { { 0.f, 0.f, 0.f, 1.f } };
+    cv.color        = VkClearColorValue { { 0.f, 0.f, 0.3f, 1.f } };
 
     VkRenderingAttachmentInfo colorAttachment = {};
     colorAttachment.sType                     = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;

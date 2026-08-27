@@ -15,6 +15,7 @@ SET(BEE_RENDERING_SOURCE
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Vulkan/SwapChain.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Vulkan/Renderer.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Vulkan/Utility.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Private/Primitives/Camera.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Raycaster/Rays.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Raycaster/VoxelPipeline.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Raycaster/VoxelGrid.cpp"
