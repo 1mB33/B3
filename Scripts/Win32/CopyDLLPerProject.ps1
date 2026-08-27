@@ -5,9 +5,9 @@ param (
 
 $dlls = Get-ChildItem -Path $root_path -Filter *.dll -File
 
-Write-Output $root_path
-Write-Output $project_list
-Write-Output $dlls
+# Write-Output $root_path
+# Write-Output $project_list
+# Write-Output $dlls
 
 $project_list.Split(";") | ForEach {  
     foreach ($dll in $dlls) 
