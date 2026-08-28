@@ -2,24 +2,28 @@
 #define B33_PIPELINE_SPRITES_H
 
 #include "Vec2.hpp"
+#include "Mat44.hpp"
+#include "Vulkan/Buffers/ImgBuffer.hpp"
 #include "Vulkan/IPipeline.hpp"
 #include "Vulkan/Buffers/GPUStreamBuffer.hpp"
-#include "vulkan/vulkan_core.h"
 
 namespace B33::Rendering
 {
 
 struct alignas( 16 ) SpritesPushConstants : IPushConstants
 {
-    using Vec2 = ::B33::Math::Vec2;
+    using Vec2  = ::B33::Math::Vec2;
+    using Mat44 = ::B33::Math::Mat44;
 
-    Vec2 ScreenDim;
+    Vec2  ScreenDim;
+    Mat44 Proj;
+    Mat44 Cam;
 };
 
 class SpritesPipeline : public IPipeline<SpritesPipeline>
 {
-    using Vec  = ::B33::Math::Vec3;
-    using iVec = ::B33::Math::iVec3;
+    using Vec3  = ::B33::Math::Vec3;
+    using iVec3 = ::B33::Math::iVec3;
 
     enum EShaderResource
     {
@@ -29,9 +33,9 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
   public:
     struct alignas( 16 ) SpriteData
     {
-        ::B33::Math::Vec3 Pos;
-        ::B33::Math::Vec3 Color;
-        ::B33::Math::Vec3 Scale;
+        Vec3 Pos;
+        Vec3 Color;
+        Vec3 Scale;
     };
 
     constexpr static uint32_t MAX_SPRITES = 1024;
@@ -44,6 +48,10 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
       , m_pQuadBuffer( ::std::make_shared<GPUBuffer>() )
       , m_pStageQuadBuffer( ::std::make_shared<GPUStreamBuffer>() )
       , m_PerFrameResources()
+      , m_uCurFrame( 0 )
+      , m_bPendingUpload( false )
+      , m_bPendingMeshUpload( true )
+      , m_uLastUploadedGeneration( 0 )
       , m_SpriteData( MAX_SPRITES )
       , m_VertexShader( VK_NULL_HANDLE )
     {
@@ -86,6 +94,7 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
   public:
     void UpdateSprite( size_t i, SpriteData sd )
     {
+        m_bPendingUpload  = true;
         m_SpriteData[ i ] = sd;
     }
 
@@ -101,17 +110,18 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
 
     struct PerFrame
     {
-        ::uint32_t                                           uLastUploadedGeneration;
-        bool                                                 bPendingGpuCopy;
+        ::uint64_t                                           uLastUploadedGeneration;
         ::std::shared_ptr<::B33::Rendering::GPUBuffer>       SpriteInstances;
         ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> StageSpriteInstances;
-        VkImage                                              DepthImg;
-        VkImageView                                          DepthImgView;
+        ImgBuffer                                            DepthImg;
         ::VkDescriptorSet                                    DescSet = VK_NULL_HANDLE;
     };
 
-    ::std::vector<PerFrame> m_PerFrameResources = {};
-    ::uint32_t              m_uCurFrame         = -1;
+    ::std::vector<PerFrame> m_PerFrameResources       = {};
+    ::uint32_t              m_uCurFrame               = -1;
+    bool                    m_bPendingUpload          = false;
+    bool                    m_bPendingMeshUpload      = false;
+    ::uint64_t              m_uLastUploadedGeneration = -1;
 
     ::std::vector<SpriteData> m_SpriteData = {};
 

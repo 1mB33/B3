@@ -14,15 +14,16 @@ AdapterWrapper::AdapterWrapper()
   , m_uQueueFamily()
   , m_Device()
   , m_Queue()
+  , m_PushConstantsLimit( 0 )
 {
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 AdapterWrapper::~AdapterWrapper()
 {
-    B33_LOG( Core::Debug::Info, L"Destroying adapter" );
     if ( m_Device != VK_NULL_HANDLE )
     {
+        B33_LOG( Core::Debug::Info, L"Destroying adapter" );
         vkDestroyDevice( m_Device, NULL );
         m_Device = VK_NULL_HANDLE;
     }

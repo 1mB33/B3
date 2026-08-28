@@ -6,7 +6,7 @@ SET(BEE_MATH_SOURCE
 SET(BEE_MATH_HEADRES
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/B33Math.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Consts.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Mat4.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Mat44.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Operations.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Rot.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Vec3.hpp"

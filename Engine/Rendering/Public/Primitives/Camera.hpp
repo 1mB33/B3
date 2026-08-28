@@ -1,6 +1,8 @@
 #ifndef B33_CAMERA_H
 #define B33_CAMERA_H
 
+#include "ExportImport.h"
+#include "Mat44.hpp"
 #include "Primitives/Object.hpp"
 
 namespace B33::Rendering
@@ -12,6 +14,8 @@ namespace B33::Rendering
  * */
 class Camera : public ::B33::Math::WorldObject
 {
+    using Mat44 = ::B33::Math::Mat44;
+
   public:
     Camera( float fFov = 90.f )
       : m_fFov( fFov )
@@ -36,6 +40,9 @@ class Camera : public ::B33::Math::WorldObject
     {
         return m_fFov;
     }
+
+  public:
+    __B33_API Mat44 GenerateLookAt();
 
   private:
     float m_fFov;

@@ -54,6 +54,7 @@ struct Voxel
     uint Id[ 26 ];
 };
 
+[[vk::image_format("unknown")]]
 RWTexture2D<float4>      g_OutputImage : register( u0 );
 StructuredBuffer<Voxel>  g_Voxels : register( t1 );
 StructuredBuffer<float4> g_Positions : register( t2 );

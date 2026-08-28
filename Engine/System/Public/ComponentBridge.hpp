@@ -66,9 +66,8 @@ class ComponentBridge
     ComponentAbstractBase *QueryComponentByClassName( ::std::string_view ComponentDerived )
     {
         B33_ASSERT( m_ComponentMap.find( ComponentDerived ) != m_ComponentMap.end() );
-        ComponentAbstractBase *result        = m_ComponentMap[ ComponentDerived ].get();
-        ComponentAbstractBase *resultDerived = result;
-        return resultDerived;
+        ComponentAbstractBase *result = m_ComponentMap[ ComponentDerived ].get();
+        return result;
     }
 
     template <class COMPONENT_DERIVED>
@@ -76,7 +75,7 @@ class ComponentBridge
     {
         B33_ASSERT( m_ComponentMap.find( COMPONENT_DERIVED::GetComponentName() ) != m_ComponentMap.end() );
         ComponentAbstractBase *result        = m_ComponentMap[ COMPONENT_DERIVED::GetComponentName() ].get();
-        COMPONENT_DERIVED      *resultDerived = dynamic_cast<COMPONENT_DERIVED *>( result );
+        COMPONENT_DERIVED     *resultDerived = dynamic_cast<COMPONENT_DERIVED *>( result );
         return BorrowedComponent<COMPONENT_DERIVED>( *resultDerived );
     }
 

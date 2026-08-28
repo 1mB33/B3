@@ -93,7 +93,7 @@ struct alignas( 16 ) iVec2
     template <typename Vector>
     static iVec2 ToVec( Vector v )
     {
-        return iVec2( v.x, v.y, v.z );
+        return iVec2( v.x, v.y );
     }
 };
 

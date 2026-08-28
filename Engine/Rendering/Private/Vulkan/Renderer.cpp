@@ -1,12 +1,9 @@
 #include "B33Rendering.hpp"
-#include "B33Core.h"
 
 #include "Vulkan/Renderer.hpp"
 #include "Vulkan/Memory/Memory.hpp"
 #include "Vulkan/ErrorHandling.hpp"
 #include "Vulkan/FrameResources.hpp"
-#include "Vulkan/WrapperAdapter.hpp"
-#include "Vulkan/WrapperHardware.hpp"
 
 namespace B33::Rendering
 {
@@ -152,9 +149,9 @@ void Renderer::Destroy()
 
     if ( m_pDeviceAdapter != nullptr )
         vkDeviceWaitIdle( m_pDeviceAdapter->GetAdapterHandle() );
+    else
+        return;
 
-    m_PipelineMap.clear();
-    m_vPipelines.clear();
     if ( m_pDeviceAdapter != nullptr )
         DestroyFrameResources();
 
@@ -166,6 +163,9 @@ void Renderer::Destroy()
         delete pPipeline;
         B33_TRACE( L"Deleted pipeline from renderer" );
     }
+
+    m_PipelineMap.clear();
+    m_vPipelines.clear();
 
     m_CommandPool    = VK_NULL_HANDLE;
     m_pMemory        = nullptr;

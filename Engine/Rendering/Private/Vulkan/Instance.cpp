@@ -17,9 +17,9 @@ Instance::Instance()
 // ---------------------------------------------------------------------------------------------------------------------
 Instance::~Instance()
 {
-    B33_LOG( B33::Core::Debug::Info, L"Destroying instance" );
     if ( m_Instance != VK_NULL_HANDLE )
     {
+        B33_LOG( B33::Core::Debug::Info, L"Destroying instance" );
         vkDestroyInstance( m_Instance, NULL );
         m_Instance = VK_NULL_HANDLE;
     }
@@ -67,10 +67,10 @@ VkInstance Instance::CreateInstance()
 #ifdef _B33_DEBUG
     vector<VkValidationFeatureEnableEXT> enabledVaditationFeatures = {
         VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT,
-        //VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT,
+        VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT,
         //VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
-        //VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
-        //VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT,
+        VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
+        VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT,
     };
 
     VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = {};

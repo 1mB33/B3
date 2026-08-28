@@ -2,6 +2,7 @@
 #define B33_WRAPPER_HARDWARE_H
 
 #include "Vulkan/Instance.hpp"
+#include <memory>
 
 namespace B33::Rendering
 {
@@ -36,18 +37,18 @@ class HardwareWrapper
     // Methods // -----------------------------------------------------------------------------------------------------
   public:
     template <class T>
-    void Initialize( ::std::weak_ptr<const ::B33::Rendering::Instance> pInstance, const T &hardware )
+    void Initialize( ::std::shared_ptr<const ::B33::Rendering::Instance> pInstance, const T &hardware )
     {
         B33_LOG( Core::Debug::Info, L"Initializing hardware" );
-        auto pLockedInstance = pInstance.lock();
-        if ( !pLockedInstance )
-            throw B33_EXCEPT( "Instance cannot be locked on hardware initialization" );
+        m_pInstance = pInstance;
 
-        m_PhysicalDevice = hardware.ChooseHardware( pLockedInstance->GetInstance() );
+        m_PhysicalDevice = hardware.ChooseHardware( m_pInstance->GetInstance() );
     }
 
     // Internal // ----------------------------------------------------------------------------------------------------
   private:
+    ::std::shared_ptr<const ::B33::Rendering::Instance> m_pInstance = nullptr;
+
     VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
 };
 

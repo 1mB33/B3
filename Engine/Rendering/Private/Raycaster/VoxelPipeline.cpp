@@ -434,10 +434,24 @@ VkDescriptorSetLayout VoxelPipeline::CreateDescriptorLayoutImpl()
     bindings[ 4 ].descriptorCount = 1;
     bindings[ 4 ].stageFlags      = VK_SHADER_STAGE_COMPUTE_BIT;
 
+
+    array<VkDescriptorBindingFlags, 5> bindingFlags = { 0,
+                                                        VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT,
+                                                        VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT,
+                                                        VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT,
+                                                        VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT };
+
+    VkDescriptorSetLayoutBindingFlagsCreateInfo bindingCreateInfo = {};
+    bindingCreateInfo.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+    bindingCreateInfo.bindingCount  = bindingFlags.size();
+    bindingCreateInfo.pBindingFlags = bindingFlags.data();
+
     VkDescriptorSetLayoutCreateInfo layoutCreateInfo = {};
+    layoutCreateInfo.pNext                           = &bindingCreateInfo;
     layoutCreateInfo.sType                           = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     layoutCreateInfo.bindingCount                    = static_cast<uint32_t>( bindings.size() );
     layoutCreateInfo.pBindings                       = &bindings[ 0 ];
+    layoutCreateInfo.flags                           = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
 
     THROW_IF_FAILED( vkCreateDescriptorSetLayout( GetAdaterInternal()->GetAdapterHandle(),
                                                   &layoutCreateInfo,
@@ -462,6 +476,7 @@ VkDescriptorPool VoxelPipeline::CreateDescriptorPoolImpl()
     poolInfo.maxSets                    = Frame::MAX_FRAMES_IN_FLIGHT;
     poolInfo.poolSizeCount              = static_cast<uint32_t>( poolSizes.size() );
     poolInfo.pPoolSizes                 = &poolSizes[ 0 ];
+    poolInfo.flags                      = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
 
     THROW_IF_FAILED(
         vkCreateDescriptorPool( GetAdaterInternal()->GetAdapterHandle(), &poolInfo, NULL, &descriptorPool ) );
