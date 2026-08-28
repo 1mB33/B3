@@ -70,8 +70,7 @@ void SpritesPipeline::CreatePipelineResourcesImpl()
         GetMemoryInternal()->ReserveImageView( img, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT );
 
         m_PerFrameResources.push_back( {
-            .uLastUploadedGeneration = ~(uint32_t)0,
-            .bPendingGpuCopy         = false,
+            .uLastUploadedGeneration = 0,
             .SpriteInstances         = GetMemoryInternal()->ReserveGPUBuffer( instanceSize ),
             .StageSpriteInstances    = GetMemoryInternal()->ReserveStagingBuffer( instanceSize ),
             .DepthImg                = std::move( img ),
@@ -85,10 +84,16 @@ void SpritesPipeline::Update()
 {
     auto &curFrame = m_PerFrameResources[ m_uCurFrame ];
 
-    GetMemoryInternal()->UploadToStreamBufferDescSet(
-        m_SpriteData.data(),
-        m_SpriteData.size() * sizeof( SpriteData ),
-        GetUniformUploadDescriptor( curFrame.StageSpriteInstances, EShaderResource::SpriteInstances ) );
+    if ( m_bPendingUpload )
+    {
+        GetMemoryInternal()->UploadToStreamBufferDescSet(
+            m_SpriteData.data(),
+            m_SpriteData.size() * sizeof( SpriteData ),
+            GetUniformUploadDescriptor( curFrame.StageSpriteInstances, EShaderResource::SpriteInstances ) );
+
+        ++m_uLastUploadedGeneration;
+        m_bPendingUpload = false;
+    }
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -102,71 +107,79 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
     auto  extent    = swapChain->GetExtent();
     auto &curFrame  = m_PerFrameResources[ m_uCurFrame ];
 
-    VkBufferCopy copyRegion = {
-        .srcOffset = 0,
-        .dstOffset = 0,
-        .size      = m_pStageQuadBuffer->GetSizeInBytes(),
-    };
-    vkCmdCopyBuffer( cmdBuffer,
-                     m_pStageQuadBuffer->GetBufferHandle(),
-                     m_pQuadBuffer->GetBufferHandle(),
-                     1,
-                     &copyRegion );
+    if ( m_bPendingMeshUpload )
+    {
+        VkBufferCopy copyRegion = {
+            .srcOffset = 0,
+            .dstOffset = 0,
+            .size      = m_pStageQuadBuffer->GetSizeInBytes(),
+        };
+        vkCmdCopyBuffer( cmdBuffer,
+                         m_pStageQuadBuffer->GetBufferHandle(),
+                         m_pQuadBuffer->GetBufferHandle(),
+                         1,
+                         &copyRegion );
 
-    VkBufferMemoryBarrier buffersBarrier = {};
-    buffersBarrier.sType                 = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-    buffersBarrier.pNext                 = NULL;
-    buffersBarrier.srcAccessMask         = VK_ACCESS_TRANSFER_WRITE_BIT;
-    buffersBarrier.dstAccessMask         = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-    buffersBarrier.srcQueueFamilyIndex   = VK_QUEUE_FAMILY_IGNORED;
-    buffersBarrier.dstQueueFamilyIndex   = VK_QUEUE_FAMILY_IGNORED;
-    buffersBarrier.buffer                = m_pQuadBuffer->GetBufferHandle();
-    buffersBarrier.offset                = 0;
-    buffersBarrier.size                  = VK_WHOLE_SIZE;
+        VkBufferMemoryBarrier buffersBarrier = {};
+        buffersBarrier.sType                 = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+        buffersBarrier.pNext                 = NULL;
+        buffersBarrier.srcAccessMask         = VK_ACCESS_TRANSFER_WRITE_BIT;
+        buffersBarrier.dstAccessMask         = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+        buffersBarrier.srcQueueFamilyIndex   = VK_QUEUE_FAMILY_IGNORED;
+        buffersBarrier.dstQueueFamilyIndex   = VK_QUEUE_FAMILY_IGNORED;
+        buffersBarrier.buffer                = m_pQuadBuffer->GetBufferHandle();
+        buffersBarrier.offset                = 0;
+        buffersBarrier.size                  = VK_WHOLE_SIZE;
 
-    vkCmdPipelineBarrier( cmdBuffer,
-                          VK_PIPELINE_STAGE_TRANSFER_BIT,
-                          VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-                          0,
-                          0,
-                          NULL,
-                          1,
-                          &buffersBarrier,
-                          0,
-                          NULL );
+        vkCmdPipelineBarrier( cmdBuffer,
+                              VK_PIPELINE_STAGE_TRANSFER_BIT,
+                              VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                              0,
+                              0,
+                              NULL,
+                              1,
+                              &buffersBarrier,
+                              0,
+                              NULL );
+        m_bPendingMeshUpload = false;
+    }
 
-    VkBufferCopy copyRegion2 = {
-        .srcOffset = 0,
-        .dstOffset = 0,
-        .size      = curFrame.StageSpriteInstances->GetSizeInBytes(),
-    };
-    vkCmdCopyBuffer( cmdBuffer,
-                     curFrame.StageSpriteInstances->GetBufferHandle(),
-                     curFrame.SpriteInstances->GetBufferHandle(),
-                     1,
-                     &copyRegion2 );
+    if ( curFrame.uLastUploadedGeneration != m_uLastUploadedGeneration )
+    {
+        VkBufferCopy copyRegion2 = {
+            .srcOffset = 0,
+            .dstOffset = 0,
+            .size      = curFrame.StageSpriteInstances->GetSizeInBytes(),
+        };
+        vkCmdCopyBuffer( cmdBuffer,
+                         curFrame.StageSpriteInstances->GetBufferHandle(),
+                         curFrame.SpriteInstances->GetBufferHandle(),
+                         1,
+                         &copyRegion2 );
 
-    VkBufferMemoryBarrier imgMemBarrier = {};
-    imgMemBarrier.sType                 = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-    imgMemBarrier.pNext                 = NULL;
-    imgMemBarrier.srcAccessMask         = VK_ACCESS_TRANSFER_WRITE_BIT;
-    imgMemBarrier.dstAccessMask         = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-    imgMemBarrier.srcQueueFamilyIndex   = VK_QUEUE_FAMILY_IGNORED;
-    imgMemBarrier.dstQueueFamilyIndex   = VK_QUEUE_FAMILY_IGNORED;
-    imgMemBarrier.buffer                = curFrame.SpriteInstances->GetBufferHandle();
-    imgMemBarrier.offset                = 0;
-    imgMemBarrier.size                  = VK_WHOLE_SIZE;
+        VkBufferMemoryBarrier imgMemBarrier = {};
+        imgMemBarrier.sType                 = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+        imgMemBarrier.pNext                 = NULL;
+        imgMemBarrier.srcAccessMask         = VK_ACCESS_TRANSFER_WRITE_BIT;
+        imgMemBarrier.dstAccessMask         = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+        imgMemBarrier.srcQueueFamilyIndex   = VK_QUEUE_FAMILY_IGNORED;
+        imgMemBarrier.dstQueueFamilyIndex   = VK_QUEUE_FAMILY_IGNORED;
+        imgMemBarrier.buffer                = curFrame.SpriteInstances->GetBufferHandle();
+        imgMemBarrier.offset                = 0;
+        imgMemBarrier.size                  = VK_WHOLE_SIZE;
 
-    vkCmdPipelineBarrier( cmdBuffer,
-                          VK_PIPELINE_STAGE_TRANSFER_BIT,
-                          VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-                          0,
-                          0,
-                          NULL,
-                          1,
-                          &imgMemBarrier,
-                          0,
-                          NULL );
+        vkCmdPipelineBarrier( cmdBuffer,
+                              VK_PIPELINE_STAGE_TRANSFER_BIT,
+                              VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                              0,
+                              0,
+                              NULL,
+                              1,
+                              &imgMemBarrier,
+                              0,
+                              NULL );
+        curFrame.uLastUploadedGeneration = m_uLastUploadedGeneration;
+    }
 
     lastStage = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
 
@@ -307,6 +320,8 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                           NULL,
                           1,
                           &presentBarrier );
+
+    m_uCurFrame = ( m_uCurFrame + 1 ) % m_PerFrameResources.size();
 }
 
 // --------------------------------------------------------------------------------------------------------------------

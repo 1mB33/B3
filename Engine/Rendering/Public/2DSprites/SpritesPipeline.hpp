@@ -48,6 +48,10 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
       , m_pQuadBuffer( ::std::make_shared<GPUBuffer>() )
       , m_pStageQuadBuffer( ::std::make_shared<GPUStreamBuffer>() )
       , m_PerFrameResources()
+      , m_uCurFrame( 0 )
+      , m_bPendingUpload( false )
+      , m_bPendingMeshUpload( true )
+      , m_uLastUploadedGeneration( 0 )
       , m_SpriteData( MAX_SPRITES )
       , m_VertexShader( VK_NULL_HANDLE )
     {
@@ -90,6 +94,7 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
   public:
     void UpdateSprite( size_t i, SpriteData sd )
     {
+        m_bPendingUpload  = true;
         m_SpriteData[ i ] = sd;
     }
 
@@ -105,16 +110,18 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
 
     struct PerFrame
     {
-        ::uint32_t                                           uLastUploadedGeneration;
-        bool                                                 bPendingGpuCopy;
+        ::uint64_t                                           uLastUploadedGeneration;
         ::std::shared_ptr<::B33::Rendering::GPUBuffer>       SpriteInstances;
         ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> StageSpriteInstances;
         ImgBuffer                                            DepthImg;
         ::VkDescriptorSet                                    DescSet = VK_NULL_HANDLE;
     };
 
-    ::std::vector<PerFrame> m_PerFrameResources = {};
-    ::uint32_t              m_uCurFrame         = -1;
+    ::std::vector<PerFrame> m_PerFrameResources       = {};
+    ::uint32_t              m_uCurFrame               = -1;
+    bool                    m_bPendingUpload          = false;
+    bool                    m_bPendingMeshUpload      = false;
+    ::uint64_t              m_uLastUploadedGeneration = -1;
 
     ::std::vector<SpriteData> m_SpriteData = {};
 
