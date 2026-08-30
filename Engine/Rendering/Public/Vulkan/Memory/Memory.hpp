@@ -47,7 +47,7 @@ class Memory
     __B33_API
     void UploadToBufferRaw( const void                                                 *pUpload,
                             const ::size_t                                              uUploadSize,
-                            const ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> &gpuStreamBuffer );
+                            const ::std::shared_ptr<::B33::Rendering::GPUBuffer> &gpuBuffer );
 
     __B33_API
     void UploadToStreamBufferRaw( const void                                                 *pUpload,

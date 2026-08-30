@@ -159,16 +159,16 @@ ImgBuffer Memory::ReserveImage( const ::uint32_t        uWidth,
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void Memory::UploadToBufferRaw( const void                                                 *pUpload,
-                                const ::size_t                                              uUploadSize,
-                                const ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> &gpuStreamBuffer )
+void Memory::UploadToBufferRaw( const void                                           *pUpload,
+                                const ::size_t                                        uUploadSize,
+                                const ::std::shared_ptr<::B33::Rendering::GPUBuffer> &gpuBuffer )
 {
-    const VkDevice   da     = m_pAdapter->GetAdapterHandle();
-    GPUStreamBuffer *buffer = gpuStreamBuffer.get();
+    const VkDevice da     = m_pAdapter->GetAdapterHandle();
+    GPUBuffer     *buffer = gpuBuffer.get();
+    void          *pData  = nullptr;
 
-    THROW_IF_FAILED(
-        vkMapMemory( da, buffer->GetMemoryHandle(), 0, buffer->GetSizeInBytes(), 0, buffer->GetPtrToDataPointer() ) );
-    memcpy( buffer->GetDataPointer(), pUpload, uUploadSize );
+    THROW_IF_FAILED( vkMapMemory( da, buffer->GetMemoryHandle(), 0, buffer->GetSizeInBytes(), 0, &pData ) );
+    memcpy( pData, pUpload, uUploadSize );
     vkUnmapMemory( da, buffer->GetMemoryHandle() );
 }
 
