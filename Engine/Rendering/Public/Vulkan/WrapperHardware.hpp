@@ -2,7 +2,6 @@
 #define B33_WRAPPER_HARDWARE_H
 
 #include "Vulkan/Instance.hpp"
-#include <memory>
 
 namespace B33::Rendering
 {

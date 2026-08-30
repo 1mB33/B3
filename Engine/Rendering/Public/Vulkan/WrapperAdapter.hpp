@@ -2,7 +2,6 @@
 #define B33_WRAPPER_ADAPTER_H
 
 #include "Vulkan/WrapperHardware.hpp"
-#include <vulkan/vulkan_core.h>
 
 namespace B33::Rendering
 {
