@@ -55,7 +55,42 @@ void SpritesPipeline::CreatePipelineResourcesImpl()
     m_uCurFrame                       = 0;
     constexpr size_t unitVerticesSize = sizeof( Vertex ) * g_UnitQuadVertices.size();
     constexpr size_t instanceSize     = sizeof( SpriteData ) * MAX_SPRITES;
+    constexpr size_t imgSize          = 4 * 256 * 256;
 
+    m_pTexture = GetMemoryInternal()->ReserveImage( 256,
+                                                    256,
+                                                    VK_FORMAT_R8G8B8A8_UNORM,
+                                                    VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT );
+    VkSamplerCreateInfo sampler     = {};
+    sampler.sType                   = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    sampler.magFilter               = VK_FILTER_LINEAR;
+    sampler.minFilter               = VK_FILTER_LINEAR;
+    sampler.mipmapMode              = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    sampler.addressModeU            = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    sampler.addressModeV            = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    sampler.addressModeW            = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    sampler.mipLodBias              = 0.0f;
+    sampler.anisotropyEnable        = VK_FALSE;
+    sampler.maxAnisotropy           = 1.0f;
+    sampler.compareEnable           = VK_FALSE;
+    sampler.compareOp               = VK_COMPARE_OP_ALWAYS;
+    sampler.minLod                  = 0.0f;
+    sampler.maxLod                  = 0.0f;
+    sampler.borderColor             = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+    sampler.unnormalizedCoordinates = VK_FALSE;
+
+    GetMemoryInternal()->ReserveImageView( m_pTexture, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT );
+    GetMemoryInternal()->ReserveSampler( m_pTexture, sampler );
+    m_pStageTexture = GetMemoryInternal()->ReserveStagingBuffer( imgSize );
+
+    float pBuf[ imgSize ] = {};
+    for ( size_t i = 0; i < imgSize; ++i )
+    {
+        pBuf[ i ] = i;
+    }
+
+
+    GetMemoryInternal()->UploadToBufferRaw( pBuf, imgSize, m_pStageTexture );
     m_pStageQuadBuffer = GetMemoryInternal()->ReserveStagingBuffer( unitVerticesSize );
     m_pQuadBuffer      = GetMemoryInternal()->ReserveVertexBuffer( unitVerticesSize );
 
@@ -70,6 +105,7 @@ void SpritesPipeline::CreatePipelineResourcesImpl()
         GetMemoryInternal()->ReserveImageView( img, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT );
 
         m_PerFrameResources.push_back( {
+            .bInit                   = false,
             .uLastUploadedGeneration = 0,
             .SpriteInstances         = GetMemoryInternal()->ReserveGPUBuffer( instanceSize ),
             .StageSpriteInstances    = GetMemoryInternal()->ReserveStagingBuffer( instanceSize ),
@@ -143,6 +179,104 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                               NULL );
         m_bPendingMeshUpload = false;
     }
+
+    if ( m_bPendingTextureUpload )
+    {
+        VkImageMemoryBarrier toTransferDst = {};
+        toTransferDst.sType                = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        toTransferDst.srcAccessMask        = 0;
+        toTransferDst.dstAccessMask        = VK_ACCESS_TRANSFER_WRITE_BIT;
+        toTransferDst.oldLayout            = VK_IMAGE_LAYOUT_UNDEFINED;
+        toTransferDst.newLayout            = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        toTransferDst.srcQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
+        toTransferDst.dstQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
+        toTransferDst.image                = m_pTexture.GetImage();
+        toTransferDst.subresourceRange     = VkImageSubresourceRange { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+
+        vkCmdPipelineBarrier( cmdBuffer,
+                              VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                              VK_PIPELINE_STAGE_TRANSFER_BIT,
+                              0,
+                              0,
+                              NULL,
+                              0,
+                              NULL,
+                              1,
+                              &toTransferDst );
+
+        VkBufferImageCopy copyRegion               = {};
+        copyRegion.imageSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
+        copyRegion.imageSubresource.mipLevel       = 0;
+        copyRegion.imageSubresource.baseArrayLayer = 0;
+        copyRegion.imageSubresource.layerCount     = 1;
+        copyRegion.imageExtent                     = { 256, 256, 1 };
+
+        vkCmdCopyBufferToImage( cmdBuffer,
+                                m_pStageTexture->GetBufferHandle(),
+                                m_pTexture.GetImage(),
+                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                1,
+                                &copyRegion );
+
+        VkImageMemoryBarrier toShaderRead = {};
+        toShaderRead.sType                = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        toShaderRead.srcAccessMask        = VK_ACCESS_TRANSFER_WRITE_BIT;
+        toShaderRead.dstAccessMask        = VK_ACCESS_SHADER_READ_BIT;
+        toShaderRead.oldLayout            = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        toShaderRead.newLayout            = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        toShaderRead.srcQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
+        toShaderRead.dstQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
+        toShaderRead.image                = m_pTexture.GetImage();
+        toShaderRead.subresourceRange     = VkImageSubresourceRange { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+
+        vkCmdPipelineBarrier( cmdBuffer,
+                              VK_PIPELINE_STAGE_TRANSFER_BIT,
+                              VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                              0,
+                              0,
+                              NULL,
+                              0,
+                              NULL,
+                              1,
+                              &toShaderRead );
+
+        m_bPendingTextureUpload = false;
+    }
+
+    if ( !curFrame.bInit )
+    {
+        VkDescriptorImageInfo imageInfo = {};
+        imageInfo.imageView             = m_pTexture.GetImageView();
+        imageInfo.imageLayout           = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        VkDescriptorImageInfo samplerInfo = {};
+        samplerInfo.sampler               = m_pTexture.GetSampler();
+
+        array<VkWriteDescriptorSet, 2> writes = {};
+
+        writes[ 0 ].sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        writes[ 0 ].dstSet          = curFrame.DescSet;
+        writes[ 0 ].dstBinding      = 2;
+        writes[ 0 ].descriptorCount = 1;
+        writes[ 0 ].descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+        writes[ 0 ].pImageInfo      = &imageInfo;
+
+        writes[ 1 ].sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        writes[ 1 ].dstSet          = curFrame.DescSet;
+        writes[ 1 ].dstBinding      = 3;
+        writes[ 1 ].descriptorCount = 1;
+        writes[ 1 ].descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER;
+        writes[ 1 ].pImageInfo      = &samplerInfo;
+
+        vkUpdateDescriptorSets( GetAdaterInternal()->GetAdapterHandle(),
+                                static_cast<uint32_t>( writes.size() ),
+                                writes.data(),
+                                0,
+                                NULL );
+
+        curFrame.bInit = true;
+    }
+
 
     if ( curFrame.uLastUploadedGeneration != m_uLastUploadedGeneration )
     {
@@ -345,7 +479,7 @@ void SpritesPipeline::Reset()
 // Private // ----------------------------------------------------------------------------------------------------------
 VkDescriptorSetLayout SpritesPipeline::CreateDescriptorLayoutImpl()
 {
-    array<VkDescriptorSetLayoutBinding, 1> bindings = {};
+    array<VkDescriptorSetLayoutBinding, 3> bindings = {};
     VkDescriptorSetLayout                  descriptorSetLayout;
 
     bindings[ 0 ]                 = {};
@@ -354,7 +488,19 @@ VkDescriptorSetLayout SpritesPipeline::CreateDescriptorLayoutImpl()
     bindings[ 0 ].descriptorCount = 1;
     bindings[ 0 ].stageFlags      = VK_SHADER_STAGE_VERTEX_BIT;
 
-    array<VkDescriptorBindingFlags, 1> bindingFlags = { VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT };
+    bindings[ 1 ]                 = {};
+    bindings[ 1 ].binding         = 2;
+    bindings[ 1 ].descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+    bindings[ 1 ].descriptorCount = 1;
+    bindings[ 1 ].stageFlags      = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    bindings[ 2 ]                 = {};
+    bindings[ 2 ].binding         = 3;
+    bindings[ 2 ].descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER;
+    bindings[ 2 ].descriptorCount = 1;
+    bindings[ 2 ].stageFlags      = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    array<VkDescriptorBindingFlags, 3> bindingFlags = { VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT, 0, 0 };
 
     VkDescriptorSetLayoutBindingFlagsCreateInfo bindingCreateInfo = {};
     bindingCreateInfo.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
@@ -400,8 +546,10 @@ UploadDescriptor SpritesPipeline::GetUniformUploadDescriptor( const shared_ptr<G
 // ---------------------------------------------------------------------------------------------------------------------
 VkDescriptorPool SpritesPipeline::CreateDescriptorPoolImpl()
 {
-    const array<VkDescriptorPoolSize, 1> poolSizes = {
+    const array<VkDescriptorPoolSize, 3> poolSizes = {
         VkDescriptorPoolSize( VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, Frame::MAX_FRAMES_IN_FLIGHT ),
+        VkDescriptorPoolSize( VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1 ),
+        VkDescriptorPoolSize( VK_DESCRIPTOR_TYPE_SAMPLER, 1 ),
     };
     VkDescriptorPool descriptorPool;
 

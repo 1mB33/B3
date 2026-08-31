@@ -3,6 +3,7 @@
 
 #include "Vec2.hpp"
 #include "Mat44.hpp"
+#include "Vulkan/Buffers/GPUBuffer.hpp"
 #include "Vulkan/Buffers/ImgBuffer.hpp"
 #include "Vulkan/IPipeline.hpp"
 #include "Vulkan/Buffers/GPUStreamBuffer.hpp"
@@ -51,6 +52,7 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
       , m_uCurFrame( 0 )
       , m_bPendingUpload( false )
       , m_bPendingMeshUpload( true )
+      , m_bPendingTextureUpload( true )
       , m_uLastUploadedGeneration( 0 )
       , m_SpriteData( MAX_SPRITES )
       , m_VertexShader( VK_NULL_HANDLE )
@@ -103,13 +105,15 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
                                                  const EShaderResource                    &sr );
 
   private:
-    ::B33::Rendering::SpritesPushConstants m_Vpc = {};
-
+    ::B33::Rendering::SpritesPushConstants               m_Vpc = {};
+    ::B33::Rendering::ImgBuffer                          m_pTexture;
+    ::std::shared_ptr<::B33::Rendering::GPUBuffer>       m_pStageTexture;
     ::std::shared_ptr<::B33::Rendering::GPUBuffer>       m_pQuadBuffer;
     ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> m_pStageQuadBuffer;
 
     struct PerFrame
     {
+        bool                                                 bInit;
         ::uint64_t                                           uLastUploadedGeneration;
         ::std::shared_ptr<::B33::Rendering::GPUBuffer>       SpriteInstances;
         ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> StageSpriteInstances;
@@ -121,6 +125,7 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
     ::uint32_t              m_uCurFrame               = -1;
     bool                    m_bPendingUpload          = false;
     bool                    m_bPendingMeshUpload      = false;
+    bool                    m_bPendingTextureUpload   = false;
     ::uint64_t              m_uLastUploadedGeneration = -1;
 
     ::std::vector<SpriteData> m_SpriteData = {};

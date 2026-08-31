@@ -155,7 +155,7 @@ ImgBuffer Memory::ReserveImage( const ::uint32_t        uWidth,
     THROW_IF_FAILED( vkAllocateMemory( da, &allocInfo, NULL, &memory ) );
     THROW_IF_FAILED( vkBindImageMemory( da, result, memory, 0 ) );
 
-    return ImgBuffer( m_pAdapter, result, VK_NULL_HANDLE );
+    return ImgBuffer( m_pAdapter, result, VK_NULL_HANDLE, VK_NULL_HANDLE );
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -189,7 +189,17 @@ void Memory::ReserveImageView( ImgBuffer &image, const VkFormat format, const Vk
 
     THROW_IF_FAILED( vkCreateImageView( da, &info, NULL, &result ) );
 
-    image = ImgBuffer( m_pAdapter, image.DetachImage(), result );
+    image = ImgBuffer( m_pAdapter, image.DetachImage(), result, image.DetachSampler() );
+}
+
+void Memory::ReserveSampler( ImgBuffer &image, VkSamplerCreateInfo &createInfo )
+{
+    const VkDevice da = m_pAdapter->GetAdapterHandle();
+    VkSampler      result;
+
+    THROW_IF_FAILED( vkCreateSampler( da, &createInfo, NULL, &result ) );
+
+    image = ImgBuffer( m_pAdapter, image.DetachImage(), image.DetachImageView(), result );
 }
 
 // --------------------------------------------------------------------------------------------------------------------

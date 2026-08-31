@@ -45,8 +45,11 @@ class Memory
     void ReserveImageView( ImgBuffer &image, const ::VkFormat format, const ::VkImageAspectFlags aspectMask );
 
     __B33_API
-    void UploadToBufferRaw( const void                                                 *pUpload,
-                            const ::size_t                                              uUploadSize,
+    void ReserveSampler( ImgBuffer &image, VkSamplerCreateInfo& createInfo );
+
+    __B33_API
+    void UploadToBufferRaw( const void                                           *pUpload,
+                            const ::size_t                                        uUploadSize,
                             const ::std::shared_ptr<::B33::Rendering::GPUBuffer> &gpuBuffer );
 
     __B33_API

@@ -12,7 +12,10 @@ class ImgBuffer
     __B33_API ImgBuffer();
 
     __B33_API
-    ImgBuffer( ::std::shared_ptr<const ::B33::Rendering::AdapterWrapper> da, ::VkImage image, ::VkImageView imageView );
+    ImgBuffer( ::std::shared_ptr<const ::B33::Rendering::AdapterWrapper> da,
+               ::VkImage                                                 image,
+               ::VkImageView                                             imageView,
+               ::VkSampler                                               sampler );
 
     __B33_API ~ImgBuffer();
 
@@ -37,6 +40,12 @@ class ImgBuffer
         return m_ImageView;
     }
 
+    ::VkSampler GetSampler() const
+    {
+        B33_ASSERT( m_Sampler != VK_NULL_HANDLE );
+        return m_Sampler;
+    }
+
     ::VkImage DetachImage()
     {
         auto result = m_Image;
@@ -44,10 +53,25 @@ class ImgBuffer
         return result;
     }
 
+    ::VkImageView DetachImageView()
+    {
+        auto result = m_ImageView;
+        m_ImageView = VK_NULL_HANDLE;
+        return result;
+    }
+
+    ::VkSampler DetachSampler()
+    {
+        auto result = m_Sampler;
+        m_Sampler   = VK_NULL_HANDLE;
+        return result;
+    }
+
   protected:
     ::std::shared_ptr<const ::B33::Rendering::AdapterWrapper> m_pDeviceAdapter = nullptr;
     ::VkImage                                                 m_Image          = VK_NULL_HANDLE;
     ::VkImageView                                             m_ImageView      = VK_NULL_HANDLE;
+    ::VkSampler                                               m_Sampler        = VK_NULL_HANDLE;
 };
 
 } // namespace B33::Rendering
