@@ -1,7 +1,7 @@
-#if !defined(B33_COMPONENT_BRIDGE_H)
-#define B33_COMPONENT_BRIDGE_H
+#if !defined( B33_COMPONENT_BRIDGE_H )
+#    define B33_COMPONENT_BRIDGE_H
 
-#include "IComponent.hpp"
+#    include "IComponent.hpp"
 
 namespace B33::System
 {
@@ -71,12 +71,12 @@ class ComponentBridge
     }
 
     template <class COMPONENT_DERIVED>
-    BorrowedComponent<COMPONENT_DERIVED> QueryComponent()
+    Core::Borrowed<COMPONENT_DERIVED> QueryComponent()
     {
         B33_ASSERT( m_ComponentMap.find( COMPONENT_DERIVED::GetComponentName() ) != m_ComponentMap.end() );
         ComponentAbstractBase *result        = m_ComponentMap[ COMPONENT_DERIVED::GetComponentName() ].get();
         COMPONENT_DERIVED     *resultDerived = dynamic_cast<COMPONENT_DERIVED *>( result );
-        return BorrowedComponent<COMPONENT_DERIVED>( *resultDerived );
+        return Core::Borrowed<COMPONENT_DERIVED>( &resultDerived->m_mUsed, resultDerived );
     }
 
   private:

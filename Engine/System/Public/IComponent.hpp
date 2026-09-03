@@ -1,9 +1,10 @@
-#if !defined(B33_ICOMPONENT_H)
-#define B33_ICOMPONENT_H
+#if !defined( B33_ICOMPONENT_H )
+#    define B33_ICOMPONENT_H
 
-#include "B33Core.h"
-#include "B33System.hpp"
-#include "Synchronization/DeltaTime.hpp"
+#    include "B33Core.h"
+#    include "B33System.hpp"
+#    include "Synchronization/DeltaTime.hpp"
+#    include "Borrowed.hpp"
 
 namespace B33::System
 {
@@ -23,8 +24,7 @@ class ComponentAbstractBase
 {
     friend class EngineLoop;
 
-    template <class T>
-    friend class BorrowedComponent;
+    friend class ComponentBridge;
 
   public:
     virtual ::B33::System::EComponentType GetComponentType() = 0;
@@ -42,36 +42,32 @@ class ComponentAbstractBase
     virtual ~ComponentAbstractBase() = default;
 
   public:
+    float GetLocalDelta()
+    {
+        return m_LocalDelta.FetchMs();
+    }
+
+  public:
+    void SetDeltaRefrenceFrame()
+    {
+        m_LocalDelta.SetReferenceFrame();
+    }
+
+  public:
     virtual void Initialize( class ComponentBridge &bridge )           = 0;
     virtual void Update( float fDelta, class ComponentBridge &bridge ) = 0;
     virtual void Destroy( class ComponentBridge &bridge )              = 0;
 
-  public:
     void Lock()
     {
         m_mUsed.lock();
         B33_TRACE( L"Component locked %p", this );
     }
 
-    bool TryLock()
-    {
-        return true;
-    }
-
     void Unlock()
     {
         m_mUsed.unlock();
         B33_TRACE( L"Component unlocked %p", this );
-    }
-
-    float GetLocalDelta()
-    {
-        return m_LocalDelta.FetchMs();
-    }
-
-    void SetDeltaRefrenceFrame()
-    {
-        m_LocalDelta.SetReferenceFrame();
     }
 
   private:
@@ -156,20 +152,20 @@ class ComponentInstanceRegister
     __B33_API static void RegisterInternal( const ::std::string_view &className, ComponentFactory factory );
 };
 
-#define B33_COMPONENT( CLASS_NAME )                                                                                    \
-  public:                                                                                                              \
-    static ::B33::System::ComponentInstance GetComponentFactory()                                                      \
-    {                                                                                                                  \
-        return ::std::make_unique<CLASS_NAME>();                                                                       \
-    }                                                                                                                  \
-    static ::std::string_view GetComponentName()                                                                       \
-    {                                                                                                                  \
-        return #CLASS_NAME;                                                                                            \
-    }                                                                                                                  \
+#    define B33_COMPONENT( CLASS_NAME )                                                                                \
+      public:                                                                                                          \
+        static ::B33::System::ComponentInstance GetComponentFactory()                                                  \
+        {                                                                                                              \
+            return ::std::make_unique<CLASS_NAME>();                                                                   \
+        }                                                                                                              \
+        static ::std::string_view GetComponentName()                                                                   \
+        {                                                                                                              \
+            return #CLASS_NAME;                                                                                        \
+        }                                                                                                              \
                                                                                                                        \
-  private:                                                                                                             \
-    static inline const ::B33::System::ComponentInstanceRegister RegisteredComponent =                                 \
-        ::B33::System::ComponentInstanceRegister::Register( #CLASS_NAME, &GetComponentFactory );
+      private:                                                                                                         \
+        static inline const ::B33::System::ComponentInstanceRegister RegisteredComponent =                             \
+            ::B33::System::ComponentInstanceRegister::Register( #CLASS_NAME, &GetComponentFactory );
 
 
 } // namespace B33::System
