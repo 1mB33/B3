@@ -1,14 +1,15 @@
-#if !defined(B33_CORE_MINIMAL_H)
-#define B33_CORE_MINIMAL_H
+#if !defined( B33_CORE_MINIMAL_H )
+#    define B33_CORE_MINIMAL_H
 
-#include "AbLimits.h"
-#include "CStandard.h"
+#    ifdef __cplusplus
+#        include "CPlusPlusStandard.hpp"
+#    endif //!__cplusplus
 
-#ifdef __cplusplus
-#    include "CPlusPlusStandard.hpp"
-#endif //!__cplusplus
+#    include "CStandard.h"
+#    include "MinimalSystemIncludes.h"
+#    include "Types.h"
+#    include "AbLimits.h"
 
-#include "ExportImport.h"
-#include "MinimalSystemIncludes.h"
+#    include "ExportImport.h"
 
 #endif //! B33_CORE_MINIMAL_H

@@ -13,7 +13,7 @@ __B33_ATTRIBUTE_MIGHT_BE_UNUSED static struct Runnable
 {
     Runnable()
     {
-        B33_INFO(L"Spawing AppResources on main thread");
+        B33_INFO( L"Spawing AppResources on main thread" );
         AppResources::Get();
     }
 } MakeSureThatAppResourcesAreOnMainThread = {};
@@ -22,7 +22,7 @@ __B33_ATTRIBUTE_MIGHT_BE_UNUSED static struct Runnable
 AppResources::AppResources()
   : m_wstrExePathW( InternalGetExecutablePathW() )
   , m_strExePathA( InternalGetExecutablePathA( m_wstrExePathW ) )
-  , m_MainThreadId( ::std::this_thread::get_id() )
+  , m_MainThreadId( this_thread::get_id() )
 {
 }
 
@@ -102,14 +102,14 @@ wstring AppResources::InternalGetExecutablePathW()
 #endif // !__linux__
 
 // --------------------------------------------------------------------------------------------------------------------
-string AppResources::InternalGetExecutablePathA( const ::std::wstring wstrBase )
+string AppResources::InternalGetExecutablePathA( const wstring wstrBase )
 {
-    size_t len = std::wcstombs( nullptr, wstrBase.c_str(), 0 );
+    size_t len = wcstombs( nullptr, wstrBase.c_str(), 0 );
 
     if ( len != static_cast<size_t>( -1 ) )
     {
-        std::string str( len, '\0' );
-        std::wcstombs( &str[ 0 ], wstrBase.c_str(), len );
+        string str( len, '\0' );
+        wcstombs( &str[ 0 ], wstrBase.c_str(), len );
         return str;
     }
 

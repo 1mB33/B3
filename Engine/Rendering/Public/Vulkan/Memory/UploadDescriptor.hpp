@@ -15,13 +15,13 @@ enum EUploadType
 struct UploadDescriptor
 {
     template <typename T>
-    constexpr decltype( auto ) forward( T &arg ) noexcept
+    constexpr decltype( auto ) Forward( T &arg ) noexcept
     {
         return ::std::forward<T>( arg );
     }
 
     template <typename T>
-    constexpr decltype( auto ) forward( T &&arg ) noexcept
+    constexpr decltype( auto ) Forward( T &&arg ) noexcept
     {
         return ::std::forward<T>( arg );
     }
@@ -31,8 +31,8 @@ struct UploadDescriptor
 
     template <typename U, typename L, class T>
     UploadDescriptor( U &&bufferInfo, L &&write, EUploadType type, const T &buffer )
-      : BufferInfo( forward<U>( bufferInfo ) )
-      , Write( forward<L>( write ) )
+      : BufferInfo( Forward<U>( bufferInfo ) )
+      , Write( Forward<L>( write ) )
       , Type( type )
     {
         Write.pBufferInfo = &BufferInfo;

@@ -1,28 +1,28 @@
-#include "B33Core.h"
+#include "B33App.h"
 
 #include "MouseMap.hpp"
 
 namespace B33::App
 {
 
-// ---------------------------------------------------------------------------------------------------------------------
-void MouseMap::BindActionImpl( __B33_ATTRIBUTE_MIGHT_BE_UNUSED const AbInputBind &ib,
-                               void                                              *pThis,
-                               __B33_ATTRIBUTE_MIGHT_BE_UNUSED AbAction           a,
-                               AbMouseAction                                      ma )
+// Impl // ------------------------------------------------------------------------------------------------------------
+void MouseMap::BindActionImpl( __B33_ATTRIBUTE_MIGHT_BE_UNUSED const B33InputBind &ib,
+                               void                                               *pThis,
+                               __B33_ATTRIBUTE_MIGHT_BE_UNUSED B33Action           a,
+                               B33MouseAction                                      ma )
 {
-    B33_ASSERT( ib.Type == EAbBindType::Mouse );
+    B33_ASSERT( ib.Type == EB33BindType::Mouse );
     B33_ASSERT( a == nullptr );
     B33_ASSERT( ma != nullptr );
     B33_ASSERT( pThis != nullptr );
 
-    m_vMouseBinds.push_back( DataForActionReplay { pThis, ma } );
+    m_vMouseBinds.push_back( ActionReplayData { pThis, ma } );
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-void MouseMap::UnbindActionImpl( __B33_ATTRIBUTE_MIGHT_BE_UNUSED const AbInputBind &ib, void *pThis )
+void MouseMap::UnbindActionImpl( __B33_ATTRIBUTE_MIGHT_BE_UNUSED const B33InputBind &ib, void *pThis )
 {
-    B33_ASSERT( ib.Type == EAbBindType::Mouse );
+    B33_ASSERT( ib.Type == EB33BindType::Mouse );
     B33_ASSERT( pThis != nullptr );
 
     auto it = m_vMouseBinds.begin();
@@ -38,8 +38,8 @@ void MouseMap::UnbindActionImpl( __B33_ATTRIBUTE_MIGHT_BE_UNUSED const AbInputBi
     B33_ASSERT( it != m_vMouseBinds.end() );
 }
 
-// ---------------------------------------------------------------------------------------------------------------------
-void MouseMap::PlayAction( const float fDelta, int32_t fX, int32_t fY )
+// Public // ----------------------------------------------------------------------------------------------------------
+void MouseMap::PlayAction( const float fDelta, int32_t fX, int32_t fY ) noexcept
 {
     for ( const auto &bind : m_vMouseBinds )
     {

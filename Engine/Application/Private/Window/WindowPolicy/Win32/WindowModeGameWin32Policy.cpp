@@ -107,7 +107,7 @@ void WindowModeGameWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM
         case WM_INPUT:
         {
             static ::std::vector<BYTE> vRi = {};
-            AbInputStruct              is  = {};
+            B33InputStruct              is  = {};
             UINT                       cbSize;
             UINT                       cbSize2;
             size_t                     uRiRead;

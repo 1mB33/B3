@@ -192,19 +192,19 @@ uint32_t BasicLinuxWindowPolicy::OnUpdate( WindowDesc *pWd, XEvent &event )
     switch ( event.type )
     {
         case KeyPress:
-            HandleKey( pWd, event, AbKeyPress );
+            HandleKey( pWd, event, B33KeyPress );
             return 0;
 
         case KeyRelease:
-            HandleKey( pWd, event, AbKeyRelease );
+            HandleKey( pWd, event, B33KeyRelease );
             return 0;
 
         case ButtonPress:
-            HandleMouseButton( pWd, event, AbButtonPress );
+            HandleMouseButton( pWd, event, B33ButtonPress );
             return 0;
 
         case ButtonRelease:
-            HandleMouseButton( pWd, event, AbButtonRelease );
+            HandleMouseButton( pWd, event, B33ButtonRelease );
             return 0;
 
         case MotionNotify:
@@ -222,9 +222,9 @@ uint32_t BasicLinuxWindowPolicy::OnUpdate( WindowDesc *pWd, XEvent &event )
                            reinterpret_cast<unsigned int *>( &dummy ) );
 
             windowData.LastEvent |= Input;
-            AbInputStruct is;
+            B33InputStruct is;
 
-            is.Event        = AbMotion;
+            is.Event        = B33Motion;
             is.Mouse.MouseX = static_cast<int32_t>( rootX );
             is.Mouse.MouseY = static_cast<int32_t>( rootY );
 
@@ -265,11 +265,11 @@ uint32_t BasicLinuxWindowPolicy::OnUpdate( WindowDesc *pWd, XEvent &event )
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-void BasicLinuxWindowPolicy::HandleKey( WindowDesc *pWd, XEvent &event, EAbInputEvents ie )
+void BasicLinuxWindowPolicy::HandleKey( WindowDesc *pWd, XEvent &event, EB33InputEvents ie )
 {
     pWd->Data.LastEvent |= Input;
 
-    AbInputStruct is;
+    B33InputStruct is;
     is.Event          = ie;
     is.Keyboard.KeyId = event.xkey.keycode - 8;
 
@@ -277,11 +277,11 @@ void BasicLinuxWindowPolicy::HandleKey( WindowDesc *pWd, XEvent &event, EAbInput
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-void BasicLinuxWindowPolicy::HandleMouseButton( WindowDesc *pWd, XEvent &event, EAbInputEvents ie )
+void BasicLinuxWindowPolicy::HandleMouseButton( WindowDesc *pWd, XEvent &event, EB33InputEvents ie )
 {
     pWd->Data.LastEvent |= Input;
 
-    AbInputStruct is;
+    B33InputStruct is;
     is.Event             = ie;
     is.MouseButton.KeyId = event.xbutton.button;
 

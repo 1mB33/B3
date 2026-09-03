@@ -166,7 +166,7 @@ void BasicWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM lParam )
                 return;
             }
 
-            AbInputStruct is = {};
+            B33InputStruct is = {};
             m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::Input;
 
             is.Event          = EAbInputEvents::AbKeyPress;
@@ -178,7 +178,7 @@ void BasicWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM lParam )
 
         case WM_KEYUP:
         {
-            AbInputStruct is = {};
+            B33InputStruct is = {};
             m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::Input;
 
             is.Event          = EAbInputEvents::AbKeyRelease;
@@ -190,7 +190,7 @@ void BasicWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM lParam )
 
         case WM_LBUTTONDOWN:
         {
-            AbInputStruct is = {};
+            B33InputStruct is = {};
             m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::Input;
 
             is.Event             = EAbInputEvents::AbButtonPress;
@@ -202,7 +202,7 @@ void BasicWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM lParam )
 
         case WM_RBUTTONDOWN:
         {
-            AbInputStruct is = {};
+            B33InputStruct is = {};
             m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::Input;
 
             is.Event             = EAbInputEvents::AbButtonPress;
@@ -214,7 +214,7 @@ void BasicWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM lParam )
 
         case WM_MBUTTONDOWN:
         {
-            AbInputStruct is = {};
+            B33InputStruct is = {};
             m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::Input;
 
             is.Event             = EAbInputEvents::AbButtonPress;
@@ -226,7 +226,7 @@ void BasicWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM lParam )
 
         case WM_MOUSEMOVE:
         {
-            AbInputStruct is = {};
+            B33InputStruct is = {};
             m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::Input;
 
             is.Event        = EAbInputEvents::AbMotion;

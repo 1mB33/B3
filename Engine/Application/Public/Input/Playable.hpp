@@ -1,9 +1,8 @@
-#include "Borrowed.hpp"
 #if !defined( B33_PLAYABLE_HPP )
 #    define B33_PLAYABLE_HPP
 
-#    include "B33Core.h"
-
+#    include <B33Core.h>
+#    include "Borrowed.hpp"
 #    include "Bind.h"
 #    include "Input/UserInput.hpp"
 #    include "Action.hpp"
@@ -64,7 +63,7 @@ class Playable
     // Methods // -----------------------------------------------------------------------------------------------------
   public:
     using UserInputPtr      = ::std::shared_ptr<::B33::App::UserInput>;
-    using ActionInputVector = ::std::vector<::std::pair<::B33::App::Action, AbInputBind>>;
+    using ActionInputVector = ::std::vector<::std::pair<::B33::App::Action, B33InputBind>>;
 
     void Lock()
     {
@@ -83,13 +82,13 @@ class Playable
         {
             switch ( bind.first.Type )
             {
-                case EAbBindType::Keyboard:
+                case EB33BindType::Keyboard:
                     pInput->Bind( &m_Object, &m_Controller, bind.first.ButtonAction, nullptr, bind.second );
                     break;
-                case EAbBindType::Mouse:
+                case EB33BindType::Mouse:
                     pInput->Bind( &m_Object, &m_Controller, nullptr, bind.first.MouseAction, bind.second );
                     break;
-                case EAbBindType::MouseButton:
+                case EB33BindType::MouseButton:
                     pInput->Bind( &m_Object, &m_Controller, bind.first.ButtonAction, nullptr, bind.second );
                     break;
             }

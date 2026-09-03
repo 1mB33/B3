@@ -17,10 +17,10 @@ AppStatus::AppStatus()
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-AppStatus::~AppStatus() {}
+AppStatus::~AppStatus() noexcept {}
 
 // --------------------------------------------------------------------------------------------------------------------
-AppStatus &AppStatus::Get()
+AppStatus &AppStatus::Get() noexcept
 {
     static AppStatus instance;
     return instance;
@@ -51,7 +51,7 @@ void AppStatus::SendExitSignal()
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-uint32_t AppStatus::SendOpenWindowSignal( shared_ptr<WindowDesc> pWd )
+u32 AppStatus::SendOpenWindowSignal( shared_ptr<WindowDesc> pWd )
 {
     B33_LOG( Info, L"Got new window signal" );
 
@@ -64,7 +64,7 @@ uint32_t AppStatus::SendOpenWindowSignal( shared_ptr<WindowDesc> pWd )
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-uint32_t AppStatus::SendCloseWindowSignal( shared_ptr<WindowDesc> pWd )
+u32 AppStatus::SendCloseWindowSignal( shared_ptr<WindowDesc> pWd )
 {
     B33_LOG( Info, L"Got close window signal" );
 

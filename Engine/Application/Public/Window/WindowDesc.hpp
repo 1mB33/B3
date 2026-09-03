@@ -1,8 +1,8 @@
-#if !defined(B33_WINDOW_DESC_H)
-#define B33_WINDOW_DESC_H
+#if !defined( B33_WINDOW_DESC_H )
+#    define B33_WINDOW_DESC_H
 
-#include "Input/InputEvents.h"
-#include "WindowEvents.h"
+#    include "Input/InputEvents.h"
+#    include "WindowEvents.h"
 
 /**
  * Struct that contains all the handles and information about the window.
@@ -12,33 +12,38 @@
  */
 struct WindowDesc
 {
-    ::std::mutex mUpdated;
+    template <typename T>
+    using Queue   = ::std::queue<T>;
+    using Mutex   = ::std::mutex;
+    using WString = ::std::wstring;
+
+    Mutex mUpdated;
 
     struct
     {
-        ::std::wstring              Name;
-        const wchar_t              *pwszClassName;
-        int32_t                     Width;
-        int32_t                     Height;
-        bool                        bIsAlive;
-        bool                        bIsVisible;
-        EAbWindowEventsFlags        LastEvent;
-        ::std::queue<AbInputStruct> InputStruct;
+        WString               Name;
+        const wchar_t        *pwszClassName;
+        i32                   Width;
+        i32                   Height;
+        bool                  bIsAlive;
+        bool                  bIsVisible;
+        EB33WindowEventsFlags LastEvent;
+        Queue<B33InputStruct> InputStruct;
     } Data;
 
     struct
     {
-#if defined( _WIN32 )
+#    if defined( _WIN32 )
         HWND       hWnd;
         WNDCLASSEX Wcex;
-#elif defined( _X11 )
+#    elif defined( _X11 )
         Display *pDisplayHandle;
         Window   WindowHandle;
-        int32_t  Screen;
-#elif defined( __APPLE__ )
+        i32      Screen;
+#    elif defined( __APPLE__ )
         void *pWindow;
         void *pMetalContext;
-#endif // !_WIN32
+#    endif // !_WIN32
     } OS;
 
   public:
@@ -49,20 +54,46 @@ struct WindowDesc
     {
     }
 
+  public:
     WindowDesc( const WindowDesc &other )
       : mUpdated()
       , Data( other.Data )
       , OS( other.OS )
     {
     }
+
+    WindowDesc &operator=( const WindowDesc &other )
+    {
+        Data = other.Data;
+        OS   = other.OS;
+
+        return *this;
+    }
+
+    WindowDesc( WindowDesc &&other ) noexcept
+      : mUpdated()
+      , Data( ::std::move( other.Data ) )
+      , OS( ::std::move( other.OS ) )
+    {
+    }
+
+    WindowDesc &operator=( WindowDesc &&other ) noexcept
+    {
+        Data = ::std::move( other.Data );
+        OS   = ::std::move( other.OS );
+
+        return *this;
+    }
 };
 
 template <class U>
-WindowDesc CreateWindowDesc( U &&wstrName, int32_t width = 1200, int32_t height = 700 )
+WindowDesc CreateWindowDesc( U &&wstrName, i32 width = 1200, i32 height = 700 )
 {
+    using ::std::forward;
+
     WindowDesc wd = {};
 
-    wd.Data.Name          = ::std::forward<U>( wstrName );
+    wd.Data.Name          = forward<U>( wstrName );
     wd.Data.pwszClassName = NULL;
     wd.Data.Width         = width;
     wd.Data.Height        = height;
@@ -70,14 +101,14 @@ WindowDesc CreateWindowDesc( U &&wstrName, int32_t width = 1200, int32_t height 
     wd.Data.bIsVisible    = false;
     wd.Data.LastEvent &= 0;
 
-#if defined( _WIN32 )
+#    if defined( _WIN32 )
     wd.OS.hWnd = NULL;
     wd.OS.Wcex = {};
-#elif defined( _X11 )
+#    elif defined( _X11 )
     wd.OS.pDisplayHandle = NULL;
     wd.OS.WindowHandle   = 0;
     wd.OS.Screen         = 0;
-#endif // !_WIN32
+#    endif // !_WIN32
     return wd;
 }
 

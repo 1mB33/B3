@@ -1,25 +1,25 @@
-#if !defined(B33_BORDERLESS_GAME_SYSTEM_POLICY_H)
-#define B33_BORDERLESS_GAME_SYSTEM_POLICY_H
+#if !defined( B33_BORDERLESS_GAME_SYSTEM_POLICY_H )
+#    define B33_BORDERLESS_GAME_SYSTEM_POLICY_H
 
-#if defined( _WIN32 )
-#    include "Window/WindowPolicy/Win32/BorderlessGameWin32Policy.hpp"
-#elif defined( _X11 )
-#    include "Window/WindowPolicy/Linux/BorderlessGameLinuxPolicy.hpp"
-#elif defined( __APPLE__ )
-#    include "BasicSystemPolicy.hpp"
-#endif // !_WIN32
+#    if defined( _WIN32 )
+#        include "Window/WindowPolicy/Win32/BorderlessGameWin32Policy.hpp"
+#    elif defined( _X11 )
+#        include "Window/WindowPolicy/Linux/BorderlessGameLinuxPolicy.hpp"
+#    elif defined( __APPLE__ )
+#        include "BasicSystemPolicy.hpp"
+#    endif // !_WIN32
 
 namespace B33::App
 {
 
 typedef
-#if defined( _WIN32 )
+#    if defined( _WIN32 )
     BorderlessGameWin32Policy
-#elif defined( _X11 )
+#    elif defined( _X11 )
     BorderlessGameLinuxWindowPolicy
-#elif defined( __APPLE__ )
+#    elif defined( __APPLE__ )
     MetalAppleWindowPolicy
-#endif // !_WIN32
+#    endif // !_WIN32
         BorderlessGameSystemPolicy;
 
 } // namespace B33::App

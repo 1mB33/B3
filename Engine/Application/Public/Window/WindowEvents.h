@@ -3,15 +3,15 @@
 
 #include "B33Core.h"
 
-typedef uint32_t EAbWindowEventsFlags;
+typedef u32 EB33WindowEventsFlags;
 
-typedef enum EAbWindowEvents : EAbWindowEventsFlags
+typedef enum EB33WindowEvents : EB33WindowEventsFlags
 {
     NothingNew      = 1,
     Destroy         = NothingNew << 1,
     Resize          = Destroy << 1,
     Input           = Resize << 1,
     ChangedBehavior = Input << 1,
-} EAbWindowEvents;
+} EB33WindowEvents;
 
 #endif // !B33_WINDOW_EVENTS_H

@@ -1,3 +1,4 @@
+#include "Input/InputEvents.h"
 #if defined( _X11 )
 #    ifndef B33_WINDOW_POLICY_H
 #        define B33_WINDOW_POLICY_H
@@ -37,9 +38,9 @@ class __B33_API BasicLinuxWindowPolicy : public IWindowPolicy<BasicLinuxWindowPo
     virtual uint32_t OnUpdate( WindowDesc *pWd, XEvent &event );
 
   private:
-    void HandleKey( WindowDesc *pWd, XEvent &event, EAbInputEvents ie );
+    void HandleKey( WindowDesc *pWd, XEvent &event, EB33InputEvents ie );
 
-    void HandleMouseButton( WindowDesc *pWd, XEvent &event, EAbInputEvents ie );
+    void HandleMouseButton( WindowDesc *pWd, XEvent &event, EB33InputEvents ie );
 };
 
 } // namespace B33::App

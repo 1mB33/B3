@@ -115,8 +115,8 @@ void GameLinuxWindowPolicy::HandleRawInput( WindowDesc *pWd, XEvent &event )
 
     windowData.LastEvent |= Input;
 
-    AbInputStruct is;
-    is.Event        = AbMotion;
+    B33InputStruct is;
+    is.Event        = B33Motion;
     is.Mouse.MouseX = dx;
     is.Mouse.MouseY = dy;
 

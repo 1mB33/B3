@@ -1,8 +1,8 @@
-#if !defined(B33_IWINDOW_POLICY_H)
-#define B33_IWINDOW_POLICY_H
+#if !defined( B33_IWINDOW_POLICY_H )
+#    define B33_IWINDOW_POLICY_H
 
-#include "Unknown.hpp"
-#include "Window/WindowDesc.hpp"
+#    include "Unknown.hpp"
+#    include "Window/WindowDesc.hpp"
 
 namespace B33::App
 {
@@ -11,9 +11,9 @@ template <class Policy>
 class IWindowPolicy
 {
   public:
-    IWindowPolicy() = default;
+    IWindowPolicy() noexcept = default;
 
-    ~IWindowPolicy() = default;
+    ~IWindowPolicy() noexcept = default;
 
   public:
     IWindowPolicy( const IWindowPolicy & )            = default;

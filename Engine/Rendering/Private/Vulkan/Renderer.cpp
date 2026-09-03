@@ -62,9 +62,9 @@ void Renderer::Render()
 {
     lock_guard lg( GetWindowDesc()->mUpdated );
 
-    if ( GetWindowDesc()->Data.LastEvent & EAbWindowEvents::ChangedBehavior )
+    if ( GetWindowDesc()->Data.LastEvent & EB33WindowEvents::ChangedBehavior )
     {
-        GetWindowDesc()->Data.LastEvent &= ~EAbWindowEvents::ChangedBehavior;
+        GetWindowDesc()->Data.LastEvent &= ~EB33WindowEvents::ChangedBehavior;
         B33_WARNING( L"On update, the window just changed behavior, skipping a frame" );
         RecreateSwapChain();
         return;

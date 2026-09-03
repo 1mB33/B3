@@ -1,22 +1,25 @@
-#if !defined(B33_WINDOW_LISTENER_H)
-#define B33_WINDOW_LISTENER_H
+#if !defined( B33_WINDOW_LISTENER_H )
+#    define B33_WINDOW_LISTENER_H
 
-#include "B33Core.h"
+#    include <B33Core.h>
 
-#include "Window/WindowDesc.hpp"
+#    include "Window/WindowDesc.hpp"
 
 namespace B33::App
 {
 
 class WindowListener
 {
+    template <typename T>
+    using SharedPtr = ::std::shared_ptr<T>;
+
   public:
-    explicit WindowListener( ::std::shared_ptr<WindowDesc> pWd = nullptr )
+    explicit WindowListener( SharedPtr<WindowDesc> pWd = nullptr )
       : m_pWindowDesc( pWd )
     {
     }
 
-    ~WindowListener() = default;
+    ~WindowListener() noexcept = default;
 
   public:
     WindowListener( const WindowListener &other ) noexcept
@@ -42,7 +45,7 @@ class WindowListener
     }
 
   public:
-    void ListenToWindow( ::std::shared_ptr<WindowDesc> pWd )
+    void ListenToWindow( SharedPtr<WindowDesc> pWd )
     {
         B33_ASSERT( pWd != nullptr );
         m_pWindowDesc = pWd;
@@ -61,7 +64,7 @@ class WindowListener
     }
 
   private:
-    ::std::shared_ptr<WindowDesc> m_pWindowDesc = nullptr;
+    SharedPtr<WindowDesc> m_pWindowDesc = nullptr;
 };
 
 } // namespace B33::App

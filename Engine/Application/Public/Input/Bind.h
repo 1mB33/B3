@@ -1,17 +1,17 @@
-#if !defined(B33_KEY_BIND_H)
-#define B33_KEY_BIND_H
+#if !defined( B33_KEY_BIND_H )
+#    define B33_KEY_BIND_H
 
-#include "B33Core.h"
+#    include <B33Core.h>
 
 /**
  * Empty struct to force binding type safety. Like a rock for your shoe.
  * */
-typedef struct AbActionType
+typedef struct B33ActionType
 {
     char Reserved;
-} AbActionType;
+} B33ActionType;
 
-typedef uint8_t AbKeyId;
+typedef u8 B33KeyId;
 
 typedef enum EState
 {
@@ -19,44 +19,44 @@ typedef enum EState
     IsReleased = IsPressed << 1,
 } EState;
 
-typedef enum EAbOnState
+typedef enum EB33OnState
 {
     Release    = 1,
     Press      = Release << 1,
     Continuous = Press << 1,
-} EAbOnState;
+} EB33OnState;
 
-typedef enum EAbBindType
+typedef enum EB33BindType
 {
     Keyboard    = 1,
     Mouse       = Keyboard << 1,
     MouseButton = Mouse << 1,
-} EAbBindType;
+} EB33BindType;
 
-typedef struct AbKeyboardBind
+typedef struct B33KeyboardBind
 {
-    EAbOnState KeyState;
-    AbKeyId    KeyCode;
-} AbKeyboardBind;
+    EB33OnState KeyState;
+    B33KeyId    KeyCode;
+} B33KeyboardBind;
 
-typedef struct AbMouseButtonBind
+typedef struct B33MouseButtonBind
 {
-    EAbOnState ButtonState;
-    AbKeyId    ButtonCode;
-} AbMouseButtonBind;
+    EB33OnState ButtonState;
+    B33KeyId    ButtonCode;
+} B33MouseButtonBind;
 
-typedef struct AbInputBind
+typedef struct B33InputBind
 {
-    EAbBindType Type;
+    EB33BindType Type;
 
     union
     {
-        AbKeyboardBind    Keyboard;
-        AbMouseButtonBind MouseButton;
+        B33KeyboardBind    Keyboard;
+        B33MouseButtonBind MouseButton;
     };
-} AbInputBind;
+} B33InputBind;
 
-typedef AbActionType ( *AbAction )( const float fDelta, void *pThis );
-typedef AbActionType ( *AbMouseAction )( const float fDelta, void *pThis, int32_t X, int32_t y );
+typedef B33ActionType ( *B33Action )( const float fDelta, void *pThis );
+typedef B33ActionType ( *B33MouseAction )( const float fDelta, void *pThis, i32 X, int32_t y );
 
 #endif // !B33_KEY_BIND_H

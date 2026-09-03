@@ -1,13 +1,12 @@
-#if !defined(B33_IBASEWINDOW_H)
-#define B33_IBASEWINDOW_H
+#if !defined( B33_IBASEWINDOW_H )
+#    define B33_IBASEWINDOW_H
 
-#include "B33Core.h"
-
-#include "AppResources.hpp"
-#include "AppStatus.hpp"
-#include "Window/WindowDesc.hpp"
-#include "Window/WindowEvents.h"
-#include "Window/WindowPolicy/BasicSystemPolicy.hpp"
+#    include <B33Core.h>
+#    include "AppResources.hpp"
+#    include "AppStatus.hpp"
+#    include "Window/WindowDesc.hpp"
+#    include "Window/WindowEvents.h"
+#    include "Window/WindowPolicy/BasicSystemPolicy.hpp"
 
 namespace B33::App
 {
@@ -22,22 +21,66 @@ namespace B33::App
 template <typename Derived, typename WindowPolicy = DefaultSystemWindowPolicy>
 class IBaseWindow
 {
+    template <typename T>
+    constexpr decltype( auto ) Forward( T &arg ) noexcept
+    {
+        return ::std::forward<T>( arg );
+    }
+
+    template <typename T>
+    constexpr decltype( auto ) Forward( T &&arg ) noexcept
+    {
+        return ::std::forward<T>( arg );
+    }
+
+    template <typename T>
+    constexpr decltype( auto ) MakeShared() noexcept
+    {
+        return ::std::make_shared<T>();
+    }
+
+    template <typename T>
+    constexpr decltype( auto ) MakeUnique() noexcept
+    {
+        return ::std::make_unique<T>();
+    }
+
+    template <typename T, typename U>
+    constexpr decltype( auto ) MakeShared( U &&arg ) noexcept
+    {
+        return ::std::make_shared<T>( Forward<U>( arg ) );
+    }
+
+    template <typename T, typename U>
+    constexpr decltype( auto ) MakeUnique( U &&arg ) noexcept
+    {
+        return ::std::make_unique<T>( Forward<U>( arg ) );
+    }
+
+    template <typename T>
+    using UniquePtr = ::std::unique_ptr<T>;
+
+    template <typename T>
+    using SharedPtr = ::std::shared_ptr<T>;
+
   public:
     IBaseWindow()
-      : m_Policy( ::std::make_unique<WindowPolicy>() )
-      , m_pWindowDesc( ::std::make_shared<WindowDesc>( CreateWindowDesc( L"IBaseWindow", 1280, 720 ) ) )
+      : m_Policy( MakeUnique<WindowPolicy>() )
+      , m_pWindowDesc( MakeShared<WindowDesc>( CreateWindowDesc( L"IBaseWindow", 1280, 720 ) ) )
     {
-        B33_ASSERT( ::std::this_thread::get_id() == AppResources::Get().GetMainThreadID() );
+        using ::std::this_thread::get_id;
+
+        B33_ASSERT( get_id() == AppResources::Get().GetMainThreadID() );
     }
 
     template <class U>
     explicit IBaseWindow( U &&windowDesc = WindowDesc() )
-      : m_Policy( ::std::make_unique<WindowPolicy>() )
-      , m_pWindowDesc( ::std::make_shared<WindowDesc>( ::std::forward<U>( windowDesc ) ) )
+      : m_Policy( MakeUnique<WindowPolicy>() )
+      , m_pWindowDesc( MakeShared<WindowDesc>( ::std::forward<U>( windowDesc ) ) )
     {
     }
 
-    ~IBaseWindow()
+    ~IBaseWindow() noexcept
     {
         if ( m_pWindowDesc.get() )
         {
@@ -46,7 +89,7 @@ class IBaseWindow
     }
 
   public:
-    IBaseWindow( const IBaseWindow & )                     = delete;
+    IBaseWindow( const IBaseWindow & ) noexcept            = delete;
     IBaseWindow &operator=( const IBaseWindow & ) noexcept = delete;
 
     IBaseWindow( IBaseWindow &&other ) noexcept
@@ -57,47 +100,74 @@ class IBaseWindow
 
     IBaseWindow &operator=( IBaseWindow &&other ) noexcept
     {
+        this->Destroy();
+
         this->m_Policy      = ::std::move( other.m_Policy );
         this->m_pWindowDesc = ::std::move( other.m_pWindowDesc );
 
         other.m_pWindowDesc = nullptr;
+
+        return *this;
     }
 
   public:
     template <class NewPolicy>
-    void ChangePolicy()
+    void ChangePolicy() noexcept
     {
-        B33_ASSERT( m_pWindowDesc != nullptr );
+        using ::std::exception;
+        using ::std::lock_guard;
 
-        ::std::lock_guard lg( m_pWindowDesc->mUpdated );
-
-        bool                                         bWasAlive  = this->m_pWindowDesc->Data.bIsAlive;
-        ::std::unique_ptr<DefaultSystemWindowPolicy> pNewPolicy = ::std::make_unique<NewPolicy>();
-        m_Policy.swap( pNewPolicy );
-
-        // If the window wasn't created yet, there is nothing left to do
-        if ( !bWasAlive )
+        try
         {
+            B33_ASSERT( m_pWindowDesc != nullptr );
+        }
+        catch ( exception &e )
+        {
+            B33_ERROR( L"Error on destroy %s", e.what() );
             return;
         }
 
+        lock_guard lg( m_pWindowDesc->mUpdated );
+
+        bool                                 bWasAlive  = this->m_pWindowDesc->Data.bIsAlive;
+        UniquePtr<DefaultSystemWindowPolicy> pNewPolicy = nullptr;
+
         // Create structs for new state and to keep the old state of WindowDesc
-        WindowDesc oldDesc = *( this->m_pWindowDesc.get() );
-        WindowDesc newDesc = CreateWindowDesc( oldDesc.Data.Name, oldDesc.Data.Width, oldDesc.Data.Height );
+        WindowDesc oldDesc = {};
+        WindowDesc newDesc = {};
+        try
+        {
+            oldDesc = *( this->m_pWindowDesc.get() );
+            newDesc = CreateWindowDesc( oldDesc.Data.Name, oldDesc.Data.Width, oldDesc.Data.Height );
+
+            pNewPolicy = MakeUnique<NewPolicy>();
+            m_Policy.swap( pNewPolicy );
+
+            // If the window wasn't created yet, there is nothing left to do
+            if ( !bWasAlive )
+            {
+                return;
+            }
+        }
+        catch ( ... )
+        {
+            B33_ERROR( L"We couldn't create resources" );
+            return;
+        }
 
         // Try to create the new window
         B33_TRACE( L"Creating new window for behavior change" );
         SetWindowDescBufferStateInternal( newDesc );
         try
         {
-            B33_LOG( Core::Debug::Warning, L"Creating new window!" );
+            B33_WARNING( L"Creating new window!" );
             this->Create();
         }
         catch ( ... )
         {
             SetWindowDescBufferStateInternal( oldDesc );
             m_Policy.swap( pNewPolicy );
-            B33_LOG( Core::Debug::Error, L"We couldn't change this window policy!" );
+            B33_ERROR( L"We couldn't change this window policy!" );
             return;
         }
 
@@ -108,12 +178,12 @@ class IBaseWindow
         m_Policy.swap( pNewPolicy );
         try
         {
-            B33_LOG( Core::Debug::Warning, L"Destroying the old window!" );
+            B33_WARNING( L"Destroying the old window!" );
             this->Destroy();
         }
         catch ( ... )
         {
-            B33_LOG( Core::Debug::Error, L"Old verison of window wasn't properly closed!" );
+            B33_ERROR( L"Old verison of window wasn't properly closed!" );
         }
 
         // Load our new policy and new state
@@ -130,18 +200,19 @@ class IBaseWindow
                 this->Show();
             }
         }
-        catch ( ::std::exception &e )
+        catch ( exception &e )
         {
-            B33_ERROR( L"Fatal on updating the new behavior" );
-            throw ::B33::Core::Exception( e );
+            B33_ERROR( L"Error on destroy %s", e.what() );
         }
-        m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::ChangedBehavior;
+        m_pWindowDesc->Data.LastEvent |= EB33WindowEvents::ChangedBehavior;
     }
 
   public:
     void Create()
     {
-        B33_ASSERT( ::std::this_thread::get_id() == AppResources::Get().GetMainThreadID() );
+        using ::std::this_thread::get_id;
+
+        B33_ASSERT( get_id() == AppResources::Get().GetMainThreadID() );
         B33_ASSERT( m_pWindowDesc != nullptr );
         B33_ASSERT( m_Policy != nullptr );
 
@@ -164,6 +235,9 @@ class IBaseWindow
 
     void Show()
     {
+        using ::std::this_thread::get_id;
+
+        B33_ASSERT( get_id() == AppResources::Get().GetMainThreadID() );
         B33_ASSERT( m_pWindowDesc != nullptr );
         B33_ASSERT( m_Policy != nullptr );
 
@@ -173,6 +247,9 @@ class IBaseWindow
 
     void Hide()
     {
+        using ::std::this_thread::get_id;
+
+        B33_ASSERT( get_id() == AppResources::Get().GetMainThreadID() );
         B33_ASSERT( m_pWindowDesc != nullptr );
         B33_ASSERT( m_Policy != nullptr );
 
@@ -180,27 +257,48 @@ class IBaseWindow
         m_pWindowDesc->Data.bIsVisible = false;
     }
 
-    void Destroy()
+    void Destroy() noexcept
     {
-        B33_ASSERT( m_pWindowDesc != nullptr );
-        B33_ASSERT( m_Policy != nullptr );
+        using ::B33::App::AppStatus;
+        using ::std::exception;
+        using ::std::this_thread::get_id;
 
-        if ( !m_pWindowDesc->Data.bIsAlive )
+        try
         {
-            B33_LOG( Core::Debug::Warning, L"Cannot destroy dead window" );
+            B33_ASSERT( get_id() == AppResources::Get().GetMainThreadID() );
+            B33_ASSERT( m_pWindowDesc != nullptr );
+            B33_ASSERT( m_Policy != nullptr );
+        }
+        catch ( exception &e )
+        {
+            B33_ERROR( L"Error on destroy %s", e.what() );
             return;
         }
 
-        B33::App::AppStatus::Get().SendCloseWindowSignal( m_pWindowDesc );
+        if ( !m_pWindowDesc->Data.bIsAlive )
+        {
+            B33_WARNING( L"Cannot destroy dead window" );
+            return;
+        }
 
-        m_Policy->WindowPolicyDestroy( m_pWindowDesc.get() );
+        try
+        {
+            AppStatus::Get().SendCloseWindowSignal( m_pWindowDesc );
+            m_Policy->WindowPolicyDestroy( m_pWindowDesc.get() );
+        }
+        catch ( exception &e )
+        {
+            B33_ERROR( L"Error on destroy %s", e.what() );
+        }
 
         m_pWindowDesc->Data.bIsAlive = false;
     }
 
     void Update( const float fDelta )
     {
-        B33_ASSERT( ::std::this_thread::get_id() == AppResources::Get().GetMainThreadID() );
+        using ::std::this_thread::get_id;
+
+        B33_ASSERT( get_id() == AppResources::Get().GetMainThreadID() );
         B33_ASSERT( m_pWindowDesc != nullptr );
         B33_ASSERT( m_Policy != nullptr );
 
@@ -212,7 +310,7 @@ class IBaseWindow
 
         m_Policy->WindowPolicyUpdate( m_pWindowDesc.get() );
 
-        if ( m_pWindowDesc->Data.LastEvent & EAbWindowEvents::Destroy )
+        if ( m_pWindowDesc->Data.LastEvent & EB33WindowEvents::Destroy )
         {
             B33_LOG( Core::Debug::Info, L"Window is being closed by user" );
             this->Destroy();
@@ -222,7 +320,7 @@ class IBaseWindow
     }
 
   public:
-    const ::std::shared_ptr<WindowDesc> &GetWindowDesc() const
+    const SharedPtr<WindowDesc> &GetWindowDesc() const
     {
         return m_pWindowDesc;
     }
@@ -233,22 +331,22 @@ class IBaseWindow
     }
 
   private:
-    void HandleMessage( const float fDelta, EAbWindowEventsFlags events )
+    void HandleMessage( const float fDelta, EB33WindowEventsFlags events )
     {
         static_cast<Derived *>( this )->HandleMessageImpl( fDelta, events );
     }
 
   private:
-    void SetWindowDescBufferStateInternal( const WindowDesc &wd )
+    void SetWindowDescBufferStateInternal( const WindowDesc &wd ) noexcept
     {
         this->m_pWindowDesc.get()->Data = wd.Data;
         this->m_pWindowDesc.get()->OS   = wd.OS;
     }
 
   private:
-    ::std::unique_ptr<DefaultSystemWindowPolicy> m_Policy;
+    UniquePtr<DefaultSystemWindowPolicy> m_Policy;
 
-    ::std::shared_ptr<WindowDesc> m_pWindowDesc;
+    SharedPtr<WindowDesc> m_pWindowDesc;
 };
 
 } // namespace B33::App
