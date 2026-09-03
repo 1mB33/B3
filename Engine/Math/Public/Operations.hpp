@@ -1,4 +1,4 @@
-#ifndef B33_OPERATIONS_H
+#if !defined(B33_OPERATIONS_H)
 #define B33_OPERATIONS_H
 
 #include "Mat44.hpp"

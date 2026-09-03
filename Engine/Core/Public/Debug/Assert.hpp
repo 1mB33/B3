@@ -1,4 +1,4 @@
-#ifndef B33_DEBUG_ASSERT_H
+#if !defined(B33_DEBUG_ASSERT_H)
 #define B33_DEBUG_ASSERT_H
 
 #include "B33CoreMinimal.h"

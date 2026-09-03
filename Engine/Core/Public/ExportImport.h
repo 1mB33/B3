@@ -1,4 +1,4 @@
-#ifndef B33_EXPORT_IMPORT_H
+#if !defined(B33_EXPORT_IMPORT_H)
 #define B33_EXPORT_IMPORT_H
 #if defined( __linux__ ) || defined( __APPLE__ )
 #    ifdef _BEAST_EXPORTS

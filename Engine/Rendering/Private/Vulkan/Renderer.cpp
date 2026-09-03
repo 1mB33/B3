@@ -4,6 +4,7 @@
 #include "Vulkan/Memory/Memory.hpp"
 #include "Vulkan/ErrorHandling.hpp"
 #include "Vulkan/FrameResources.hpp"
+#include "Window/WindowListener.hpp"
 
 namespace B33::Rendering
 {
@@ -13,7 +14,7 @@ using namespace ::B33::Math;
 
 // Constructors // ----------------------------------------------------------------------------------------------------
 Renderer::Renderer()
-  : m_pWindowDesc( nullptr )
+  : App::WindowListener()
   , m_pInstance( nullptr )
   , m_pHardware( nullptr )
   , m_pDeviceAdapter( nullptr )
@@ -35,10 +36,9 @@ Renderer::~Renderer()
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-void Renderer::InitializeInternal( shared_ptr<WindowDesc> wd )
+void Renderer::InitializeInternal()
 {
-    m_pMemory     = make_shared<Memory>( m_pHardware, m_pDeviceAdapter );
-    m_pWindowDesc = wd;
+    m_pMemory = make_shared<Memory>( m_pHardware, m_pDeviceAdapter );
 
     B33_TRACE( L"Initializing command pool" );
     m_CommandPool = CreateCommandPool( static_pointer_cast<AdapterWrapper>( m_pDeviceAdapter ),
@@ -60,11 +60,11 @@ void Renderer::Update( const float )
 // ---------------------------------------------------------------------------------------------------------------------
 void Renderer::Render()
 {
-    lock_guard lg( m_pWindowDesc->mUpdated );
+    lock_guard lg( GetWindowDesc()->mUpdated );
 
-    if ( m_pWindowDesc->Data.LastEvent & EAbWindowEvents::ChangedBehavior )
+    if ( GetWindowDesc()->Data.LastEvent & EAbWindowEvents::ChangedBehavior )
     {
-        m_pWindowDesc->Data.LastEvent &= ~EAbWindowEvents::ChangedBehavior;
+        GetWindowDesc()->Data.LastEvent &= ~EAbWindowEvents::ChangedBehavior;
         B33_WARNING( L"On update, the window just changed behavior, skipping a frame" );
         RecreateSwapChain();
         return;
@@ -306,7 +306,7 @@ void Renderer::DestroyFrameResources()
 void Renderer::RecreateSwapChain()
 {
     B33_INFO( L"Recreating swapchain" );
-    if ( m_pWindowDesc->Data.bIsAlive == false )
+    if ( GetWindowDesc()->Data.bIsAlive == false )
     {
         B33_ERROR( L"RecreateSwapChain with dead window!!!" );
         return;
@@ -323,7 +323,7 @@ void Renderer::RecreateSwapChain()
     m_pSwapChain = make_unique<Swapchain>( m_pInstance,
                                            static_pointer_cast<HardwareWrapper>( m_pHardware ),
                                            static_pointer_cast<AdapterWrapper>( m_pDeviceAdapter ),
-                                           m_pWindowDesc );
+                                           GetWindowDesc() );
 
     for ( auto &pipeline : m_PipelineMap )
         pipeline.second->SetNewSwapChain( m_pSwapChain.get() );

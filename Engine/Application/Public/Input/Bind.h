@@ -1,4 +1,4 @@
-#ifndef B33_KEY_BIND_H
+#if !defined(B33_KEY_BIND_H)
 #define B33_KEY_BIND_H
 
 #include "B33Core.h"

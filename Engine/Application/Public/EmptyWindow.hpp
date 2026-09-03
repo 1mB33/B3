@@ -1,4 +1,4 @@
-#ifndef B33_EMPTYWINDOW_H
+#if !defined(B33_EMPTYWINDOW_H)
 #define B33_EMPTYWINDOW_H
 
 #include "Window/IBaseWindow.hpp"

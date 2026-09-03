@@ -1,4 +1,4 @@
-#ifndef B33_CSYSTEM_H
+#if !defined(B33_CSYSTEM_H)
 #define B33_CSYSTEM_H
 
 #include <algorithm>

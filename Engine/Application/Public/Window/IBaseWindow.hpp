@@ -1,4 +1,4 @@
-#ifndef B33_IBASEWINDOW_H
+#if !defined(B33_IBASEWINDOW_H)
 #define B33_IBASEWINDOW_H
 
 #include "B33Core.h"

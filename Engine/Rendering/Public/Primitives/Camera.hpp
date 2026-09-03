@@ -1,4 +1,4 @@
-#ifndef B33_CAMERA_H
+#if !defined(B33_CAMERA_H)
 #define B33_CAMERA_H
 
 #include "ExportImport.h"

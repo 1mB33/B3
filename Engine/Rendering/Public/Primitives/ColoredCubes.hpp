@@ -1,4 +1,4 @@
-#ifndef B33_COLORED_CUBES_AB
+#if !defined(B33_COLORED_CUBES_AB)
 #define B33_COLORED_CUBES_AB
 
 #include "Primitives/Cubes.hpp"

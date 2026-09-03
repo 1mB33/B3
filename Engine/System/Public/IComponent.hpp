@@ -1,4 +1,4 @@
-#ifndef B33_ICOMPONENT_H
+#if !defined(B33_ICOMPONENT_H)
 #define B33_ICOMPONENT_H
 
 #include "B33Core.h"

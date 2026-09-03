@@ -1,4 +1,4 @@
-#ifndef B33_APP_H
+#if !defined(B33_APP_H)
 #define B33_APP_H
 
 #include "B33Core.h"

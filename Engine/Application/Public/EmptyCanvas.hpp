@@ -1,4 +1,4 @@
-#ifndef B33_EMPTYCANVAS_H
+#if !defined(B33_EMPTYCANVAS_H)
 #define B33_EMPTYCANVAS_H
 
 #include "B33App.h"

@@ -1,4 +1,4 @@
-#ifndef B33_ATTRIBUTES_H
+#if !defined(B33_ATTRIBUTES_H)
 #define B33_ATTRIBUTES_H
 
 #if defined( _GNU )

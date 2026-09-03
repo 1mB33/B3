@@ -1,4 +1,4 @@
-#ifndef B33_DELTA_TIME_H
+#if !defined(B33_DELTA_TIME_H)
 #define B33_DELTA_TIME_H
 
 #include "B33Core.h"

@@ -1,4 +1,4 @@
-#ifndef B3_TESTMASTER_HPP
+#if !defined(B3_TESTMASTER_HPP)
 #define B3_TESTMASTER_HPP
 
 namespace B33::Core::Tests

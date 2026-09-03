@@ -1,4 +1,4 @@
-#ifndef B33_MOUSE_BUTTON_LIST_H
+#if !defined(B33_MOUSE_BUTTON_LIST_H)
 #define B33_MOUSE_BUTTON_LIST_H
 
 #include "Bind.h"

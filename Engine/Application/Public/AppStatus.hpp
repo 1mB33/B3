@@ -1,4 +1,4 @@
-#ifndef B33_APPSTATUS_H
+#if !defined(B33_APPSTATUS_H)
 #define B33_APPSTATUS_H
 
 #include "B33App.h"

@@ -1,4 +1,4 @@
-#ifndef B33_ENGINE_LOOP_H
+#if !defined(B33_ENGINE_LOOP_H)
 #define B33_ENGINE_LOOP_H
 
 #include "B33System.hpp"

@@ -1,4 +1,4 @@
-#ifndef B33_WRAPPER_ADAPTER_H
+#if !defined(B33_WRAPPER_ADAPTER_H)
 #define B33_WRAPPER_ADAPTER_H
 
 #include "Vulkan/WrapperHardware.hpp"

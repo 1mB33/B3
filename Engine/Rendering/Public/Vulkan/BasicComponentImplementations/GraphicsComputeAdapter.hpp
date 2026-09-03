@@ -1,4 +1,4 @@
-#ifndef B33_COMPUTE_DEVICE_ADAPTER_H
+#if !defined(B33_COMPUTE_DEVICE_ADAPTER_H)
 #define B33_COMPUTE_DEVICE_ADAPTER_H
 
 #include "ExportImport.h"

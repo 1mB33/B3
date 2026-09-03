@@ -1,4 +1,4 @@
-#ifndef B33_BASIC_SYSTEM_POLICY_H
+#if !defined(B33_BASIC_SYSTEM_POLICY_H)
 #define B33_BASIC_SYSTEM_POLICY_H
 
 #if defined( _WIN32 )

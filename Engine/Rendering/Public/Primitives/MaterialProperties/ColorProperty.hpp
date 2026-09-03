@@ -1,4 +1,4 @@
-#ifndef B33_COLOR_PROPERTY_H
+#if !defined(B33_COLOR_PROPERTY_H)
 #define B33_COLOR_PROPERTY_H
 
 namespace B33::Rendering

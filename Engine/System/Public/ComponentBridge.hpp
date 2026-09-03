@@ -1,4 +1,4 @@
-#ifndef B33_COMPONENT_BRIDGE_H
+#if !defined(B33_COMPONENT_BRIDGE_H)
 #define B33_COMPONENT_BRIDGE_H
 
 #include "IComponent.hpp"

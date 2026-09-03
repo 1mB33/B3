@@ -1,4 +1,4 @@
-#ifndef B33_VOXEL_GRID_H
+#if !defined(B33_VOXEL_GRID_H)
 #define B33_VOXEL_GRID_H
 
 #include "Primitives/ColoredCubes.hpp"

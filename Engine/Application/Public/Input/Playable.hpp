@@ -1,4 +1,4 @@
-#ifndef B33_PLAYABLE_HPP
+#if !defined(B33_PLAYABLE_HPP)
 #define B33_PLAYABLE_HPP
 
 #include "B33Core.h"

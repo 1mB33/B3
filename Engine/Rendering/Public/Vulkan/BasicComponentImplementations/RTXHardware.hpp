@@ -1,4 +1,4 @@
-#ifndef B33_RTX_HARDWARE_H
+#if !defined(B33_RTX_HARDWARE_H)
 #define B33_RTX_HARDWARE_H
 
 #include "Vulkan/Instance.hpp"

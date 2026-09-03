@@ -1,4 +1,4 @@
-#ifndef B33_WRAPPER_PIPELINE_H
+#if !defined(B33_WRAPPER_PIPELINE_H)
 #define B33_WRAPPER_PIPELINE_H
 
 #include "B33Core.h"
@@ -34,22 +34,22 @@ class PipelineWrapper
         B33_LOG( Core::Debug::Info, L"Destroying pipeline" );
         if ( m_Pipeline != VK_NULL_HANDLE )
         {
-            vkDestroyPipeline( GetAdaterInternal()->GetAdapterHandle(), m_Pipeline, NULL );
+            vkDestroyPipeline( GetAdater()->GetAdapterHandle(), m_Pipeline, NULL );
             m_Pipeline = VK_NULL_HANDLE;
         }
         if ( m_PipelineLayout != VK_NULL_HANDLE )
         {
-            vkDestroyPipelineLayout( GetAdaterInternal()->GetAdapterHandle(), m_PipelineLayout, NULL );
+            vkDestroyPipelineLayout( GetAdater()->GetAdapterHandle(), m_PipelineLayout, NULL );
             m_PipelineLayout = VK_NULL_HANDLE;
         }
         if ( m_DescriptorPool != VK_NULL_HANDLE )
         {
-            vkDestroyDescriptorPool( GetAdaterInternal()->GetAdapterHandle(), m_DescriptorPool, NULL );
+            vkDestroyDescriptorPool( GetAdater()->GetAdapterHandle(), m_DescriptorPool, NULL );
             m_DescriptorPool = VK_NULL_HANDLE;
         }
         if ( m_DescriptorLayout != VK_NULL_HANDLE )
         {
-            vkDestroyDescriptorSetLayout( GetAdaterInternal()->GetAdapterHandle(), m_DescriptorLayout, NULL );
+            vkDestroyDescriptorSetLayout( GetAdater()->GetAdapterHandle(), m_DescriptorLayout, NULL );
             m_DescriptorLayout = VK_NULL_HANDLE;
         }
     }
@@ -91,7 +91,8 @@ class PipelineWrapper
 
     void LoadPushConstants( const IPushConstants &constants, __B33_ATTRIBUTE_MIGHT_BE_UNUSED ::size_t uByteSize )
     {
-        B33_ASSERT( uByteSize == m_uPushConstantsByteSize && uByteSize < m_pDeviceAdapter.lock()->GetPushConstantsLimit() );
+        B33_ASSERT( uByteSize == m_uPushConstantsByteSize &&
+                    uByteSize < m_pDeviceAdapter.lock()->GetPushConstantsLimit() );
 
         memcpy( m_pPushConstants, &constants, m_uPushConstantsByteSize );
     }
@@ -136,7 +137,7 @@ class PipelineWrapper
     }
 
   protected:
-    ::std::shared_ptr<const ::B33::Rendering::AdapterWrapper> GetAdaterInternal()
+    ::std::shared_ptr<const ::B33::Rendering::AdapterWrapper> GetAdater()
     {
         if ( auto result = m_pDeviceAdapter.lock() )
             return result;
@@ -144,7 +145,7 @@ class PipelineWrapper
         throw B33_EXCEPT( "Cannot lock resources in the PipelineWrapper" );
     }
 
-    ::std::shared_ptr<::B33::Rendering::Memory> GetMemoryInternal() const
+    ::std::shared_ptr<::B33::Rendering::Memory> GetMemory() const
     {
         if ( auto result = m_pMemory.lock() )
             return result;
@@ -152,17 +153,17 @@ class PipelineWrapper
         throw B33_EXCEPT( "Cannot lock resources in the PipelineWrapper" );
     }
 
-    const ::B33::Rendering::Swapchain *GetSwapChainInternal() const
+    const ::B33::Rendering::Swapchain *GetSwapChain() const
     {
         return m_pSwapChain;
     }
 
-    ::VkDescriptorSetLayout GetDescriptorLayoutInternal()
+    ::VkDescriptorSetLayout GetDescriptorLayout()
     {
         return m_DescriptorLayout;
     }
 
-    ::VkDescriptorPool GetDescriptorPoolInternal()
+    ::VkDescriptorPool GetDescriptorPool()
     {
         return m_DescriptorPool;
     }

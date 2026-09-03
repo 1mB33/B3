@@ -1,4 +1,4 @@
-#ifndef B33_SYSTEMINCLU_H
+#if !defined(B33_SYSTEMINCLU_H)
 #define B33_SYSTEMINCLU_H
 #if defined( _WIN32 )
 #    include "MinimalWindowsIncludes.h"

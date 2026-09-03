@@ -1,4 +1,4 @@
-#ifndef B33_WRAPPER_H
+#if !defined(B33_WRAPPER_H)
 #define B33_WRAPPER_H
 
 namespace B33::Rendering

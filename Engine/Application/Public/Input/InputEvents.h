@@ -1,4 +1,4 @@
-#ifndef B33_INPUT_EVENTS_H
+#if !defined(B33_INPUT_EVENTS_H)
 #define B33_INPUT_EVENTS_H
 
 #include "Bind.h"

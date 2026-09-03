@@ -1,4 +1,4 @@
-#ifndef B33_ROT3_H
+#if !defined(B33_ROT3_H)
 #define B33_ROT3_H
 
 #include "Vec3.hpp"

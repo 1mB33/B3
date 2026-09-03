@@ -1,4 +1,4 @@
-#ifndef B33_MATH_CONSTS_H
+#if !defined(B33_MATH_CONSTS_H)
 #define B33_MATH_CONSTS_H
 
 namespace B33::Math

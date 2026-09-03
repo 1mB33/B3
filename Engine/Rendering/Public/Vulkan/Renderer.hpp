@@ -1,4 +1,4 @@
-#ifndef B33_RENDERER_H
+#if !defined(B33_RENDERER_H)
 #define B33_RENDERER_H
 
 #include "Unknown.hpp"
@@ -9,13 +9,14 @@
 #include "Vulkan/Memory/Memory.hpp"
 #include "Vulkan/SwapChain.hpp"
 #include "Vulkan/WrapperPipeline.hpp"
+#include "Window/WindowListener.hpp"
 
 namespace B33::Rendering
 {
 
-class Renderer
+class Renderer : public App::WindowListener
 {
-    static inline uint64_t TIMEOUT_MAX = 1000000000;
+    constexpr static inline uint64_t TIMEOUT_MAX = 1000000000;
 
     using FramesArray = ::std::array<::B33::Rendering::Frame, ::B33::Rendering::Frame::MAX_FRAMES_IN_FLIGHT>;
     template <typename T>
@@ -42,6 +43,7 @@ class Renderer
     template <class PIPE_LINE>
     PIPE_LINE *GetPipeline()
     {
+        B33_ASSERT( m_PipelineMap.find( PIPE_LINE::GetGlobalIndex() ) != m_PipelineMap.end() );
         return reinterpret_cast<PIPE_LINE *>( m_PipelineMap[ PIPE_LINE::GetGlobalIndex() ] );
     }
 
@@ -53,7 +55,7 @@ class Renderer
     // Methods // -----------------------------------------------------------------------------------------------------
   public:
     template <class HARDWARE, class ADAPTER>
-    void Initialize( SharedPtr<::WindowDesc> wd )
+    void Initialize()
     {
         using ::std::make_shared;
 
@@ -67,7 +69,7 @@ class Renderer
         m_pDeviceAdapter = make_shared<AdapterWrapper>();
         m_pDeviceAdapter->Initialize( m_pHardware, ADAPTER() );
 
-        this->InitializeInternal( wd );
+        this->InitializeInternal();
     }
 
     __B33_API void Update( const float fDelta );
@@ -97,7 +99,7 @@ class Renderer
 
     // Internal // ----------------------------------------------------------------------------------------------------
   private:
-    __B33_API void InitializeInternal( SharedPtr<::WindowDesc> wd );
+    __B33_API void InitializeInternal();
 
     ::VkCommandPool CreateCommandPool( SharedPtr<const AdapterWrapper> da, ::uint32_t uQueueFamily );
 
@@ -119,7 +121,6 @@ class Renderer
     void RecreateSwapChain();
 
   private:
-    SharedPtr<::WindowDesc>    m_pWindowDesc    = nullptr;
     SharedPtr<Instance>        m_pInstance      = nullptr;
     SharedPtr<HardwareWrapper> m_pHardware      = nullptr;
     SharedPtr<AdapterWrapper>  m_pDeviceAdapter = nullptr;

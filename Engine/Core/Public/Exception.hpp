@@ -1,4 +1,4 @@
-#ifndef B33_EXCEPT_H
+#if !defined(B33_EXCEPT_H)
 #define B33_EXCEPT_H
 
 #include "B33CoreMinimal.h"

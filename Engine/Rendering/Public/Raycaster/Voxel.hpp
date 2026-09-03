@@ -1,4 +1,4 @@
-#ifndef B33_VOXEL_H
+#if !defined(B33_VOXEL_H)
 #define B33_VOXEL_H
 
 #include "B33CoreMinimal.h"

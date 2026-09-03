@@ -1,4 +1,4 @@
-#ifndef B33_PIPELINE_H
+#if !defined(B33_PIPELINE_H)
 #define B33_PIPELINE_H
 
 #include "Vulkan/IPipeline.hpp"

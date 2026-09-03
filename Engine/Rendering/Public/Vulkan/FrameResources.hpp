@@ -1,4 +1,4 @@
-#ifndef B33_FRAME_RESOURCES_H
+#if !defined(B33_FRAME_RESOURCES_H)
 #define B33_FRAME_RESOURCES_H
 
 namespace B33::Rendering

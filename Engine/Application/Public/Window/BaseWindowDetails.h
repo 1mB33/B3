@@ -1,4 +1,4 @@
-#ifndef B33_BASE_WINDOW_DETAILS_H
+#if !defined(B33_BASE_WINDOW_DETAILS_H)
 #define B33_BASE_WINDOW_DETAILS_H
 
 #include "B33Core.h"

@@ -1,4 +1,4 @@
-#ifndef B33_VOXELS_H
+#if !defined(B33_VOXELS_H)
 #define B33_VOXELS_H
 
 #if defined( _WIN32 )

@@ -1,4 +1,4 @@
-#ifndef B33_KEY_LIST_H
+#if !defined(B33_KEY_LIST_H)
 #define B33_KEY_LIST_H
 
 #include "Bind.h"

@@ -1,4 +1,4 @@
-#ifndef B33_MAT4_H
+#if !defined(B33_MAT4_H)
 #define B33_MAT4_H
 
 namespace B33::Math

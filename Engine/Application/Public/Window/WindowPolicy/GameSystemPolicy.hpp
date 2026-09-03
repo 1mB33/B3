@@ -1,4 +1,4 @@
-#ifndef B33_GAME_SYSTEM_POLICY_H
+#if !defined(B33_GAME_SYSTEM_POLICY_H)
 #define B33_GAME_SYSTEM_POLICY_H
 
 #include "B33App.h"

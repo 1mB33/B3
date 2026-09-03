@@ -1,4 +1,4 @@
-#ifndef B33_LOGGER_H
+#if !defined(B33_LOGGER_H)
 #define B33_LOGGER_H
 
 #include <string>

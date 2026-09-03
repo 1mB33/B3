@@ -1,4 +1,4 @@
-#ifndef B33_IMATERIAL_PROPERTIES_H
+#if !defined(B33_IMATERIAL_PROPERTIES_H)
 #define B33_IMATERIAL_PROPERTIES_H
 
 namespace B33::Rendering

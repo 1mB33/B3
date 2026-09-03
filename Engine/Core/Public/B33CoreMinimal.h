@@ -1,4 +1,4 @@
-#ifndef B33_CORE_MINIMAL_H
+#if !defined(B33_CORE_MINIMAL_H)
 #define B33_CORE_MINIMAL_H
 
 #include "AbLimits.h"

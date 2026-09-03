@@ -1,4 +1,4 @@
-#ifndef B33_SYSTEM_H
+#if !defined(B33_SYSTEM_H)
 #define B33_SYSTEM_H
 
 #include <stdint.h>

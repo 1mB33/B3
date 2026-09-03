@@ -1,4 +1,4 @@
-#ifndef B33_EDITOR_PUSH_CONSTANTS_H
+#if !defined(B33_EDITOR_PUSH_CONSTANTS_H)
 #define B33_EDITOR_PUSH_CONSTANTS_H
 
 #include "Vulkan/IPushConstants.hpp"

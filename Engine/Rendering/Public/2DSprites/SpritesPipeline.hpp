@@ -1,4 +1,4 @@
-#ifndef B33_PIPELINE_SPRITES_H
+#if !defined(B33_PIPELINE_SPRITES_H)
 #define B33_PIPELINE_SPRITES_H
 
 #include "Vec2.hpp"

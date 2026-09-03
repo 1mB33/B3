@@ -1,4 +1,4 @@
-#ifndef B33_MEMORY_H
+#if !defined(B33_MEMORY_H)
 #define B33_MEMORY_H
 
 #include "Vulkan/Buffers/GPUBuffer.hpp"

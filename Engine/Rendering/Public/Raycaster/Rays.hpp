@@ -1,4 +1,4 @@
-#ifndef B33_RAYS_H
+#if !defined(B33_RAYS_H)
 #define B33_RAYS_H
 
 #include "Raycaster/VoxelGrid.hpp"

@@ -3,8 +3,6 @@
 #include "Debug/Assert.hpp"
 #include "Vulkan/ErrorHandling.hpp"
 #include "Vulkan/SwapChain.hpp"
-#include "Vulkan/WrapperHardware.hpp"
-#include "vulkan/vulkan_metal.h"
 
 namespace B33::Rendering
 {
@@ -15,7 +13,7 @@ using namespace std;
 Swapchain::Swapchain( weak_ptr<const Instance>        pInst,
                       weak_ptr<const HardwareWrapper> hw,
                       weak_ptr<const AdapterWrapper>  da,
-                      weak_ptr<const WindowDesc>      wd )
+                      const WindowDesc               *wd )
   : m_pInstance( pInst )
   , m_pHardware( hw )
   , m_pDeviceAdapter( da )
@@ -109,13 +107,13 @@ Swapchain::~Swapchain()
 }
 
 // Private // ---------------------------------------------------------------------------------------------------------
-VkSurfaceKHR Swapchain::CreateSurface( weak_ptr<const Instance> &pInstance, weak_ptr<const WindowDesc> &pWindowDesc )
+VkSurfaceKHR Swapchain::CreateSurface( weak_ptr<const Instance> &pInstance, const WindowDesc *pWindowDesc )
 {
     B33_LOG( Core::Debug::Info, L"Creating a swapchain!" ); // This is the first private method that
                                                             // is called in the constructior, so we LOG here
     B33_TRACE( L"Swapchain::CreateSurface" );
     VkSurfaceKHR surface         = VK_NULL_HANDLE;
-    auto         pLockedWd       = pWindowDesc.lock();
+    auto         pLockedWd       = pWindowDesc;
     auto         pLockedInstance = pInstance.lock();
 
     if ( !pLockedWd )
@@ -192,11 +190,10 @@ uint32_t Swapchain::GetImageCountInternal( const VkSurfaceCapabilitiesKHR &capab
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-VkExtent2D Swapchain::GetExtentInternal( const VkSurfaceCapabilitiesKHR &capabilities,
-                                         weak_ptr<const WindowDesc>      pWindowDesc )
+VkExtent2D Swapchain::GetExtentInternal( const VkSurfaceCapabilitiesKHR &capabilities, const WindowDesc *pWindowDesc )
 {
     VkExtent2D extent    = capabilities.currentExtent;
-    auto       pLockedWd = pWindowDesc.lock();
+    auto       pLockedWd = pWindowDesc;
 
     if ( !pLockedWd )
         throw B33_EXCEPT( "Window description is expried, cannot get extent" );

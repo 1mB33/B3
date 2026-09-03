@@ -1,4 +1,4 @@
-#ifndef B33_GPU_BUFFER_H
+#if !defined(B33_GPU_BUFFER_H)
 #define B33_GPU_BUFFER_H
 
 #include "Vulkan/WrapperAdapter.hpp"

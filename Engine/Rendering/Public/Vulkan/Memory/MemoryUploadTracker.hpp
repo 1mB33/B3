@@ -1,4 +1,4 @@
-#ifndef B33_MEMORY_UPLOAD_TRACKER_H
+#if !defined(B33_MEMORY_UPLOAD_TRACKER_H)
 #define B33_MEMORY_UPLOAD_TRACKER_H
 
 #include "B33CoreMinimal.h"

@@ -1,4 +1,4 @@
-#ifndef B33_SWAPCHAIN_H
+#if !defined(B33_SWAPCHAIN_H)
 #define B33_SWAPCHAIN_H
 
 #include "B33Core.h"
@@ -29,7 +29,7 @@ class Swapchain
     __B33_API Swapchain( WeakPtr<const Instance>        inst,
                          WeakPtr<const HardwareWrapper> hw,
                          WeakPtr<const AdapterWrapper>  da,
-                         WeakPtr<const ::WindowDesc>    wd );
+                         const ::WindowDesc            *wd );
 
     __B33_API ~Swapchain();
 
@@ -66,13 +66,12 @@ class Swapchain
 
     // Internal // ----------------------------------------------------------------------------------------------------
   private:
-    ::VkSurfaceKHR CreateSurface( WeakPtr<const Instance> &pInstance, WeakPtr<const ::WindowDesc> &pWindowDesc );
+    ::VkSurfaceKHR CreateSurface( WeakPtr<const Instance> &pInstance, const ::WindowDesc *pWindowDesc );
 
     ::VkSurfaceCapabilitiesKHR GetCapabilitesInternal( WeakPtr<const HardwareWrapper> pHardware,
                                                        ::VkSurfaceKHR                 surface );
 
-    ::VkExtent2D GetExtentInternal( const VkSurfaceCapabilitiesKHR &capabilities,
-                                    WeakPtr<const WindowDesc>       pWindowDesc );
+    ::VkExtent2D GetExtentInternal( const VkSurfaceCapabilitiesKHR &capabilities, const WindowDesc *pWindowDesc );
 
     ::uint32_t GetImageCountInternal( const VkSurfaceCapabilitiesKHR &capabilities );
 
@@ -102,7 +101,7 @@ class Swapchain
     WeakPtr<const Instance>        m_pInstance      = {};
     WeakPtr<const HardwareWrapper> m_pHardware      = {};
     WeakPtr<const AdapterWrapper>  m_pDeviceAdapter = {};
-    WeakPtr<const ::WindowDesc>    m_pWindowDesc    = {};
+    const ::WindowDesc            *m_pWindowDesc    = {};
 
     ::VkSurfaceKHR             m_Surface       = VK_NULL_HANDLE;
     ::VkSurfaceCapabilitiesKHR m_Capabilities  = {};

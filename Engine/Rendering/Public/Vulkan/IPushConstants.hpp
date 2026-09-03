@@ -1,4 +1,4 @@
-#ifndef B33_IPUSH_CONSTANTS_H
+#if !defined(B33_IPUSH_CONSTANTS_H)
 #define B33_IPUSH_CONSTANTS_H
 
 namespace B33::Rendering

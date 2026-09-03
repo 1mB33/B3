@@ -1,4 +1,4 @@
-#ifndef B33_LIMITS_H
+#if !defined(B33_LIMITS_H)
 #define B33_LIMITS_H
 
 #define B33_LONG_STRING   1024

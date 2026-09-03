@@ -1,4 +1,4 @@
-#ifndef B33_OBJECTS_H
+#if !defined(B33_OBJECTS_H)
 #define B33_OBJECTS_H
 
 #include "B33Math.hpp"

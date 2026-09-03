@@ -1,4 +1,4 @@
-#ifndef B33_USER_INPUT_H
+#if !defined(B33_USER_INPUT_H)
 #define B33_USER_INPUT_H
 
 #include "Input/Bind.h"

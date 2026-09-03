@@ -1,4 +1,4 @@
-#ifndef B33_IPIPELINE_H
+#if !defined(B33_IPIPELINE_H)
 #define B33_IPIPELINE_H
 
 #include "Unknown.hpp"
@@ -31,9 +31,9 @@ class IPipeline
     IPipeline &operator=( const IPipeline & ) noexcept = default;
 
   protected:
-    using PipelineWrapper::GetAdaterInternal;
-    using PipelineWrapper::GetDescriptorLayoutInternal;
-    using PipelineWrapper::GetDescriptorPoolInternal;
+    using PipelineWrapper::GetAdater;
+    using PipelineWrapper::GetDescriptorLayout;
+    using PipelineWrapper::GetDescriptorPool;
 
     // Interface // ---------------------------------------------------------------------------------------------------
   public:

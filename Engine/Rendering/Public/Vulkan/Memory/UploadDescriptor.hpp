@@ -1,4 +1,4 @@
-#ifndef B33_UPLOAD_DESCRIPTOR_H
+#if !defined(B33_UPLOAD_DESCRIPTOR_H)
 #define B33_UPLOAD_DESCRIPTOR_H
 
 #include "Vulkan/Buffers/GPUBuffer.hpp"

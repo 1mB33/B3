@@ -1,4 +1,4 @@
-#ifndef B33_KEYS_MAP_H
+#if !defined(B33_KEYS_MAP_H)
 #define B33_KEYS_MAP_H
 
 #include "IBindMap.hpp"

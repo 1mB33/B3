@@ -1,4 +1,4 @@
-#ifndef B33_FPS_LIMITER_H
+#if !defined(B33_FPS_LIMITER_H)
 #define B33_FPS_LIMITER_H
 
 namespace B33::Core

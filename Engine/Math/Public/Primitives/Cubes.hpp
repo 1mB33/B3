@@ -1,4 +1,4 @@
-#ifndef B33_CUBES_H
+#if !defined(B33_CUBES_H)
 #define B33_CUBES_H
 
 #include "B33Math.hpp"

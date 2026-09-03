@@ -1,4 +1,4 @@
-#ifndef B33_GROUP_HPP
+#if !defined(B33_GROUP_HPP)
 #define B33_GROUP_HPP
 
 #include "B33Core.h"

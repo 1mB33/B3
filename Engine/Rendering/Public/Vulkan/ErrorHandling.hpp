@@ -1,4 +1,4 @@
-#ifndef B33_ERROR_HANDLING_H
+#if !defined(B33_ERROR_HANDLING_H)
 #define B33_ERROR_HANDLING_H
 
 #define THROW_IF_FAILED( result )                                                                                      \

@@ -27,9 +27,8 @@ void Renderer::Initialize( ::B33::System::ComponentBridge &bridge )
             } );
     }
 
-    m_RendererInstance.Initialize<Rendering::MinimalHardware, Rendering::GraphicsComputeAdapter>(
-        windowHandle->GetWindowInstance().GetWindowDesc() );
-
+    m_RendererInstance.ListenToWindow( windowHandle->GetWindowInstance().GetWindowDesc() );
+    m_RendererInstance.Initialize<Rendering::MinimalHardware, Rendering::GraphicsComputeAdapter>();
     m_RendererInstance.PushPipeline<::B33::Rendering::VoxelPipeline>( gameHandle->GetGameInstance().GetWorld() );
 }
 

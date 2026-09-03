@@ -1,4 +1,4 @@
-#ifndef B33_PURE_GRAPHICS_DEVICE_ADAPTER_H
+#if !defined(B33_PURE_GRAPHICS_DEVICE_ADAPTER_H)
 #define B33_PURE_GRAPHICS_DEVICE_ADAPTER_H
 
 #include "Vulkan/IAdapter.hpp"

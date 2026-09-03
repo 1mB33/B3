@@ -1,4 +1,4 @@
-#ifndef B33_WINDOW_LISTENER_H
+#if !defined(B33_WINDOW_LISTENER_H)
 #define B33_WINDOW_LISTENER_H
 
 #include "B33Core.h"
@@ -61,7 +61,7 @@ class WindowListener
     }
 
   private:
-    ::std::shared_ptr<WindowDesc> m_pWindowDesc;
+    ::std::shared_ptr<WindowDesc> m_pWindowDesc = nullptr;
 };
 
 } // namespace B33::App

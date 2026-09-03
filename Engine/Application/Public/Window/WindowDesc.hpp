@@ -1,4 +1,4 @@
-#ifndef B33_WINDOW_DESC_H
+#if !defined(B33_WINDOW_DESC_H)
 #define B33_WINDOW_DESC_H
 
 #include "Input/InputEvents.h"

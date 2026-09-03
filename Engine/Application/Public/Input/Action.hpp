@@ -1,4 +1,4 @@
-#ifndef B33_ACTION_HPP
+#if !defined(B33_ACTION_HPP)
 #define B33_ACTION_HPP
 
 #include "B33Core.h"

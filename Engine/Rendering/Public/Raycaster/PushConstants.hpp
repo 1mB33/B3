@@ -1,4 +1,4 @@
-#ifndef B33_VOXEL_PUSH_CONSTANTS_H
+#if !defined(B33_VOXEL_PUSH_CONSTANTS_H)
 #define B33_VOXEL_PUSH_CONSTANTS_H
 
 #include "Vulkan/IPushConstants.hpp"

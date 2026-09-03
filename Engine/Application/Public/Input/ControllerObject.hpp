@@ -1,4 +1,4 @@
-#ifndef B33_CONTROLLER_OBJECT_HPP
+#if !defined(B33_CONTROLLER_OBJECT_HPP)
 #define B33_CONTROLLER_OBJECT_HPP
 
 #include "B33Core.h"

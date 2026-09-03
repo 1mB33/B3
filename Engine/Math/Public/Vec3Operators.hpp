@@ -1,4 +1,4 @@
-#ifndef B33_VEC3_OPERATORS_H
+#if !defined(B33_VEC3_OPERATORS_H)
 #define B33_VEC3_OPERATORS_H
 
 #include "Operations.hpp"

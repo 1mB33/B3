@@ -34,14 +34,14 @@ SpritesPipeline::~SpritesPipeline()
 {
     if ( m_FragShader != VK_NULL_HANDLE )
     {
-        vkDestroyShaderModule( GetAdaterInternal()->GetAdapterHandle(), m_FragShader, NULL );
+        vkDestroyShaderModule( GetAdater()->GetAdapterHandle(), m_FragShader, NULL );
     }
 
     m_FragShader = VK_NULL_HANDLE;
 
     if ( m_VertexShader != VK_NULL_HANDLE )
     {
-        vkDestroyShaderModule( GetAdaterInternal()->GetAdapterHandle(), m_VertexShader, NULL );
+        vkDestroyShaderModule( GetAdater()->GetAdapterHandle(), m_VertexShader, NULL );
     }
 
     m_VertexShader = VK_NULL_HANDLE;
@@ -50,14 +50,14 @@ SpritesPipeline::~SpritesPipeline()
 // Public // -----------------------------------------------------------------------------------------------------------
 void SpritesPipeline::CreatePipelineResourcesImpl()
 {
-    auto swapChain                    = GetSwapChainInternal();
+    auto swapChain                    = GetSwapChain();
     auto extent                       = swapChain->GetExtent();
     m_uCurFrame                       = 0;
     constexpr size_t unitVerticesSize = sizeof( Vertex ) * g_UnitQuadVertices.size();
     constexpr size_t instanceSize     = sizeof( SpriteData ) * MAX_SPRITES;
     constexpr size_t imgSize          = 4 * 256 * 256;
 
-    m_pTexture = GetMemoryInternal()->ReserveImage( 256,
+    m_pTexture = GetMemory()->ReserveImage( 256,
                                                     256,
                                                     VK_FORMAT_R8G8B8A8_UNORM,
                                                     VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT );
@@ -79,9 +79,9 @@ void SpritesPipeline::CreatePipelineResourcesImpl()
     sampler.borderColor             = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
     sampler.unnormalizedCoordinates = VK_FALSE;
 
-    GetMemoryInternal()->ReserveImageView( m_pTexture, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT );
-    GetMemoryInternal()->ReserveSampler( m_pTexture, sampler );
-    m_pStageTexture = GetMemoryInternal()->ReserveStagingBuffer( imgSize );
+    GetMemory()->ReserveImageView( m_pTexture, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT );
+    GetMemory()->ReserveSampler( m_pTexture, sampler );
+    m_pStageTexture = GetMemory()->ReserveStagingBuffer( imgSize );
 
     float pBuf[ imgSize ] = {};
     for ( size_t i = 0; i < imgSize; ++i )
@@ -90,25 +90,25 @@ void SpritesPipeline::CreatePipelineResourcesImpl()
     }
 
 
-    GetMemoryInternal()->UploadToBufferRaw( pBuf, imgSize, m_pStageTexture );
-    m_pStageQuadBuffer = GetMemoryInternal()->ReserveStagingBuffer( unitVerticesSize );
-    m_pQuadBuffer      = GetMemoryInternal()->ReserveVertexBuffer( unitVerticesSize );
+    GetMemory()->UploadToBufferRaw( pBuf, imgSize, m_pStageTexture );
+    m_pStageQuadBuffer = GetMemory()->ReserveStagingBuffer( unitVerticesSize );
+    m_pQuadBuffer      = GetMemory()->ReserveVertexBuffer( unitVerticesSize );
 
-    GetMemoryInternal()->UploadToStreamBufferRaw( g_UnitQuadVertices.data(), unitVerticesSize, m_pStageQuadBuffer );
+    GetMemory()->UploadToStreamBufferRaw( g_UnitQuadVertices.data(), unitVerticesSize, m_pStageQuadBuffer );
 
     for ( uint32_t i = 0; i < Frame::MAX_FRAMES_IN_FLIGHT; ++i )
     {
-        auto img = GetMemoryInternal()->ReserveImage( extent.width,
+        auto img = GetMemory()->ReserveImage( extent.width,
                                                       extent.height,
                                                       VK_FORMAT_D32_SFLOAT,
                                                       VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT );
-        GetMemoryInternal()->ReserveImageView( img, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT );
+        GetMemory()->ReserveImageView( img, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT );
 
         m_PerFrameResources.push_back( {
             .bInit                   = false,
             .uLastUploadedGeneration = 0,
-            .SpriteInstances         = GetMemoryInternal()->ReserveGPUBuffer( instanceSize ),
-            .StageSpriteInstances    = GetMemoryInternal()->ReserveStagingBuffer( instanceSize ),
+            .SpriteInstances         = GetMemory()->ReserveGPUBuffer( instanceSize ),
+            .StageSpriteInstances    = GetMemory()->ReserveStagingBuffer( instanceSize ),
             .DepthImg                = std::move( img ),
             .DescSet                 = CreateDescriptorSet(),
         } );
@@ -122,7 +122,7 @@ void SpritesPipeline::Update()
 
     if ( m_bPendingUpload )
     {
-        GetMemoryInternal()->UploadToStreamBufferDescSet(
+        GetMemory()->UploadToStreamBufferDescSet(
             m_SpriteData.data(),
             m_SpriteData.size() * sizeof( SpriteData ),
             GetUniformUploadDescriptor( curFrame.StageSpriteInstances, EShaderResource::SpriteInstances ) );
@@ -137,7 +137,7 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                                       VkPipelineStageFlagBits lastStage,
                                       VkImageLayout           lastLayout )
 {
-    auto  swapChain = GetSwapChainInternal();
+    auto  swapChain = GetSwapChain();
     auto  image     = swapChain->GetCurrentImage();
     auto  imageView = swapChain->GetCurrentImageView();
     auto  extent    = swapChain->GetExtent();
@@ -268,7 +268,7 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
         writes[ 1 ].descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER;
         writes[ 1 ].pImageInfo      = &samplerInfo;
 
-        vkUpdateDescriptorSets( GetAdaterInternal()->GetAdapterHandle(),
+        vkUpdateDescriptorSets( GetAdater()->GetAdapterHandle(),
                                 static_cast<uint32_t>( writes.size() ),
                                 writes.data(),
                                 0,
@@ -461,16 +461,16 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
 // --------------------------------------------------------------------------------------------------------------------
 void SpritesPipeline::Reset()
 {
-    auto swapChain = GetSwapChainInternal();
+    auto swapChain = GetSwapChain();
     auto extent    = swapChain->GetExtent();
 
     for ( auto &resources : m_PerFrameResources )
     {
-        auto img = GetMemoryInternal()->ReserveImage( extent.width,
+        auto img = GetMemory()->ReserveImage( extent.width,
                                                       extent.height,
                                                       VK_FORMAT_D32_SFLOAT,
                                                       VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT );
-        GetMemoryInternal()->ReserveImageView( img, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT );
+        GetMemory()->ReserveImageView( img, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT );
 
         resources.DepthImg = std::move( img );
     }
@@ -514,7 +514,7 @@ VkDescriptorSetLayout SpritesPipeline::CreateDescriptorLayoutImpl()
     layoutCreateInfo.pBindings                       = bindings.data();
     layoutCreateInfo.flags                           = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
 
-    THROW_IF_FAILED( vkCreateDescriptorSetLayout( GetAdaterInternal()->GetAdapterHandle(),
+    THROW_IF_FAILED( vkCreateDescriptorSetLayout( GetAdater()->GetAdapterHandle(),
                                                   &layoutCreateInfo,
                                                   NULL,
                                                   &descriptorSetLayout ) );
@@ -561,7 +561,7 @@ VkDescriptorPool SpritesPipeline::CreateDescriptorPoolImpl()
     poolInfo.flags                      = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
 
     THROW_IF_FAILED(
-        vkCreateDescriptorPool( GetAdaterInternal()->GetAdapterHandle(), &poolInfo, NULL, &descriptorPool ) );
+        vkCreateDescriptorPool( GetAdater()->GetAdapterHandle(), &poolInfo, NULL, &descriptorPool ) );
 
     return descriptorPool;
 }
@@ -569,16 +569,16 @@ VkDescriptorPool SpritesPipeline::CreateDescriptorPoolImpl()
 // ---------------------------------------------------------------------------------------------------------------------
 VkDescriptorSet SpritesPipeline::CreateDescriptorSet()
 {
-    VkDescriptorSetLayout descLayout = GetDescriptorLayoutInternal();
+    VkDescriptorSetLayout descLayout = GetDescriptorLayout();
     VkDescriptorSet       descriptorSet;
 
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType                       = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool              = GetDescriptorPoolInternal();
+    allocInfo.descriptorPool              = GetDescriptorPool();
     allocInfo.descriptorSetCount          = 1;
     allocInfo.pSetLayouts                 = &descLayout;
 
-    THROW_IF_FAILED( vkAllocateDescriptorSets( GetAdaterInternal()->GetAdapterHandle(), &allocInfo, &descriptorSet ) );
+    THROW_IF_FAILED( vkAllocateDescriptorSets( GetAdater()->GetAdapterHandle(), &allocInfo, &descriptorSet ) );
 
     return descriptorSet;
 }
@@ -587,7 +587,7 @@ VkDescriptorSet SpritesPipeline::CreateDescriptorSet()
 VkPipelineLayout SpritesPipeline::CreatePipelineLayoutImpl()
 {
     VkPipelineLayout      pipelineLayout;
-    VkDescriptorSetLayout descLayout = GetDescriptorLayoutInternal();
+    VkDescriptorSetLayout descLayout = GetDescriptorLayout();
 
     VkPushConstantRange pushConstantRange = {
         .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
@@ -606,7 +606,7 @@ VkPipelineLayout SpritesPipeline::CreatePipelineLayoutImpl()
     };
 
     THROW_IF_FAILED(
-        vkCreatePipelineLayout( GetAdaterInternal()->GetAdapterHandle(), &layoutInfo, NULL, &pipelineLayout ) );
+        vkCreatePipelineLayout( GetAdater()->GetAdapterHandle(), &layoutInfo, NULL, &pipelineLayout ) );
 
     return pipelineLayout;
 }
@@ -614,15 +614,15 @@ VkPipelineLayout SpritesPipeline::CreatePipelineLayoutImpl()
 // ---------------------------------------------------------------------------------------------------------------------
 VkPipeline SpritesPipeline::CreatePipelineImpl()
 {
-    const VkDevice device   = GetAdaterInternal()->GetAdapterHandle();
+    const VkDevice device   = GetAdater()->GetAdapterHandle();
     VkPipeline     pipeline = VK_NULL_HANDLE;
     m_VertexShader =
         Shaders::LoadShader( ::B33::App::AppResources::Get().GetExecutablePathA() + "/../Assets/Shaders/2DSpritesV.spv",
-                             GetAdaterInternal().get() );
+                             GetAdater().get() );
 
     m_FragShader =
         Shaders::LoadShader( ::B33::App::AppResources::Get().GetExecutablePathA() + "/../Assets/Shaders/2DSpritesF.spv",
-                             GetAdaterInternal().get() );
+                             GetAdater().get() );
 
     array<VkPipelineShaderStageCreateInfo, 2> stages = {};
 

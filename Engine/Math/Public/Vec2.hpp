@@ -1,4 +1,4 @@
-#ifndef B22_VEC2_H
+#if !defined(B22_VEC2_H)
 #define B22_VEC2_H
 
 #include "B33Core.h"

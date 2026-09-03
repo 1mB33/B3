@@ -1,4 +1,4 @@
-#ifndef B33_COMPONENTS_ORDER_HPP
+#if !defined(B33_COMPONENTS_ORDER_HPP)
 #define B33_COMPONENTS_ORDER_HPP
 
 #include "B33System.hpp"

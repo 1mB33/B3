@@ -1,4 +1,4 @@
-#ifndef B33_OBJECT_H
+#if !defined(B33_OBJECT_H)
 #define B33_OBJECT_H
 
 #include "Rot.hpp"

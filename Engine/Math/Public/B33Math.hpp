@@ -1,4 +1,4 @@
-#ifndef B33_ATLANTIC_MATH_H
+#if !defined(B33_ATLANTIC_MATH_H)
 #define B33_ATLANTIC_MATH_H
 
 #include "B33Core.h"

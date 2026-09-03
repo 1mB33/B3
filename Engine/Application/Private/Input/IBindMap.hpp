@@ -1,4 +1,4 @@
-#ifndef B33_BIND_MAP_H
+#if !defined(B33_BIND_MAP_H)
 #define B33_BIND_MAP_H
 
 #include "Input/Bind.h"

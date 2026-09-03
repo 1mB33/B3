@@ -1,4 +1,4 @@
-#ifndef B33_INSTANCE_H
+#if !defined(B33_INSTANCE_H)
 #define B33_INSTANCE_H
 
 #include "B33Rendering.hpp"
