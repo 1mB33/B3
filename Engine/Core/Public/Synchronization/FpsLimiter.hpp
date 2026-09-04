@@ -1,5 +1,5 @@
-#if !defined(B33_FPS_LIMITER_H)
-#define B33_FPS_LIMITER_H
+#if !defined( B33_FPS_LIMITER_H )
+#    define B33_FPS_LIMITER_H
 
 namespace B33::Core
 {
@@ -9,9 +9,9 @@ class FpsLimiter
   public:
     FpsLimiter() = delete;
 
-    explicit __B33_API FpsLimiter( const float fTargetMs );
+    explicit __B33_API FpsLimiter( const float fTargetMs ) noexcept;
 
-    ~FpsLimiter() = default;
+    ~FpsLimiter() noexcept = default;
 
   public:
     FpsLimiter( const FpsLimiter & ) noexcept            = default;

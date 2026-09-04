@@ -9,12 +9,12 @@ namespace B33::Core
 using namespace std;
 using namespace B33;
 
-void JobSystem::JobProcessorLoop( mutex              &mutex,
-                                  condition_variable &condition,
-                                  atomic_bool        &IsWorking,
-                                  atomic_bool        &IsFree,
+void JobSystem::JobProcessorLoop( Mutex        &mutex,
+                                  ConditionVar &condition,
+                                  ABool        &IsWorking,
+                                  ABool        &IsFree,
 #if defined( _B33_DEBUG )
-                                  atomic_bool &IsError,
+                                  ABool &IsError,
 #endif
                                   Job &currentJob )
 {
@@ -65,7 +65,7 @@ void JobSystem::JobProcessorLoop( mutex              &mutex,
 }
 
 JobSystem::JobSystem()
-  : m_Threads( ::std::thread::hardware_concurrency() - 2 )
+  : m_Threads( Thread::hardware_concurrency() - 2 )
   , m_uHead( 0 )
   , m_IsError( false )
 {

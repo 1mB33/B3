@@ -1,31 +1,31 @@
-#if !defined(B33_DEBUG_ASSERT_H)
-#define B33_DEBUG_ASSERT_H
+#if !defined( B33_DEBUG_ASSERT_H )
+#    define B33_DEBUG_ASSERT_H
 
-#include "B33CoreMinimal.h"
-#include "Exception.hpp"
+#    include "B33CoreMinimal.h"
+#    include "Exception.hpp"
 
-#ifdef _B33_DEBUG
-#    define B33_ASSERT( expr )                                                                                         \
-        do                                                                                                             \
-        {                                                                                                              \
-            if ( !( expr ) )                                                                                           \
+#    ifdef _B33_DEBUG
+#        define B33_ASSERT( expr )                                                                                     \
+            do                                                                                                         \
             {                                                                                                          \
-                throw ::B33::Core::Exception( "Assertion failed! ('" #expr "').", __LINE__, __FILE__ );                \
-            }                                                                                                          \
-        } while ( 0 )
+                if ( !( expr ) )                                                                                       \
+                {                                                                                                      \
+                    throw ::B33::Core::Exception( "Assertion failed! ('" #expr "').", __LINE__, __FILE__ );            \
+                }                                                                                                      \
+            } while ( 0 )
 
-#    define B33_ASSERT_MSG( expr, msg )                                                                                \
-        do                                                                                                             \
-        {                                                                                                              \
-            if ( !( expr ) )                                                                                           \
+#        define B33_ASSERT_MSG( expr, msg )                                                                            \
+            do                                                                                                         \
             {                                                                                                          \
-                throw ::B33::Core::Exception( "Assertion failed! ('" #expr "') " msg, __LINE__, __FILE__ );            \
-            }                                                                                                          \
-        } while ( 0 )
-#else
-#    define B33_ASSERT( expr )
-#    define B33_ASSERT_MSG( expr, msg )
-#endif
+                if ( !( expr ) )                                                                                       \
+                {                                                                                                      \
+                    throw ::B33::Core::Exception( "Assertion failed! ('" #expr "') " msg, __LINE__, __FILE__ );        \
+                }                                                                                                      \
+            } while ( 0 )
+#    else
+#        define B33_ASSERT( expr )
+#        define B33_ASSERT_MSG( expr, msg )
+#    endif
 
 namespace B33::Core
 {

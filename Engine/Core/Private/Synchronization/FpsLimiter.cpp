@@ -9,7 +9,7 @@ using namespace ::std;
 using namespace ::std::chrono;
 
 // --------------------------------------------------------------------------------------------------------------------
-FpsLimiter::FpsLimiter( const float fTargetMs )
+FpsLimiter::FpsLimiter( const float fTargetMs ) noexcept
   : m_fTarget( fTargetMs )
   , m_fBalance( 0.f )
 {

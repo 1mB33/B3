@@ -8,12 +8,12 @@ namespace B33::Core
 using namespace ::std;
 using namespace ::B33::Core::Debug;
 
-// ---------------------------------------------------------------------------------------------------------------------
+// Constructors // ----------------------------------------------------------------------------------------------------
 Exception::Exception( const char *szMessage,
-                      size_t      uMesLen,
-                      int32_t     uLine,
+                      usize       uMesLen,
+                      i32         uLine,
                       const char *szFileName,
-                      size_t      uFileNameLen ) noexcept
+                      usize       uFileNameLen ) noexcept
   : m_pszMessage( szMessage )
   , m_uMesLen( uMesLen )
   , m_Line( uLine )
@@ -26,10 +26,10 @@ Exception::Exception( const char *szMessage,
         return;
     }
 
-    char   szLine[ B33_SMALL_STRING ] = { 0 };
-    char   szInFile[]                 = "\nIn file: ";
-    size_t uFutureLen                 = m_uMesLen;
-    size_t uCurLen;
+    char  szLine[ B33_SMALL_STRING ] = { 0 };
+    char  szInFile[]                 = "\nIn file: ";
+    usize uFutureLen                 = m_uMesLen;
+    usize uCurLen;
 
     // If length is bigger then the B33_LONG_STRING, there is nothing to do, return
     if ( m_uMesLen >= B33_LONG_STRING )
@@ -102,7 +102,7 @@ Exception::Exception( const Exception &other ) noexcept
     this->m_pszMessage = pszMessage;
 }
 
-// ---------------------------------------------------------------------------------------------------------------------
+// Public // ----------------------------------------------------------------------------------------------------------
 const char *Exception::what() const noexcept
 {
     if ( m_pszMessage )
@@ -111,23 +111,23 @@ const char *Exception::what() const noexcept
     }
     else
     {
-        return ::std::exception::what();
+        return exception::what();
     }
 }
 
-// ---------------------------------------------------------------------------------------------------------------------
+// Private // ---------------------------------------------------------------------------------------------------------
 void Exception::LogAndReturnMessage( const char *pszMessage, size_t uMesLen ) const noexcept
 {
-    wchar_t *wc = new wchar_t[ uMesLen + 1 ];
-    mbstowcs( wc, pszMessage, uMesLen );
-
     try
     {
+        wchar_t *wc = new wchar_t[ uMesLen + 1 ];
+        mbstowcs( wc, pszMessage, uMesLen );
         Logger::Get().Log( Error, wc );
         Logger::Get().Flush();
     }
-    catch ( ... )
+    catch ( const exception &e )
     {
+        __B33_BEBUG_BREAK_POINT( e.what() );
     }
 }
 

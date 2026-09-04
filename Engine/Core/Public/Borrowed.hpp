@@ -1,4 +1,4 @@
-#include "Debug/Assert.hpp"
+#include <exception>
 #if !defined( B33_BORROWED_HPP )
 #    define B33_BORROWED_HPP
 
@@ -10,7 +10,7 @@ class Borrowed
     using Mutex = ::std::mutex;
 
   public:
-    explicit Borrowed()
+    explicit Borrowed() noexcept
       : m_mMutex( nullptr )
       , m_Object( nullptr )
       , m_bValid( false )
@@ -25,10 +25,19 @@ class Borrowed
         m_mMutex->lock();
     }
 
-    ~Borrowed()
+    ~Borrowed() noexcept
     {
-        if ( m_bValid )
-            m_mMutex->unlock();
+        using ::std::exception;
+
+        try
+        {
+            if ( m_bValid )
+                m_mMutex->unlock();
+        }
+        catch ( const exception &e )
+        {
+            B33_ERROR( L"Error on borrowed destruction %s", e.what() );
+        }
     }
 
   public:

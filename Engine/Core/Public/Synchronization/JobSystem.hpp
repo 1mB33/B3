@@ -1,4 +1,3 @@
-#include <memory>
 #if !defined( B33_JOB_SYSTEM_HPP )
 #    define B33_JOB_SYSTEM_HPP
 
@@ -9,10 +8,17 @@ namespace B33::Core
 
 class JobSystem
 {
+    using ABool        = ::std::atomic_bool;
+    using Thread       = ::std::thread;
+    using Mutex        = ::std::mutex;
+    using ConditionVar = ::std::condition_variable;
+    template <typename T>
+    using Vector = ::std::vector<T>;
+
     class IRunnableJob
     {
       public:
-        virtual ~IRunnableJob() = default;
+        virtual ~IRunnableJob() noexcept = default;
 
       public:
         virtual void Call() = 0;
@@ -21,22 +27,50 @@ class JobSystem
     template <typename... ARGS>
     class RunnableJob final : public IRunnableJob
     {
+        template <typename... T>
+        using Tuple = ::std::tuple<T...>;
+
+        template <typename T>
+        constexpr decltype( auto ) Forward( T &arg ) noexcept
+        {
+            return ::std::forward<T>( arg );
+        }
+
+        template <typename T>
+        constexpr decltype( auto ) Forward( T &&arg ) noexcept
+        {
+            return ::std::forward<T>( arg );
+        }
+
+        constexpr decltype( auto ) MakeTuple() noexcept
+        {
+            return ::std::make_tuple();
+        }
+
+        template <typename... U>
+        constexpr decltype( auto ) MakeTuple( U &&...arg ) noexcept
+        {
+            return ::std::make_tuple( Forward<U>( arg )... );
+        }
+
       public:
         explicit constexpr RunnableJob( void ( *func )( ARGS... ), ARGS... argv )
-          : m_FuncPtr { func }
-          , m_Params { std::make_tuple( argv... ) }
+          : m_FuncPtr( func )
+          , m_Params( MakeTuple( argv... ) )
         {
         }
 
       public:
         virtual void Call() override final
         {
-            std::apply( m_FuncPtr, m_Params );
+            using ::std::apply;
+
+            apply( m_FuncPtr, m_Params );
         }
 
       private:
         void ( *m_FuncPtr )( ARGS... ) = nullptr;
-        std::tuple<ARGS...> m_Params   = {};
+        Tuple<ARGS...> m_Params        = {};
     };
 
   public:
@@ -65,30 +99,30 @@ class JobSystem
 
     struct JobProcessor
     {
-        ::std::thread             Thread;
-        ::std::mutex              Mutex;
-        ::std::atomic_bool        IsWorking;
-        ::std::atomic_bool        IsFree;
-        ::std::condition_variable Condition;
-        Job                       CurrentJob;
+        Thread       Thread;
+        Mutex        Mutex;
+        ABool        IsWorking;
+        ABool        IsFree;
+        ConditionVar Condition;
+        Job          CurrentJob;
     };
 
   private:
     __B33_API void PushJobInternal( Job newJob );
 
-    static void JobProcessorLoop( ::std::mutex              &mutex,
-                                  ::std::condition_variable &condition,
-                                  ::std::atomic_bool        &IsWorking,
-                                  ::std::atomic_bool        &IsFree,
+    static void JobProcessorLoop( Mutex        &mutex,
+                                  ConditionVar &condition,
+                                  ABool        &IsWorking,
+                                  ABool        &IsFree,
 #    if defined( _B33_DEBUG )
-                                  ::std::atomic_bool &IsError,
+                                  ABool &IsError,
 #    endif
                                   Job &currentJob );
 
   private:
-    ::std::vector<JobProcessor> m_Threads = {};
-    ::size_t                    m_uHead   = -1;
-    ::std::atomic_bool          m_IsError = false;
+    Vector<JobProcessor> m_Threads = {};
+    usize                m_uHead   = -1;
+    ABool                m_IsError = false;
 };
 
 } // namespace B33::Core

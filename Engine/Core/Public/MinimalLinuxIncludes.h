@@ -8,5 +8,6 @@
 #            include <X11/extensions/XInput2.h>
 #        endif
 #        include <unistd.h>
+#        include <signal.h>
 #    endif // !B33_MINIMAL_LINUX_INLCUDES_H
 #endif     // !__linux__

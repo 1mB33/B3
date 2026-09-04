@@ -19,7 +19,7 @@ TestMaster::TestMaster()
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-void TestMaster::AddTest( void ( *pTest )(), const char *pszTestName, size_t uTestNameLen )
+void TestMaster::AddTest( void ( *pTest )(), const char *pszTestName, usize uTestNameLen )
 {
     m_pTestsBuf.push_back( Test { pTest, pszTestName, uTestNameLen, false } );
     ++m_uTestAmount;
@@ -30,8 +30,8 @@ void TestMaster::Run()
 {
     Debug::Logger::Get().Log( Debug::Info, L"Starting tests..." );
 
-    uint32_t uTestsPassed = 0;
-    for ( size_t i = 0; i < m_uTestAmount; ++i )
+    u32 uTestsPassed = 0;
+    for ( usize i = 0; i < m_uTestAmount; ++i )
     {
         try
         {
@@ -53,7 +53,7 @@ void TestMaster::Run()
 #elif defined( __linux__ ) || defined( __APPLE__ )
                                       L"Failed test: %s",
 #endif // !_WIN32
-                                      ColorizeTerminal::Colorize( m_pTestsBuf[ i ].pszTestName, BrigthRed ).c_str() );
+                                      ColorizeTerminal::Colorize( m_pTestsBuf[ i ].pszTestName, BrightRed ).c_str() );
         }
     }
 
