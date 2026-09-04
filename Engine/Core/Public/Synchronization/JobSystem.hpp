@@ -99,8 +99,8 @@ class JobSystem
 
     struct JobProcessor
     {
-        Thread       Thread;
-        Mutex        Mutex;
+        Thread       ThreadHandle;
+        Mutex        LocalMutex;
         ABool        IsWorking;
         ABool        IsFree;
         ConditionVar Condition;
