@@ -99,7 +99,7 @@ JobSystem::~JobSystem()
             t.IsWorking.store( false );
             t.Condition.notify_all();
             t.ThreadHandle.join();
-        
+        }
     }
     B33_TRACE( L"JobSystem::~JobSystem(): Finished" );
 }
