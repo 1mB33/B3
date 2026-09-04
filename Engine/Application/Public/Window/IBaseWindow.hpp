@@ -76,7 +76,7 @@ class IBaseWindow
     template <class U>
     explicit IBaseWindow( U &&windowDesc = WindowDesc() )
       : m_Policy( MakeUnique<WindowPolicy>() )
-      , m_pWindowDesc( MakeShared<WindowDesc>( ::std::forward<U>( windowDesc ) ) )
+      , m_pWindowDesc( MakeShared<WindowDesc>( Forward<U>( windowDesc ) ) )
     {
     }
 

@@ -16,7 +16,7 @@ class __B33_API GameLinuxWindowPolicy : public BasicLinuxWindowPolicy
   public:
     virtual void OnCreate( WindowDesc *pWd ) override;
 
-    virtual uint32_t OnUpdate( WindowDesc *pWd, XEvent &event ) override;
+    virtual u32 OnUpdate( WindowDesc *pWd, XEvent &event ) override;
 
   private:
     void HandleRawInput( WindowDesc *pWd, XEvent &event );

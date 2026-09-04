@@ -1,5 +1,6 @@
 #include "B33App.h"
 
+#include "AppResources.hpp"
 #include "AppStatus.hpp"
 
 namespace B33::App
@@ -51,7 +52,7 @@ void AppStatus::SendExitSignal()
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-u32 AppStatus::SendOpenWindowSignal( shared_ptr<WindowDesc> pWd )
+u32 AppStatus::SendOpenWindowSignal( AppStatus::SharedPtr<WindowDesc> pWd )
 {
     B33_LOG( Info, L"Got new window signal" );
 
@@ -64,7 +65,7 @@ u32 AppStatus::SendOpenWindowSignal( shared_ptr<WindowDesc> pWd )
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-u32 AppStatus::SendCloseWindowSignal( shared_ptr<WindowDesc> pWd )
+u32 AppStatus::SendCloseWindowSignal( AppStatus::SharedPtr<WindowDesc> pWd )
 {
     B33_LOG( Info, L"Got close window signal" );
 

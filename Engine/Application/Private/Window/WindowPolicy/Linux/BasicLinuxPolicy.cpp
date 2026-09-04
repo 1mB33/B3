@@ -15,7 +15,7 @@ using namespace ::B33::Core;
 using namespace ::B33::Core::Debug;
 
 // ---------------------------------------------------------------------------------------------------------------------
-uint32_t BasicLinuxWindowPolicy::CreateImpl( WindowDesc *pWd )
+u32 BasicLinuxWindowPolicy::CreateImpl( WindowDesc *pWd )
 {
     B33_ASSERT( pWd );
 
@@ -174,7 +174,7 @@ void BasicLinuxWindowPolicy::UpdateImpl( WindowDesc *pWd )
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-uint32_t BasicLinuxWindowPolicy::OnUpdate( WindowDesc *pWd, XEvent &event )
+u32 BasicLinuxWindowPolicy::OnUpdate( WindowDesc *pWd, XEvent &event )
 {
     B33_ASSERT( pWd );
 

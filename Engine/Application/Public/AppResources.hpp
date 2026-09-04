@@ -31,8 +31,6 @@ class AppResources
 
     __B33_API const ThreadID &GetMainThreadID() const;
 
-    // Methods // -----------------------------------------------------------------------------------------------------
-  public:
     __B33_API static AppResources &Get();
 
   private:

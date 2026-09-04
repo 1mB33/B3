@@ -14,7 +14,7 @@ namespace B33::App
 class __B33_API BasicLinuxWindowPolicy : public IWindowPolicy<BasicLinuxWindowPolicy>
 {
   public:
-    uint32_t CreateImpl( WindowDesc *pWd );
+    u32 CreateImpl( WindowDesc *pWd );
 
     void ShowImpl( WindowDesc *pWd );
 
@@ -35,7 +35,7 @@ class __B33_API BasicLinuxWindowPolicy : public IWindowPolicy<BasicLinuxWindowPo
      * @return If return value isn't zero, then we immediately escape event processing loop.
      * For examlpe when we just proccesed key press and want it to be immediately dispatched.
      */
-    virtual uint32_t OnUpdate( WindowDesc *pWd, XEvent &event );
+    virtual u32 OnUpdate( WindowDesc *pWd, XEvent &event );
 
   private:
     void HandleKey( WindowDesc *pWd, XEvent &event, EB33InputEvents ie );

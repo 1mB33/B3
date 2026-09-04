@@ -57,7 +57,7 @@ void GameLinuxWindowPolicy::OnCreate( WindowDesc *pWd )
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-uint32_t GameLinuxWindowPolicy::OnUpdate( WindowDesc *pWd, XEvent &event )
+u32 GameLinuxWindowPolicy::OnUpdate( WindowDesc *pWd, XEvent &event )
 {
     B33_ASSERT( pWd );
 

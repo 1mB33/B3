@@ -35,8 +35,6 @@ class __B33_API AppStatus
     AppStatus &operator=( AppStatus && ) noexcept = delete;
 
   public:
-    static AppStatus &Get() noexcept;
-
     ~AppStatus() noexcept;
 
   public:
@@ -47,6 +45,9 @@ class __B33_API AppStatus
         return m_WindowHandles;
     }
 
+    static AppStatus &Get() noexcept;
+
+  public:
     void SendExitSignal();
 
     void LockInToService()
