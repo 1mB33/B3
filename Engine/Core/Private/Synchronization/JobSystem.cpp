@@ -73,7 +73,7 @@ JobSystem::JobSystem()
         t.IsFree.store( true );
         t.IsWorking.store( true );
         t.CurrentJob   = { nullptr };
-        t.ThreadHandle = thread( &JobSystem::JobProcessorLoop,
+        t.ThreadHandle = Thread( &JobSystem::JobProcessorLoop,
                                  ref( t.LocalMutex ),
                                  ref( t.Condition ),
                                  ref( t.IsWorking ),
@@ -99,7 +99,7 @@ JobSystem::~JobSystem()
             t.IsWorking.store( false );
             t.Condition.notify_all();
             t.ThreadHandle.join();
-        }
+        
     }
     B33_TRACE( L"JobSystem::~JobSystem(): Finished" );
 }
