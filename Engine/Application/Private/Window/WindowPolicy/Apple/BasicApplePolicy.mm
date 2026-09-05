@@ -113,8 +113,8 @@ void BasicAppleWindowPolicy::UpdateImpl( WindowDesc *pWd )
                 {
                     windowData.LastEvent |= Input;
 
-                    AbInputStruct is;
-                    is.Event          = AbKeyPress;
+                    B33InputStruct is;
+                    is.Event          = B33KeyPress;
                     is.Keyboard.KeyId = event.keyCode + 1;
 
                     windowData.InputStruct.push( is );
@@ -124,8 +124,8 @@ void BasicAppleWindowPolicy::UpdateImpl( WindowDesc *pWd )
                 {
                     windowData.LastEvent |= Input;
 
-                    AbInputStruct is;
-                    is.Event          = AbKeyRelease;
+                    B33InputStruct is;
+                    is.Event          = B33KeyRelease;
                     is.Keyboard.KeyId = event.keyCode + 1;
 
                     windowData.InputStruct.push( is );
@@ -138,8 +138,8 @@ void BasicAppleWindowPolicy::UpdateImpl( WindowDesc *pWd )
                     CGFloat dx = [event deltaX];
                     CGFloat dy = [event deltaY];
 
-                    AbInputStruct is;
-                    is.Event        = AbMotion;
+                    B33InputStruct is;
+                    is.Event        = B33Motion;
                     is.Mouse.MouseX = static_cast<int32_t>( dx );
                     is.Mouse.MouseY = static_cast<int32_t>( dy );
 

@@ -1,8 +1,7 @@
-#include "Input/InputEvents.h"
 #if defined( __APPLE__ )
 
-#    include "B33Core.h"
-
+#    include <B33Core.h>
+#    include "Input/InputEvents.h"
 #    include "Window/WindowPolicy/Apple/MetalApplePolicy.hpp"
 #    import <QuartzCore/CAMetalLayer.h>
 #    import <Metal/Metal.h>
