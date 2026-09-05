@@ -1,7 +1,7 @@
 #pragma once
 
 #include "B33System.hpp"
-#include "B33Rendering.hpp"
+#include "B33Rendering.h"
 #include "IComponent.hpp"
 #include "RendererMaster.hpp"
 #include "Vulkan/Renderer.hpp"

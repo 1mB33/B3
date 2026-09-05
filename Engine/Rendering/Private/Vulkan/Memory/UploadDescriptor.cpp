@@ -1,6 +1,5 @@
-#include "B33Rendering.hpp"
+#include "B33Rendering.h"
 
-#include "Vulkan/ErrorHandling.hpp"
 #include "Vulkan/Memory/UploadDescriptor.hpp"
 
 namespace B33::Rendering

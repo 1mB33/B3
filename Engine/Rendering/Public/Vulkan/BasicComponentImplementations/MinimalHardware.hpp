@@ -1,17 +1,16 @@
-#if !defined(B33_MINIMAL_HARDWARE_H)
-#define B33_MINIMAL_HARDWARE_H
+#if !defined( B33_MINIMAL_HARDWARE_HPP )
+#    define B33_MINIMAL_HARDWARE_HPP
 
-#include "Vulkan/Instance.hpp"
-#include "Vulkan/IHardware.hpp"
+#    include "Vulkan/IHardware.hpp"
 
 namespace B33::Rendering
 {
 
-class MinimalHardware : public ::B33::Rendering::IHardware<MinimalHardware>
+class MinimalHardware : public IHardware<MinimalHardware>
 {
   public:
     __B33_API ::VkPhysicalDevice ChooseHardwareImpl( VkInstance Instance ) const;
 };
 
 } // namespace B33::Rendering
-#endif // !B33_MINIMAL_HARDWARE_H
+#endif // !B33_MINIMAL_HARDWARE_HPP

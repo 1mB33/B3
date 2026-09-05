@@ -1,21 +1,24 @@
-#if !defined(B33_GPU_BUFFER_H)
-#define B33_GPU_BUFFER_H
+#if !defined( B33_GPU_BUFFER_HPP )
+#    define B33_GPU_BUFFER_HPP
 
-#include "Vulkan/WrapperAdapter.hpp"
+#    include "Vulkan/WrapperAdapter.hpp"
 
 namespace B33::Rendering
 {
 
 class GPUBuffer
 {
+    template <typename T>
+    using SharedPtr = ::std::shared_ptr<T>;
+
   public:
     __B33_API GPUBuffer();
-    __B33_API GPUBuffer( ::std::shared_ptr<const ::B33::Rendering::AdapterWrapper> da,
-                         ::VkDeviceMemory                                          deviceMemory,
-                         ::VkBuffer                                                buffer,
-                         ::size_t                                                  sizeInBytes );
+    __B33_API GPUBuffer( SharedPtr<const AdapterWrapper> da,
+                         ::VkDeviceMemory                deviceMemory,
+                         ::VkBuffer                      buffer,
+                         usize                           sizeInBytes );
 
-    __B33_API ~GPUBuffer();
+    __B33_API ~GPUBuffer() noexcept;
 
   public:
     GPUBuffer( const GPUBuffer &other )                     = delete;
@@ -36,17 +39,17 @@ class GPUBuffer
         return m_Buffer;
     }
 
-    ::size_t GetSizeInBytes() const
+    usize GetSizeInBytes() const
     {
         return m_uSizeInBytes;
     }
 
   protected:
-    ::std::shared_ptr<const ::B33::Rendering::AdapterWrapper> m_pDeviceAdapter = nullptr;
-    ::VkDeviceMemory                                          m_DeviceMemory   = VK_NULL_HANDLE;
-    ::VkBuffer                                                m_Buffer         = VK_NULL_HANDLE;
-    ::size_t                                                  m_uSizeInBytes   = 0;
+    SharedPtr<const AdapterWrapper> m_pDeviceAdapter = nullptr;
+    ::VkDeviceMemory                m_DeviceMemory   = VK_NULL_HANDLE;
+    ::VkBuffer                      m_Buffer         = VK_NULL_HANDLE;
+    usize                           m_uSizeInBytes   = 0;
 };
 
 } // namespace B33::Rendering
-#endif //! B33_GPU_BUFFER_H
+#endif //! B33_GPU_BUFFER_HPP

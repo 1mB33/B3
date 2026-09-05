@@ -1,4 +1,4 @@
-#include "B33Rendering.hpp"
+#include "B33Rendering.h"
 
 #include "Vulkan/Buffers/GPUStreamBuffer.hpp"
 
@@ -13,17 +13,17 @@ GPUStreamBuffer::GPUStreamBuffer()
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-GPUStreamBuffer::GPUStreamBuffer( ::std::shared_ptr<const AdapterWrapper> da,
-                                  VkDeviceMemory                          deviceMemory,
-                                  VkBuffer                                buffer,
+GPUStreamBuffer::GPUStreamBuffer( SharedPtr<const AdapterWrapper> da,
+                                  VkDeviceMemory                  deviceMemory,
+                                  VkBuffer                        buffer,
                                   void *,
-                                  size_t sizeInBytes )
+                                  usize sizeInBytes )
   : GPUBuffer( da, deviceMemory, buffer, sizeInBytes )
 {
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-GPUStreamBuffer::~GPUStreamBuffer()
+GPUStreamBuffer::~GPUStreamBuffer() noexcept
 {
     if ( m_pDeviceAdapter && m_pData != nullptr )
     {

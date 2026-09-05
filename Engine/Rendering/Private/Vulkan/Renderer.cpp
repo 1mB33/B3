@@ -1,4 +1,4 @@
-#include "B33Rendering.hpp"
+#include "B33Rendering.h"
 
 #include "Vulkan/Renderer.hpp"
 #include "Vulkan/Memory/Memory.hpp"
@@ -30,7 +30,7 @@ Renderer::Renderer()
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Renderer::~Renderer()
+Renderer::~Renderer() noexcept
 {
     Destroy();
 }
@@ -70,7 +70,7 @@ void Renderer::Render()
         return;
     }
 
-    uint32_t       uImageIndex;
+    u32            uImageIndex;
     const VkDevice device     = m_pDeviceAdapter->GetAdapterHandle();
     Frame         &frame      = ( *m_vFrames.get() )[ m_uCurrentFrame ];
     const auto     swapchains = m_pSwapChain->GetSwapChainHandle();
@@ -139,11 +139,11 @@ void Renderer::Render()
         return;
     }
 
-    m_uCurrentFrame = ( m_uCurrentFrame + 1 ) % Frame::MAX_FRAMES_IN_FLIGHT;
+    m_uCurrentFrame = ( m_uCurrentFrame + 1 ) % Frame::MaxFramesInFlight;
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-void Renderer::Destroy()
+void Renderer::Destroy() noexcept
 {
     B33_LOG( Core::Debug::Info, L"Destroying renderer" );
 
@@ -176,7 +176,7 @@ void Renderer::Destroy()
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-VkCommandPool Renderer::CreateCommandPool( shared_ptr<const AdapterWrapper> da, uint32_t uQueueFamily )
+VkCommandPool Renderer::CreateCommandPool( SharedPtr<const AdapterWrapper> da, u32 uQueueFamily )
 {
     VkCommandPool cmdPool;
 
@@ -191,8 +191,8 @@ VkCommandPool Renderer::CreateCommandPool( shared_ptr<const AdapterWrapper> da, 
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-VkCommandBuffer Renderer::CreateCommandBuffer( __B33_ATTRIBUTE_MIGHT_BE_UNUSED shared_ptr<const AdapterWrapper> da,
-                                               VkCommandPool cmdPool )
+VkCommandBuffer Renderer::CreateCommandBuffer( __B33_ATTRIBUTE_MIGHT_BE_UNUSED SharedPtr<const AdapterWrapper> da,
+                                               VkCommandPool                                                   cmdPool )
 {
     VkCommandBuffer cmdBuffer;
 
@@ -211,10 +211,10 @@ VkCommandBuffer Renderer::CreateCommandBuffer( __B33_ATTRIBUTE_MIGHT_BE_UNUSED s
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-Renderer::FramesArray Renderer::CreateFrameResources( const shared_ptr<const AdapterWrapper> &da,
-                                                      __B33_ATTRIBUTE_MIGHT_BE_UNUSED const shared_ptr<Memory> &memory,
-                                                      VkCommandPool                                             cmdPool,
-                                                      __B33_ATTRIBUTE_MIGHT_BE_UNUSED size_t uFrames )
+Renderer::FramesArray Renderer::CreateFrameResources( const SharedPtr<const AdapterWrapper> &da,
+                                                      __B33_ATTRIBUTE_MIGHT_BE_UNUSED const SharedPtr<Memory> &memory,
+                                                      VkCommandPool                                            cmdPool,
+                                                      __B33_ATTRIBUTE_MIGHT_BE_UNUSED usize                    uFrames )
 {
     VkDevice    device = da->GetAdapterHandle();
     FramesArray result;
@@ -226,7 +226,7 @@ Renderer::FramesArray Renderer::CreateFrameResources( const shared_ptr<const Ada
     fenceInfo.sType             = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags             = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    for ( size_t i = 0; i < result.size(); ++i )
+    for ( usize i = 0; i < result.size(); ++i )
     {
         if ( vkCreateSemaphore( device, &semaphoreInfo, NULL, &result[ i ].ImageAvailable ) != VK_SUCCESS ||
              vkCreateFence( device, &fenceInfo, NULL, &result[ i ].InFlightFence ) != VK_SUCCESS )
@@ -278,7 +278,7 @@ void Renderer::DestroyFrameResources()
     {
         auto &frames = *m_vFrames.get();
 
-        for ( size_t i = 0; i < frames.size(); ++i )
+        for ( usize i = 0; i < frames.size(); ++i )
         {
             B33_TRACE( L"Waiting for fence %d", i );
             vkWaitForFences( m_pDeviceAdapter->GetAdapterHandle(), 1, &frames[ i ].InFlightFence, VK_TRUE, 100000 );
@@ -289,7 +289,7 @@ void Renderer::DestroyFrameResources()
         {
             vkDestroySemaphore( m_pDeviceAdapter->GetAdapterHandle(), sem, nullptr );
         }
-        for ( size_t i = 0; i < frames.size(); ++i )
+        for ( usize i = 0; i < frames.size(); ++i )
         {
             B33_TRACE( L"Destroying frame %d", i );
             vkDestroySemaphore( m_pDeviceAdapter->GetAdapterHandle(), frames[ i ].ImageAvailable, nullptr );
@@ -331,7 +331,7 @@ void Renderer::RecreateSwapChain()
     CreateRenederSyncResources( m_pDeviceAdapter, m_pSwapChain.get(), m_vRenderFinished );
 
     m_vFrames = make_unique<FramesArray>(
-        CreateFrameResources( m_pDeviceAdapter, m_pMemory, m_CommandPool, Frame::MAX_FRAMES_IN_FLIGHT ) );
+        CreateFrameResources( m_pDeviceAdapter, m_pMemory, m_CommandPool, Frame::MaxFramesInFlight ) );
     m_uCurrentFrame = 0;
 
 
@@ -339,9 +339,9 @@ void Renderer::RecreateSwapChain()
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void Renderer::CreateRenederSyncResources( const ::std::shared_ptr<const ::B33::Rendering::AdapterWrapper> &da,
-                                           const ::B33::Rendering::Swapchain                               *sc,
-                                           ::std::vector<VkSemaphore>                                      &out )
+void Renderer::CreateRenederSyncResources( const SharedPtr<const AdapterWrapper> &da,
+                                           const Swapchain                       *sc,
+                                           Vector<VkSemaphore>                   &out )
 {
     VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType                 = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;

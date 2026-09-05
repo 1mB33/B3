@@ -1,4 +1,4 @@
-#include "B33Rendering.hpp"
+#include "B33Rendering.h"
 
 #include "Raycaster/Rays.hpp"
 
@@ -9,7 +9,7 @@ using namespace ::std;
 using namespace ::B33::Math;
 
 // --------------------------------------------------------------------------------------------------------------------
-HitResult MarchTheRay( const IWorldGrid *vg, const Vec3 &ro, const Vec3 &rd, size_t maxSteps )
+HitResult MarchTheRay( const IWorldGrid *vg, const Vec3 &ro, const Vec3 &rd, usize maxSteps )
 {
     HitResult result;
     result.bHit      = false;
@@ -22,10 +22,10 @@ HitResult MarchTheRay( const IWorldGrid *vg, const Vec3 &ro, const Vec3 &rd, siz
     Vec3 tDelta( fabs( invDir.x ), fabs( invDir.y ), fabs( invDir.z ) );
     Vec3 tMax;
 
-    for ( size_t i = 0; i < 3; ++i )
+    for ( usize i = 0; i < 3; ++i )
     {
-        float offset = rd[ i ] > 0.0f ? 1.0f - ro[ i ] + static_cast<uint32_t>( ro[ i ] )
-                                      : ro[ i ] - static_cast<uint32_t>( ro[ i ] );
+        float offset =
+            rd[ i ] > 0.0f ? 1.0f - ro[ i ] + static_cast<u32>( ro[ i ] ) : ro[ i ] - static_cast<u32>( ro[ i ] );
 
         tMax[ i ] = tDelta[ i ] * offset;
     }
@@ -38,10 +38,10 @@ HitResult MarchTheRay( const IWorldGrid *vg, const Vec3 &ro, const Vec3 &rd, siz
         Z       = Y << 1,
     };
 
-    LastStepAxis  lastStepAxis = Unknown;
-    const int32_t gridWidth    = static_cast<int32_t>( vg->GetGridWidth() );
+    LastStepAxis lastStepAxis = Unknown;
+    const i32    gridWidth    = static_cast<i32>( vg->GetGridWidth() );
 
-    for ( size_t stepCount = 0; stepCount < maxSteps; ++stepCount )
+    for ( usize stepCount = 0; stepCount < maxSteps; ++stepCount )
     {
         if ( voxel.x < 0 || voxel.x >= gridWidth || voxel.y < 0 || voxel.y >= gridWidth || voxel.z < 0 ||
              voxel.z >= gridWidth )
@@ -49,9 +49,9 @@ HitResult MarchTheRay( const IWorldGrid *vg, const Vec3 &ro, const Vec3 &rd, siz
             break;
         }
 
-        const size_t index = voxel.x + voxel.y * gridWidth + voxel.z * gridWidth * gridWidth;
+        const usize index = voxel.x + voxel.y * gridWidth + voxel.z * gridWidth * gridWidth;
 
-        if ( vg->GetGrid()[ index ].Type == static_cast<uint32_t>( -1 ) ||
+        if ( vg->GetGrid()[ index ].Type == static_cast<u32>( -1 ) ||
              ( vg->GetGrid()[ index ].Type > 0 && vg->CheckIfVoxelOccupied( voxel ) ) )
         {
             result.bHit       = true;

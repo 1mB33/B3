@@ -1,23 +1,23 @@
-#if !defined(B33_IMG_BUFFER_H)
-#define B33_IMG_BUFFER_H
+#if !defined( B33_IMG_BUFFER_HPP )
+#    define B33_IMG_BUFFER_HPP
 
-#include "Vulkan/WrapperAdapter.hpp"
+#    include "Vulkan/WrapperAdapter.hpp"
 
 namespace B33::Rendering
 {
 
 class ImgBuffer
 {
+    template <typename T>
+    using SharedPtr = ::std::shared_ptr<T>;
+
   public:
     __B33_API ImgBuffer();
 
     __B33_API
-    ImgBuffer( ::std::shared_ptr<const ::B33::Rendering::AdapterWrapper> da,
-               ::VkImage                                                 image,
-               ::VkImageView                                             imageView,
-               ::VkSampler                                               sampler );
+    ImgBuffer( SharedPtr<const AdapterWrapper> da, ::VkImage image, ::VkImageView imageView, ::VkSampler sampler );
 
-    __B33_API ~ImgBuffer();
+    __B33_API ~ImgBuffer() noexcept;
 
   public:
     ImgBuffer( const ImgBuffer &other )                     = delete;
@@ -46,6 +46,7 @@ class ImgBuffer
         return m_Sampler;
     }
 
+  public:
     ::VkImage DetachImage()
     {
         auto result = m_Image;
@@ -68,11 +69,11 @@ class ImgBuffer
     }
 
   protected:
-    ::std::shared_ptr<const ::B33::Rendering::AdapterWrapper> m_pDeviceAdapter = nullptr;
-    ::VkImage                                                 m_Image          = VK_NULL_HANDLE;
-    ::VkImageView                                             m_ImageView      = VK_NULL_HANDLE;
-    ::VkSampler                                               m_Sampler        = VK_NULL_HANDLE;
+    SharedPtr<const AdapterWrapper> m_pDeviceAdapter = nullptr;
+    ::VkImage                       m_Image          = VK_NULL_HANDLE;
+    ::VkImageView                   m_ImageView      = VK_NULL_HANDLE;
+    ::VkSampler                     m_Sampler        = VK_NULL_HANDLE;
 };
 
 } // namespace B33::Rendering
-#endif //! B33_IMG_BUFFER_H
+#endif //! B33_IMG_BUFFER_HPP

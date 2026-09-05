@@ -1,12 +1,10 @@
-#if !defined(B33_WRAPPER_PIPELINE_H)
-#define B33_WRAPPER_PIPELINE_H
+#if !defined( B33_WRAPPER_PIPELINE_HPP )
+#    define B33_WRAPPER_PIPELINE_HPP
 
-#include "B33Core.h"
-#include "Attributes.h"
-#include "Vulkan/IPushConstants.hpp"
-#include "Vulkan/Memory/Memory.hpp"
-#include "Vulkan/SwapChain.hpp"
-#include "Vulkan/WrapperAdapter.hpp"
+#    include "Vulkan/IPushConstants.hpp"
+#    include "Vulkan/Memory/Memory.hpp"
+#    include "Vulkan/SwapChain.hpp"
+#    include "Vulkan/WrapperAdapter.hpp"
 
 namespace B33::Rendering
 {
@@ -15,6 +13,10 @@ class PipelineWrapper
 {
     using Vec  = ::B33::Math::Vec3;
     using iVec = ::B33::Math::iVec3;
+    template <typename T>
+    using WeakPtr = ::std::weak_ptr<T>;
+    template <typename T>
+    using SharedPtr = ::std::shared_ptr<T>;
 
   public:
     PipelineWrapper() = delete;
@@ -29,7 +31,7 @@ class PipelineWrapper
     {
     }
 
-    virtual ~PipelineWrapper()
+    virtual ~PipelineWrapper() noexcept
     {
         B33_LOG( Core::Debug::Info, L"Destroying pipeline" );
         if ( m_Pipeline != VK_NULL_HANDLE )
@@ -63,10 +65,10 @@ class PipelineWrapper
 
   public:
     template <class T>
-    void Initialize( ::std::weak_ptr<const ::B33::Rendering::AdapterWrapper> pDeviceAdapter,
-                     ::std::weak_ptr<::B33::Rendering::Memory>               pMemory,
-                     const ::B33::Rendering::Swapchain                      *pSwapChain,
-                     T                                                      &pPipeline )
+    void Initialize( WeakPtr<const AdapterWrapper> pDeviceAdapter,
+                     WeakPtr<Memory>               pMemory,
+                     const Swapchain              *pSwapChain,
+                     T                            &pPipeline )
     {
         B33_LOG( Core::Debug::Info, L"Initializing pipeline" );
 
@@ -89,7 +91,7 @@ class PipelineWrapper
 
     virtual void Reset() = 0;
 
-    void LoadPushConstants( const IPushConstants &constants, __B33_ATTRIBUTE_MIGHT_BE_UNUSED ::size_t uByteSize )
+    void LoadPushConstants( const IPushConstants &constants, __B33_ATTRIBUTE_MIGHT_BE_UNUSED usize uByteSize )
     {
         B33_ASSERT( uByteSize == m_uPushConstantsByteSize &&
                     uByteSize < m_pDeviceAdapter.lock()->GetPushConstantsLimit() );
@@ -130,14 +132,14 @@ class PipelineWrapper
     }
 
   public:
-    void SetNewSwapChain( const ::B33::Rendering::Swapchain *pSwapChain )
+    void SetNewSwapChain( const Swapchain *pSwapChain )
     {
         B33_TRACE( L"Setting new swapchain for pipeline %p", this );
         m_pSwapChain = pSwapChain;
     }
 
   protected:
-    ::std::shared_ptr<const ::B33::Rendering::AdapterWrapper> GetAdater()
+    SharedPtr<const AdapterWrapper> GetAdater()
     {
         if ( auto result = m_pDeviceAdapter.lock() )
             return result;
@@ -145,7 +147,7 @@ class PipelineWrapper
         throw B33_EXCEPT( "Cannot lock resources in the PipelineWrapper" );
     }
 
-    ::std::shared_ptr<::B33::Rendering::Memory> GetMemory() const
+    SharedPtr<Memory> GetMemory() const
     {
         if ( auto result = m_pMemory.lock() )
             return result;
@@ -153,7 +155,7 @@ class PipelineWrapper
         throw B33_EXCEPT( "Cannot lock resources in the PipelineWrapper" );
     }
 
-    const ::B33::Rendering::Swapchain *GetSwapChain() const
+    const Swapchain *GetSwapChain() const
     {
         return m_pSwapChain;
     }
@@ -169,11 +171,11 @@ class PipelineWrapper
     }
 
   private:
-    ::std::weak_ptr<const ::B33::Rendering::AdapterWrapper> m_pDeviceAdapter = {};
-    ::std::weak_ptr<::B33::Rendering::Memory>               m_pMemory        = {};
-    const ::B33::Rendering::Swapchain                      *m_pSwapChain     = {};
+    WeakPtr<const AdapterWrapper> m_pDeviceAdapter = {};
+    WeakPtr<Memory>               m_pMemory        = {};
+    const Swapchain              *m_pSwapChain     = {};
 
-    ::size_t        m_uPushConstantsByteSize = 0;
+    usize           m_uPushConstantsByteSize = 0;
     IPushConstants *m_pPushConstants         = nullptr;
 
     ::VkPipelineStageFlagBits m_StageBits   = {};

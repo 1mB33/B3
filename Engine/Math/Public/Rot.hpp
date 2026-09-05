@@ -2,6 +2,7 @@
 #    define B33_ROT3_HPP
 
 #    include "Vec3.hpp"
+#    include "Vec3Operators.hpp"
 #    include "Vec4.hpp"
 
 namespace B33::Math

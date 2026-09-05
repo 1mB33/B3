@@ -1,17 +1,22 @@
-#if !defined(B33_WRAPPER_ADAPTER_H)
-#define B33_WRAPPER_ADAPTER_H
+#if !defined( B33_WRAPPER_ADAPTER_HPP )
+#    define B33_WRAPPER_ADAPTER_HPP
 
-#include "Vulkan/WrapperHardware.hpp"
+#    include "Vulkan/WrapperHardware.hpp"
 
 namespace B33::Rendering
 {
 
 class AdapterWrapper
 {
+    template <typename T>
+    using Vector = ::std::vector<T>;
+    template <typename T>
+    using WeakPtr = ::std::weak_ptr<T>;
+
   public:
     __B33_API AdapterWrapper();
 
-    __B33_API ~AdapterWrapper();
+    __B33_API ~AdapterWrapper() noexcept;
 
   public:
     AdapterWrapper( AdapterWrapper && ) noexcept = default;
@@ -22,7 +27,7 @@ class AdapterWrapper
 
     // Getters // -----------------------------------------------------------------------------------------------------
   public:
-    uint32_t GetQueueFamilyIndex() const
+    u32 GetQueueFamilyIndex() const
     {
         return m_uQueueFamily;
     }
@@ -37,7 +42,7 @@ class AdapterWrapper
         return m_Queue;
     }
 
-    size_t GetPushConstantsLimit() const
+    usize GetPushConstantsLimit() const
     {
         return m_PushConstantsLimit;
     }
@@ -45,7 +50,7 @@ class AdapterWrapper
     // Methods // -----------------------------------------------------------------------------------------------------
   public:
     template <class T>
-    void Initialize( ::std::weak_ptr<const ::B33::Rendering::HardwareWrapper> pHardware, const T &adapter )
+    void Initialize( WeakPtr<const HardwareWrapper> pHardware, const T &adapter )
     {
         B33_LOG( Core::Debug::Info, L"Initializing adapter" );
         auto pLockedHardware = pHardware.lock();
@@ -69,24 +74,24 @@ class AdapterWrapper
 
     // Internal // ----------------------------------------------------------------------------------------------------
   private:
-    __B33_API uint32_t ChooseQueueFamily( VkPhysicalDevice gpu, const uint32_t uFlags ) const;
+    __B33_API u32 ChooseQueueFamily( VkPhysicalDevice gpu, const u32 uFlags ) const;
 
-    __B33_API VkDevice CreateDevice( VkPhysicalDevice                 gpu,
-                                     const std::vector<const char *> &vExtensions,
-                                     const void                      *pFeatures,
-                                     const uint32_t                   uFamilyIndex ) const;
+    __B33_API VkDevice CreateDevice( VkPhysicalDevice            gpu,
+                                     const Vector<const char *> &vExtensions,
+                                     const void                 *pFeatures,
+                                     const u32                   uFamilyIndex ) const;
 
-    __B33_API VkQueue CreateQueue( VkDevice dv, uint32_t uQueueIndex ) const;
+    __B33_API VkQueue CreateQueue( VkDevice dv, u32 uQueueIndex ) const;
 
   private:
-    uint32_t m_uFlags       = 0;
-    uint32_t m_uQueueFamily = 0;
+    u32 m_uFlags       = 0;
+    u32 m_uQueueFamily = 0;
 
     VkDevice m_Device = VK_NULL_HANDLE;
     VkQueue  m_Queue  = VK_NULL_HANDLE;
 
-    size_t m_PushConstantsLimit = -1;
+    usize m_PushConstantsLimit = -1;
 };
 
 } // namespace B33::Rendering
-#endif // !B33_WRAPPER_ADAPTER_H
+#endif // !B33_WRAPPER_ADAPTER_HPP

@@ -1,11 +1,11 @@
-#if !defined(B33_SWAPCHAIN_H)
-#define B33_SWAPCHAIN_H
+#if !defined( B33_SWAPCHAIN_HPP )
+#    define B33_SWAPCHAIN_HPP
 
-#include "B33Core.h"
-#include "Instance.hpp"
-#include "Window/WindowDesc.hpp"
-#include "WrapperAdapter.hpp"
-#include "WrapperHardware.hpp"
+#    include <B33Core.h>
+#    include "Instance.hpp"
+#    include "Window/WindowDesc.hpp"
+#    include "WrapperAdapter.hpp"
+#    include "WrapperHardware.hpp"
 
 namespace B33::Rendering
 {
@@ -31,7 +31,7 @@ class Swapchain
                          WeakPtr<const AdapterWrapper>  da,
                          const ::WindowDesc            *wd );
 
-    __B33_API ~Swapchain();
+    __B33_API ~Swapchain() noexcept;
 
   public:
     Swapchain( Swapchain && ) noexcept            = default;
@@ -44,7 +44,7 @@ class Swapchain
   public:
     ::VkSwapchainKHR GetSwapChainHandle() const;
 
-    ::VkImage GetImage( ::uint32_t i ) const;
+    ::VkImage GetImage( u32 i ) const;
 
     ::VkImage GetCurrentImage() const;
 
@@ -52,13 +52,13 @@ class Swapchain
 
     ::VkExtent2D GetExtent() const;
 
-    ::uint32_t GetCurrentImageIndex() const;
+    ::u32 GetCurrentImageIndex() const;
 
-    ::uint32_t GetImageCount() const;
+    ::u32 GetImageCount() const;
 
     // Setters // -----------------------------------------------------------------------------------------------------
   public:
-    void SetCurrentImage( uint32_t uImageIndex )
+    void SetCurrentImage( u32 uImageIndex )
     {
         B33_TRACE( L"Current swapchain image %d", uImageIndex );
         m_uCurrentImageIndex = uImageIndex;
@@ -66,14 +66,14 @@ class Swapchain
 
     // Internal // ----------------------------------------------------------------------------------------------------
   private:
-    ::VkSurfaceKHR CreateSurface( WeakPtr<const Instance> &pInstance, const ::WindowDesc *pWindowDesc );
+    ::VkSurfaceKHR CreateSurface( WeakPtr<const Instance> &pInstance, const WindowDesc *pWindowDesc );
 
     ::VkSurfaceCapabilitiesKHR GetCapabilitesInternal( WeakPtr<const HardwareWrapper> pHardware,
                                                        ::VkSurfaceKHR                 surface );
 
     ::VkExtent2D GetExtentInternal( const VkSurfaceCapabilitiesKHR &capabilities, const WindowDesc *pWindowDesc );
 
-    ::uint32_t GetImageCountInternal( const VkSurfaceCapabilitiesKHR &capabilities );
+    ::u32 GetImageCountInternal( const VkSurfaceCapabilitiesKHR &capabilities );
 
     ::VkSurfaceFormatKHR PickFormat( WeakPtr<const HardwareWrapper> &pHardware, VkSurfaceKHR surface );
 
@@ -83,38 +83,38 @@ class Swapchain
                                       ::VkSurfaceKHR                    surface,
                                       const ::VkSurfaceCapabilitiesKHR &capabilities,
                                       const ::VkExtent2D               &extent2D,
-                                      ::uint32_t                        uImageCount,
+                                      u32                               uImageCount,
                                       const ::VkSurfaceFormatKHR       &surfaceFormat,
                                       ::VkPresentModeKHR                presentMode );
 
-    ::uint32_t GetNumberOfSwapChainImages( WeakPtr<const AdapterWrapper> &pAdapter, ::VkSwapchainKHR swapchain );
+    ::u32 GetNumberOfSwapChainImages( WeakPtr<const AdapterWrapper> &pAdapter, ::VkSwapchainKHR swapchain );
 
     Vector<::VkImage>
-    CreateSwapChainImages( WeakPtr<const AdapterWrapper> &pAdapter, ::VkSwapchainKHR swapchain, ::uint32_t uAmount );
+    CreateSwapChainImages( WeakPtr<const AdapterWrapper> &pAdapter, ::VkSwapchainKHR swapchain, u32 uAmount );
 
     Vector<::VkImageView> CreateImageViews( WeakPtr<const AdapterWrapper> &pAdapter,
                                             Vector<::VkImage>              swapChainImages,
                                             VkFormat                       format,
-                                            ::uint32_t                     uAmount );
+                                            u32                            uAmount );
 
   private:
     WeakPtr<const Instance>        m_pInstance      = {};
     WeakPtr<const HardwareWrapper> m_pHardware      = {};
     WeakPtr<const AdapterWrapper>  m_pDeviceAdapter = {};
-    const ::WindowDesc            *m_pWindowDesc    = {};
+    const WindowDesc              *m_pWindowDesc    = {};
 
     ::VkSurfaceKHR             m_Surface       = VK_NULL_HANDLE;
     ::VkSurfaceCapabilitiesKHR m_Capabilities  = {};
     ::VkExtent2D               m_Extent        = { 0, 0 };
-    const ::uint32_t           m_uImageCount   = -1;
+    const u32                  m_uImageCount   = -1;
     ::VkSurfaceFormatKHR       m_SurfaceFormat = {};
     ::VkPresentModeKHR         m_PresentMode   = {};
     ::VkSwapchainKHR           m_pSwapChain    = VK_NULL_HANDLE;
 
-    ::uint32_t            m_uCurrentImageIndex = 0;
+    u32                   m_uCurrentImageIndex = 0;
     Vector<::VkImage>     m_SwapChainImages    = {};
     Vector<::VkImageView> m_ImageViews {};
 };
 
 } // namespace B33::Rendering
-#endif // !B33_SWAPCHAIN_H
+#endif // !B33_SWAPCHAIN_HPP

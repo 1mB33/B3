@@ -1,4 +1,4 @@
-#include "B33Rendering.hpp"
+#include "B33Rendering.h"
 
 #include "Vulkan/Buffers/ImgBuffer.hpp"
 #include "Vulkan/ErrorHandling.hpp"
@@ -13,7 +13,7 @@ using namespace B33::Core;
 using namespace B33::Core::Debug;
 
 // Constructors // ----------------------------------------------------------------------------------------------------
-Memory::Memory( shared_ptr<const HardwareWrapper> pHardware, shared_ptr<const AdapterWrapper> pAdapter )
+Memory::Memory( SharedPtr<const HardwareWrapper> pHardware, SharedPtr<const AdapterWrapper> pAdapter )
   : m_pHardware( pHardware )
   , m_pAdapter( pAdapter )
 {
@@ -21,13 +21,13 @@ Memory::Memory( shared_ptr<const HardwareWrapper> pHardware, shared_ptr<const Ad
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Memory::~Memory()
+Memory::~Memory() noexcept
 {
     B33_INFO( L"Destroying memory" );
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-shared_ptr<GPUStreamBuffer> Memory::ReserveStagingBuffer( const size_t uSizeInBytes )
+shared_ptr<GPUStreamBuffer> Memory::ReserveStagingBuffer( const usize uSizeInBytes )
 {
     B33_LOG( Info, L"Reserving staging buffer of %llu bytes", uSizeInBytes );
 
@@ -60,7 +60,7 @@ shared_ptr<GPUStreamBuffer> Memory::ReserveStagingBuffer( const size_t uSizeInBy
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-shared_ptr<GPUBuffer> Memory::ReserveVertexBuffer( const size_t uSizeInBytes )
+shared_ptr<GPUBuffer> Memory::ReserveVertexBuffer( const usize uSizeInBytes )
 {
     B33_LOG( Info, L"Reserving gpu buffer of %llu bytes", uSizeInBytes );
 
@@ -92,7 +92,7 @@ shared_ptr<GPUBuffer> Memory::ReserveVertexBuffer( const size_t uSizeInBytes )
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-shared_ptr<GPUBuffer> Memory::ReserveGPUBuffer( const size_t uSizeInBytes )
+shared_ptr<GPUBuffer> Memory::ReserveGPUBuffer( const usize uSizeInBytes )
 {
     B33_LOG( Info, L"Reserving gpu buffer of %llu bytes", uSizeInBytes );
 
@@ -123,10 +123,8 @@ shared_ptr<GPUBuffer> Memory::ReserveGPUBuffer( const size_t uSizeInBytes )
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-ImgBuffer Memory::ReserveImage( const ::uint32_t        uWidth,
-                                const ::uint32_t        uHeigth,
-                                const VkFormat          format,
-                                const VkImageUsageFlags usage )
+ImgBuffer
+Memory::ReserveImage( const u32 uWidth, const u32 uHeigth, const VkFormat format, const VkImageUsageFlags usage )
 {
     const VkDevice    da   = m_pAdapter->GetAdapterHandle();
     VkImageCreateInfo info = {};
@@ -159,9 +157,7 @@ ImgBuffer Memory::ReserveImage( const ::uint32_t        uWidth,
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void Memory::UploadToBufferRaw( const void                                           *pUpload,
-                                const ::size_t                                        uUploadSize,
-                                const ::std::shared_ptr<::B33::Rendering::GPUBuffer> &gpuBuffer )
+void Memory::UploadToBufferRaw( const void *pUpload, const usize uUploadSize, const SharedPtr<GPUBuffer> &gpuBuffer )
 {
     const VkDevice da     = m_pAdapter->GetAdapterHandle();
     GPUBuffer     *buffer = gpuBuffer.get();
@@ -203,9 +199,9 @@ void Memory::ReserveSampler( ImgBuffer &image, VkSamplerCreateInfo &createInfo )
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void Memory::UploadToStreamBufferRaw( const void                                                 *pUpload,
-                                      const ::size_t                                              uUploadSize,
-                                      const ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> &gpuStreamBuffer )
+void Memory::UploadToStreamBufferRaw( const void                       *pUpload,
+                                      const usize                       uUploadSize,
+                                      const SharedPtr<GPUStreamBuffer> &gpuStreamBuffer )
 {
     const VkDevice   da     = m_pAdapter->GetAdapterHandle();
     GPUStreamBuffer *buffer = gpuStreamBuffer.get();
@@ -223,7 +219,7 @@ void Memory::UploadToStreamBufferRaw( const void                                
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void Memory::UploadToStreamBufferDescSet( const void *pUpload, const size_t uUploadSize, const UploadDescriptor &onSet )
+void Memory::UploadToStreamBufferDescSet( const void *pUpload, const usize uUploadSize, const UploadDescriptor &onSet )
 {
     B33_ASSERT( onSet.Buffer->GetMemoryHandle() != VK_NULL_HANDLE );
     B33_ASSERT( onSet.Buffer->GetBufferHandle() != VK_NULL_HANDLE );
@@ -252,13 +248,13 @@ void Memory::UploadToStreamBufferDescSet( const void *pUpload, const size_t uUpl
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-uint32_t Memory::FindMemoryType( uint32_t typeFilter, VkMemoryPropertyFlags properties )
+u32 Memory::FindMemoryType( u32 typeFilter, VkMemoryPropertyFlags properties )
 {
     VkPhysicalDeviceMemoryProperties memProperties;
 
     vkGetPhysicalDeviceMemoryProperties( m_pHardware->GetPhysicalDevice(), &memProperties );
 
-    for ( uint32_t i = 0; i < memProperties.memoryTypeCount; ++i )
+    for ( u32 i = 0; i < memProperties.memoryTypeCount; ++i )
     {
         bool bTypeMatch       = ( typeFilter & ( 1 << i ) ) != 0;
         bool bPropertiesMatch = ( memProperties.memoryTypes[ i ].propertyFlags & properties ) == properties;

@@ -1,4 +1,4 @@
-#include "B33Rendering.hpp"
+#include "B33Rendering.h"
 
 #include "Vulkan/BasicComponentImplementations/PureGraphicsAdapter.hpp"
 
@@ -29,7 +29,7 @@ void *PureGraphicsAdapter::GetFeaturesImpl() const
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-uint32_t PureGraphicsAdapter::GetQueueFlagsImpl() const
+u32 PureGraphicsAdapter::GetQueueFlagsImpl() const
 {
     return ::VK_QUEUE_GRAPHICS_BIT;
 }

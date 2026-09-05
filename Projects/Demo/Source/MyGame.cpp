@@ -1,4 +1,5 @@
 #include "MyGame.hpp"
+#include <B33Math.hpp>
 #include "Input/MouseButtonList.hpp"
 #include "Input/Bind.h"
 #include "Input/KeyList.hpp"

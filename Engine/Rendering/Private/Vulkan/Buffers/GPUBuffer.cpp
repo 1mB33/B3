@@ -1,4 +1,4 @@
-#include "B33Rendering.hpp"
+#include "B33Rendering.h"
 
 #include "Vulkan/Buffers/GPUBuffer.hpp"
 
@@ -15,10 +15,10 @@ GPUBuffer::GPUBuffer()
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-GPUBuffer::GPUBuffer( ::std::shared_ptr<const ::B33::Rendering::AdapterWrapper> da,
-                      ::VkDeviceMemory                                          deviceMemory,
-                      ::VkBuffer                                                buffer,
-                      ::size_t                                                  sizeInBytes )
+GPUBuffer::GPUBuffer( SharedPtr<const AdapterWrapper> da,
+                      ::VkDeviceMemory                deviceMemory,
+                      ::VkBuffer                      buffer,
+                      usize                           sizeInBytes )
   : m_pDeviceAdapter( da )
   , m_DeviceMemory( deviceMemory )
   , m_Buffer( buffer )
@@ -27,7 +27,7 @@ GPUBuffer::GPUBuffer( ::std::shared_ptr<const ::B33::Rendering::AdapterWrapper> 
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-GPUBuffer::~GPUBuffer()
+GPUBuffer::~GPUBuffer() noexcept
 {
     if ( m_pDeviceAdapter && m_Buffer != VK_NULL_HANDLE )
     {

@@ -1,11 +1,6 @@
-#include "B33Rendering.hpp"
+#include "B33Rendering.h"
 
 #include "Editor/EditorPipeline.hpp"
-#include "Vulkan/ErrorHandling.hpp"
-#include "Vulkan/Buffers/GPUStreamBuffer.hpp"
-#include "Vulkan/SwapChain.hpp"
-#include "Vulkan/SwapChain.hpp"
-#include "Vulkan/Utility.hpp"
 
 namespace B33::Rendering
 {

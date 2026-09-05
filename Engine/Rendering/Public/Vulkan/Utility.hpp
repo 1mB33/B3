@@ -8,9 +8,10 @@ namespace B33::Rendering
 
 class Shaders
 {
+    using String = ::std::string;
+
   public:
-    __B33_API static ::VkShaderModule LoadShader( const ::std::string                    &strPath,
-                                                  const ::B33::Rendering::AdapterWrapper *pAdapter );
+    __B33_API static ::VkShaderModule LoadShader( const String &strPath, const AdapterWrapper *pAdapter );
 };
 
 }; // namespace B33::Rendering

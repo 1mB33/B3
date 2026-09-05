@@ -1,4 +1,4 @@
-#include "B33Rendering.hpp"
+#include "B33Rendering.h"
 
 #include "Vulkan/Buffers/ImgBuffer.hpp"
 
@@ -16,10 +16,10 @@ ImgBuffer::ImgBuffer()
 {
 }
 
-ImgBuffer::ImgBuffer( ::std::shared_ptr<const ::B33::Rendering::AdapterWrapper> da,
-                      ::VkImage                                                 image,
-                      ::VkImageView                                             imageView,
-                      ::VkSampler                                               sampler )
+ImgBuffer::ImgBuffer( SharedPtr<const AdapterWrapper> da,
+                      ::VkImage                       image,
+                      ::VkImageView                   imageView,
+                      ::VkSampler                     sampler )
   : m_pDeviceAdapter( da )
   , m_Image( image )
   , m_ImageView( imageView )
@@ -27,7 +27,7 @@ ImgBuffer::ImgBuffer( ::std::shared_ptr<const ::B33::Rendering::AdapterWrapper> 
 {
 }
 
-ImgBuffer::~ImgBuffer()
+ImgBuffer::~ImgBuffer() noexcept
 {
     if ( m_pDeviceAdapter && m_Sampler != VK_NULL_HANDLE )
     {

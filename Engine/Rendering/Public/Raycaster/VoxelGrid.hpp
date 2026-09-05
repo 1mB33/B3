@@ -1,10 +1,9 @@
-#if !defined(B33_VOXEL_GRID_H)
-#define B33_VOXEL_GRID_H
+#if !defined( B33_VOXEL_GRID_HPP )
+#    define B33_VOXEL_GRID_HPP
 
-#include "Primitives/ColoredCubes.hpp"
-#include "Primitives/Object.hpp"
-#include "Raycaster/Voxel.hpp"
-#include "Vulkan/Memory/MemoryUploadTracker.hpp"
+#    include "Primitives/ColoredCubes.hpp"
+#    include "Raycaster/Voxel.hpp"
+#    include "Vulkan/Memory/MemoryUploadTracker.hpp"
 
 namespace B33::Rendering
 {
@@ -17,16 +16,18 @@ enum EGridChanged
     HalfSize  = Rotation << 1,
 };
 
-class IWorldGrid : public ::B33::Rendering::MemoryUploadTracker
+class IWorldGrid : public MemoryUploadTracker
 {
     using Vec  = ::B33::Math::Vec3;
     using iVec = ::B33::Math::iVec3;
+    template <typename T>
+    using Vector = ::std::vector<T>;
 
   protected:
-    static constexpr size_t DefaultVoxelGridDim = 64;
+    static constexpr usize DefaultVoxelGridDim = 64;
 
   public:
-    explicit IWorldGrid( size_t uGridWidth = DefaultVoxelGridDim )
+    explicit IWorldGrid( usize uGridWidth = DefaultVoxelGridDim )
       : m_uGridDim( uGridWidth )
       , m_VoxelGrid( uGridWidth * uGridWidth * uGridWidth )
       , m_uChanged( NoChanges )
@@ -39,34 +40,34 @@ class IWorldGrid : public ::B33::Rendering::MemoryUploadTracker
         return m_VoxelGrid.data();
     }
 
-    ::std::vector<::B33::Rendering::Voxel> &GetGrid()
+    Vector<Voxel> &GetGrid()
     {
         return m_VoxelGrid;
     }
 
-    const ::std::vector<Voxel> &GetGrid() const
+    const Vector<Voxel> &GetGrid() const
     {
         return m_VoxelGrid;
     }
 
-    size_t GetVoxelsSizeInBytes() const
+    usize GetVoxelsSizeInBytes() const
     {
         return m_VoxelGrid.size() * sizeof( Voxel );
     }
 
-    ::size_t GetGridWidth() const
+    usize GetGridWidth() const
     {
         return m_uGridDim;
     }
 
-    ::size_t GetVoxels() const
+    usize GetVoxels() const
     {
         return m_VoxelGrid.size();
     }
 
-    uint32_t GetChanged()
+    u32 GetChanged()
     {
-        uint32_t r = m_uChanged;
+        u32 r = m_uChanged;
         m_uChanged &= 0;
         return r;
     }
@@ -74,17 +75,17 @@ class IWorldGrid : public ::B33::Rendering::MemoryUploadTracker
     virtual const ::B33::Math::WorldObjects &GetStoredObjects() const = 0;
 
   public:
-    __B33_API void SetVoxel( const iVec &pos, uint32_t uColor );
+    __B33_API void SetVoxel( const iVec &pos, u32 uColor );
 
   public:
     virtual bool CheckIfVoxelOccupied( const iVec &pos ) const = 0;
 
   protected:
-    __B33_API ::size_t CalcIndex( const iVec &pos ) const;
+    __B33_API usize CalcIndex( const iVec &pos ) const;
 
-    __B33_API void PlaceOnGrid( const iVec &pos, const iVec &area, const ::size_t uId );
+    __B33_API void PlaceOnGrid( const iVec &pos, const iVec &area, const usize uId );
 
-    __B33_API void RemoveFromGrid( const iVec &pos, const iVec &area, const ::size_t uId );
+    __B33_API void RemoveFromGrid( const iVec &pos, const iVec &area, const usize uId );
 
     void SetPositionChanged()
     {
@@ -102,9 +103,9 @@ class IWorldGrid : public ::B33::Rendering::MemoryUploadTracker
     }
 
   private:
-    ::size_t                               m_uGridDim = -1;
-    ::std::vector<::B33::Rendering::Voxel> m_VoxelGrid;
-    ::uint32_t                             m_uChanged;
+    usize         m_uGridDim = -1;
+    Vector<Voxel> m_VoxelGrid;
+    u32           m_uChanged;
 };
 
 template <class StoredObjectType>
@@ -113,9 +114,23 @@ class WorldGrid : public IWorldGrid
     using Vec  = ::B33::Math::Vec3;
     using iVec = ::B33::Math::iVec3;
     using Rot  = ::B33::Math::Rot3;
+    template <typename T>
+    using Vector = ::std::vector<T>;
+
+    template <typename T>
+    constexpr decltype( auto ) Forward( T &arg ) noexcept
+    {
+        return ::std::forward<T>( arg );
+    }
+
+    template <typename T>
+    constexpr decltype( auto ) Forward( T &&arg ) noexcept
+    {
+        return ::std::forward<T>( arg );
+    }
 
   public:
-    explicit WorldGrid( size_t uGridWidth = IWorldGrid::DefaultVoxelGridDim )
+    explicit WorldGrid( usize uGridWidth = IWorldGrid::DefaultVoxelGridDim )
       : IWorldGrid( uGridWidth )
       , m_StoredObjects() // TODO: this->GetVoxelsSizeInBytes() / sizeof(Voxel))
       , m_uObjectsCount( 0 )
@@ -131,13 +146,13 @@ class WorldGrid : public IWorldGrid
   public:
     virtual bool CheckIfVoxelOccupied( const iVec &pos ) const override
     {
-        const ::std::vector<Voxel> &voxelsGrid = this->GetGrid();
-        const ::size_t              uIndex     = CalcIndex( pos );
+        const Vector<Voxel> &voxelsGrid = this->GetGrid();
+        const usize          uIndex     = CalcIndex( pos );
 
         if ( voxelsGrid[ uIndex ].Type == 0 )
             return false;
 
-        for ( ::uint32_t i = 0; i < voxelsGrid[ uIndex ].Type; ++i )
+        for ( u32 i = 0; i < voxelsGrid[ uIndex ].Type; ++i )
             if ( iVec::ToVec( m_StoredObjects.GetPosition( voxelsGrid[ uIndex ].Id[ i ] ) ) == pos )
                 return true;
 
@@ -146,9 +161,9 @@ class WorldGrid : public IWorldGrid
 
   public:
     template <class U>
-    size_t GenerateObjectAtVoxel( const iVec &pos, U &&sot )
+    usize GenerateObjectAtVoxel( const iVec &pos, U &&sot )
     {
-        size_t uId = GenerateObject( pos, ::std::forward<U>( sot ) );
+        usize uId = GenerateObject( pos, Forward<U>( sot ) );
         this->ForceUpload();
         this->SetPositionChanged();
         this->SetRotationChanged();
@@ -156,7 +171,7 @@ class WorldGrid : public IWorldGrid
         return uId;
     }
 
-    void RemoveObject( const size_t uObjectId )
+    void RemoveObject( const usize uObjectId )
     {
         const iVec area = iVec::ToVec( m_StoredObjects.GetHalfSize( uObjectId ) + 1 );
 
@@ -169,7 +184,7 @@ class WorldGrid : public IWorldGrid
         m_StoredObjects.RemoveObject( uObjectId );
     }
 
-    void UpdatePos( const Vec &newPos, size_t uObjectId )
+    void UpdatePos( const Vec &newPos, usize uObjectId )
     {
         if ( m_StoredObjects.GetPosition( uObjectId ) == newPos )
             return;
@@ -183,7 +198,7 @@ class WorldGrid : public IWorldGrid
         this->SetPositionChanged();
     }
 
-    void UpdateRot( const Rot &newRot, ::size_t uId )
+    void UpdateRot( const Rot &newRot, usize uId )
     {
         if ( m_StoredObjects.GetRotation( uId ) == newRot )
         {
@@ -197,9 +212,9 @@ class WorldGrid : public IWorldGrid
 
   private:
     template <class U>
-    ::size_t GenerateObject( iVec pos, U &&sot )
+    usize GenerateObject( iVec pos, U &&sot )
     {
-        const size_t uObjId = m_StoredObjects.AddObject();
+        const usize uObjId = m_StoredObjects.AddObject();
 
         m_StoredObjects.SetPositon( Vec::ToVec( pos ), uObjId );
         m_StoredObjects.SetRotation( sot.GetRotation(), uObjId );
@@ -214,10 +229,10 @@ class WorldGrid : public IWorldGrid
 
   private:
     StoredObjectType m_StoredObjects;
-    ::size_t         m_uObjectsCount = -1;
+    usize            m_uObjectsCount = -1;
 };
 
-typedef ::B33::Rendering::WorldGrid<ColoredCubes> CubeWorld;
+typedef WorldGrid<ColoredCubes> CubeWorld;
 
 } // namespace B33::Rendering
-#endif // !B33_VOXEL_GRID_H
+#endif // !B33_VOXEL_GRID_HPP

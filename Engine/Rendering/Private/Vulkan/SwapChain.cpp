@@ -1,6 +1,5 @@
-#include "B33Rendering.hpp"
+#include "B33Rendering.h"
 
-#include "Debug/Assert.hpp"
 #include "Vulkan/ErrorHandling.hpp"
 #include "Vulkan/SwapChain.hpp"
 
@@ -10,10 +9,10 @@ namespace B33::Rendering
 using namespace std;
 
 // Constructors // ----------------------------------------------------------------------------------------------------
-Swapchain::Swapchain( weak_ptr<const Instance>        pInst,
-                      weak_ptr<const HardwareWrapper> hw,
-                      weak_ptr<const AdapterWrapper>  da,
-                      const WindowDesc               *wd )
+Swapchain::Swapchain( WeakPtr<const Instance>        pInst,
+                      WeakPtr<const HardwareWrapper> hw,
+                      WeakPtr<const AdapterWrapper>  da,
+                      const WindowDesc              *wd )
   : m_pInstance( pInst )
   , m_pHardware( hw )
   , m_pDeviceAdapter( da )
@@ -38,7 +37,7 @@ Swapchain::Swapchain( weak_ptr<const Instance>        pInst,
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-Swapchain::~Swapchain()
+Swapchain::~Swapchain() noexcept
 {
     B33_INFO( L"Destroying swapChain" );
     if ( auto pAdatper = m_pDeviceAdapter.lock() )
@@ -70,7 +69,7 @@ Swapchain::~Swapchain()
     return m_pSwapChain;
 }
 
-::VkImage Swapchain::GetImage( ::uint32_t i ) const
+::VkImage Swapchain::GetImage( ::u32 i ) const
 {
     B33_ASSERT( i < m_SwapChainImages.size() );
     B33_TRACE( L"Getting swapchain image with custom index %d", i );
@@ -95,19 +94,19 @@ Swapchain::~Swapchain()
     return m_Extent;
 }
 
-::uint32_t Swapchain::GetCurrentImageIndex() const
+::u32 Swapchain::GetCurrentImageIndex() const
 {
     B33_TRACE( L"Getting swapchain image index %d", m_uCurrentImageIndex );
     return m_uCurrentImageIndex;
 }
 
-::uint32_t Swapchain::GetImageCount() const
+::u32 Swapchain::GetImageCount() const
 {
     return m_SwapChainImages.size();
 }
 
 // Private // ---------------------------------------------------------------------------------------------------------
-VkSurfaceKHR Swapchain::CreateSurface( weak_ptr<const Instance> &pInstance, const WindowDesc *pWindowDesc )
+VkSurfaceKHR Swapchain::CreateSurface( WeakPtr<const Instance> &pInstance, const WindowDesc *pWindowDesc )
 {
     B33_LOG( Core::Debug::Info, L"Creating a swapchain!" ); // This is the first private method that
                                                             // is called in the constructior, so we LOG here
@@ -154,8 +153,8 @@ VkSurfaceKHR Swapchain::CreateSurface( weak_ptr<const Instance> &pInstance, cons
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-VkSurfaceCapabilitiesKHR Swapchain::GetCapabilitesInternal( weak_ptr<const HardwareWrapper> pHardware,
-                                                            VkSurfaceKHR                    surface )
+VkSurfaceCapabilitiesKHR Swapchain::GetCapabilitesInternal( WeakPtr<const HardwareWrapper> pHardware,
+                                                            VkSurfaceKHR                   surface )
 {
     VkSurfaceCapabilitiesKHR capabilities;
     auto                     pLockedHardware = pHardware.lock();
@@ -176,9 +175,9 @@ VkSurfaceCapabilitiesKHR Swapchain::GetCapabilitesInternal( weak_ptr<const Hardw
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-uint32_t Swapchain::GetImageCountInternal( const VkSurfaceCapabilitiesKHR &capabilities )
+u32 Swapchain::GetImageCountInternal( const VkSurfaceCapabilitiesKHR &capabilities )
 {
-    uint32_t uImageCount;
+    u32 uImageCount;
 
     uImageCount = capabilities.minImageCount + 1;
     if ( capabilities.maxImageCount > 0 && uImageCount > capabilities.maxImageCount )
@@ -208,11 +207,11 @@ VkExtent2D Swapchain::GetExtentInternal( const VkSurfaceCapabilitiesKHR &capabil
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-VkSwapchainKHR Swapchain::CreateSwapChain( weak_ptr<const AdapterWrapper> &pAdapter,
+VkSwapchainKHR Swapchain::CreateSwapChain( WeakPtr<const AdapterWrapper>  &pAdapter,
                                            VkSurfaceKHR                    surface,
                                            const VkSurfaceCapabilitiesKHR &capabilities,
                                            const VkExtent2D               &extent2D,
-                                           uint32_t                        uImageCount,
+                                           u32                             uImageCount,
                                            const VkSurfaceFormatKHR       &surfaceFormat,
                                            VkPresentModeKHR                presentMode )
 {
@@ -243,12 +242,12 @@ VkSwapchainKHR Swapchain::CreateSwapChain( weak_ptr<const AdapterWrapper> &pAdap
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-VkSurfaceFormatKHR Swapchain::PickFormat( weak_ptr<const HardwareWrapper> &pHardware, VkSurfaceKHR surface )
+VkSurfaceFormatKHR Swapchain::PickFormat( WeakPtr<const HardwareWrapper> &pHardware, VkSurfaceKHR surface )
 {
-    uint32_t                   uFormatCount = 0;
+    u32                        uFormatCount = 0;
     vector<VkSurfaceFormatKHR> vFormats     = {};
     bool                       bPicked      = false;
-    size_t                     choosenFormatIndex;
+    usize                      choosenFormatIndex;
     auto                       pLockedHardware = pHardware.lock();
 
     if ( !pLockedHardware )
@@ -264,7 +263,7 @@ VkSurfaceFormatKHR Swapchain::PickFormat( weak_ptr<const HardwareWrapper> &pHard
 
     B33_ASSERT( !vFormats.empty() );
 
-    for ( size_t i = 0; i < vFormats.size(); ++i )
+    for ( usize i = 0; i < vFormats.size(); ++i )
     {
         const auto &format = vFormats[ i ];
 
@@ -295,9 +294,9 @@ VkSurfaceFormatKHR Swapchain::PickFormat( weak_ptr<const HardwareWrapper> &pHard
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-VkPresentModeKHR Swapchain::PickPresentationMode( weak_ptr<const HardwareWrapper> &pHardware, VkSurfaceKHR surface )
+VkPresentModeKHR Swapchain::PickPresentationMode( WeakPtr<const HardwareWrapper> &pHardware, VkSurfaceKHR surface )
 {
-    uint32_t                 uPresentModeCount = 0;
+    u32                      uPresentModeCount = 0;
     vector<VkPresentModeKHR> vPresentModes     = {};
     auto                     pLockedHardware   = pHardware.lock();
 
@@ -322,10 +321,10 @@ VkPresentModeKHR Swapchain::PickPresentationMode( weak_ptr<const HardwareWrapper
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-uint32_t Swapchain::GetNumberOfSwapChainImages( weak_ptr<const AdapterWrapper> &pAdapter, VkSwapchainKHR swapchain )
+u32 Swapchain::GetNumberOfSwapChainImages( WeakPtr<const AdapterWrapper> &pAdapter, VkSwapchainKHR swapchain )
 {
-    uint32_t uImageCount    = 0;
-    auto     pLockedAdapter = pAdapter.lock();
+    u32  uImageCount    = 0;
+    auto pLockedAdapter = pAdapter.lock();
     if ( !pLockedAdapter )
         throw B33_EXCEPT( "Vulkan adapter is expried, cannot get number of images" );
 
@@ -336,7 +335,7 @@ uint32_t Swapchain::GetNumberOfSwapChainImages( weak_ptr<const AdapterWrapper> &
 
 // ---------------------------------------------------------------------------------------------------------------------
 vector<VkImage>
-Swapchain::CreateSwapChainImages( weak_ptr<const AdapterWrapper> &pAdapter, VkSwapchainKHR swapchain, uint32_t uAmount )
+Swapchain::CreateSwapChainImages( WeakPtr<const AdapterWrapper> &pAdapter, VkSwapchainKHR swapchain, u32 uAmount )
 {
     vector<VkImage> swapChainImages( uAmount );
     auto            pLockedAdapter = pAdapter.lock();
@@ -350,17 +349,17 @@ Swapchain::CreateSwapChainImages( weak_ptr<const AdapterWrapper> &pAdapter, VkSw
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-vector<VkImageView> Swapchain::CreateImageViews( weak_ptr<const AdapterWrapper> &pAdapter,
-                                                 vector<VkImage>                 swapChainImages,
-                                                 VkFormat                        format,
-                                                 uint32_t                        uAmount )
+vector<VkImageView> Swapchain::CreateImageViews( WeakPtr<const AdapterWrapper> &pAdapter,
+                                                 Vector<VkImage>                swapChainImages,
+                                                 VkFormat                       format,
+                                                 u32                            uAmount )
 {
     vector<VkImageView> imageViews( uAmount );
     auto                pLockedAdapter = pAdapter.lock();
     if ( !pLockedAdapter )
         throw B33_EXCEPT( "Vulkan adapter is expried, cannot create a swapchain images" );
 
-    for ( size_t i = 0; i < imageViews.size(); ++i )
+    for ( usize i = 0; i < imageViews.size(); ++i )
     {
         B33_TRACE( L"Creating an image view" );
         VkImageView           newImageView;

@@ -1,5 +1,5 @@
-#if !defined(B33_WRAPPER_H)
-#define B33_WRAPPER_H
+#if !defined( B33_WRAPPER_HPP )
+#    define B33_WRAPPER_HPP
 
 namespace B33::Rendering
 {
@@ -7,10 +7,13 @@ namespace B33::Rendering
 template <class Derived>
 class IAdapter
 {
-  public:
-    IAdapter() = default;
+    template <typename T>
+    using Vector = ::std::vector<T>;
 
-    ~IAdapter() = default;
+  public:
+    IAdapter() noexcept = default;
+
+    ~IAdapter() noexcept = default;
 
   public:
     IAdapter( IAdapter && ) noexcept      = default;
@@ -21,7 +24,7 @@ class IAdapter
 
     // Intreface // ---------------------------------------------------------------------------------------------------
   public:
-    const ::std::vector<const char *> &GetExtensions() const
+    const Vector<const char *> &GetExtensions() const
     {
         return static_cast<const Derived *>( this )->GetExtensionsImpl();
     }
@@ -31,11 +34,11 @@ class IAdapter
         return static_cast<const Derived *>( this )->GetFeaturesImpl();
     }
 
-    uint32_t GetQueueFlags() const
+    u32 GetQueueFlags() const
     {
         return static_cast<const Derived *>( this )->GetQueueFlagsImpl();
     }
 };
 
 } // namespace B33::Rendering
-#endif // !B33_WRAPPER_H
+#endif // !B33_WRAPPER_HPP

@@ -1,4 +1,4 @@
-#include "B33Rendering.hpp"
+#include "B33Rendering.h"
 
 #include "Vulkan/Utility.hpp"
 
@@ -9,10 +9,10 @@ namespace B33::Rendering
 
 using namespace std;
 
-VkShaderModule Shaders::LoadShader( const string &strPath, const AdapterWrapper *pAdapter )
+VkShaderModule Shaders::LoadShader( const String &strPath, const AdapterWrapper *pAdapter )
 {
     vector<char>   vBuffer;
-    size_t         uFileSize;
+    usize          uFileSize;
     VkShaderModule shaderModule;
 
     ifstream file( strPath, ios::ate | ios::binary );
@@ -23,7 +23,7 @@ VkShaderModule Shaders::LoadShader( const string &strPath, const AdapterWrapper 
         throw B33_EXCEPT( "Failed to open shader file!" );
     }
 
-    uFileSize = static_cast<size_t>( file.tellg() );
+    uFileSize = static_cast<usize>( file.tellg() );
     vBuffer.resize( uFileSize );
 
     file.seekg( 0 );
@@ -34,7 +34,7 @@ VkShaderModule Shaders::LoadShader( const string &strPath, const AdapterWrapper 
     VkShaderModuleCreateInfo shaderCreateInfo = {};
     shaderCreateInfo.sType                    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     shaderCreateInfo.codeSize                 = vBuffer.size(); // Size is in bytes, so it's okay
-    shaderCreateInfo.pCode                    = reinterpret_cast<const uint32_t *>( &vBuffer[ 0 ] );
+    shaderCreateInfo.pCode                    = reinterpret_cast<const u32 *>( &vBuffer[ 0 ] );
 
     THROW_IF_FAILED( vkCreateShaderModule( pAdapter->GetAdapterHandle(), &shaderCreateInfo, NULL, &shaderModule ) );
 

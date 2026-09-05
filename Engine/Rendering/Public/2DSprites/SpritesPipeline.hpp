@@ -1,12 +1,12 @@
-#if !defined(B33_PIPELINE_SPRITES_H)
-#define B33_PIPELINE_SPRITES_H
+#if !defined( B33_PIPELINE_SPRITES_HPP )
+#    define B33_PIPELINE_SPRITES_HPP
 
-#include "Vec2.hpp"
-#include "Mat44.hpp"
-#include "Vulkan/Buffers/GPUBuffer.hpp"
-#include "Vulkan/Buffers/ImgBuffer.hpp"
-#include "Vulkan/IPipeline.hpp"
-#include "Vulkan/Buffers/GPUStreamBuffer.hpp"
+#    include <B33Math.hpp>
+
+#    include "Vulkan/Buffers/GPUBuffer.hpp"
+#    include "Vulkan/Buffers/ImgBuffer.hpp"
+#    include "Vulkan/IPipeline.hpp"
+#    include "Vulkan/Buffers/GPUStreamBuffer.hpp"
 
 namespace B33::Rendering
 {
@@ -26,6 +26,23 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
     using Vec3  = ::B33::Math::Vec3;
     using iVec3 = ::B33::Math::iVec3;
 
+    template <typename T>
+    constexpr decltype( auto ) MakeShared() noexcept
+    {
+        return ::std::make_shared<T>();
+    }
+
+    template <typename T, typename U>
+    constexpr decltype( auto ) MakeShared( U &&arg ) noexcept
+    {
+        return ::std::make_shared<T>( Forward<U>( arg ) );
+    }
+
+    template <typename T>
+    using SharedPtr = ::std::shared_ptr<T>;
+    template <typename T>
+    using Vector = ::std::vector<T>;
+
     enum EShaderResource
     {
         SpriteInstances = 1,
@@ -39,28 +56,28 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
         Vec3 Scale;
     };
 
-    constexpr static uint32_t MAX_SPRITES = 1024;
+    constexpr static u32 MaxSprites = 1024;
 
   public:
     SpritesPipeline()
       : IPipeline( VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                    VK_PIPELINE_BIND_POINT_GRAPHICS )
-      , m_pQuadBuffer( ::std::make_shared<GPUBuffer>() )
-      , m_pStageQuadBuffer( ::std::make_shared<GPUStreamBuffer>() )
+      , m_pQuadBuffer( MakeShared<GPUBuffer>() )
+      , m_pStageQuadBuffer( MakeShared<GPUStreamBuffer>() )
       , m_PerFrameResources()
       , m_uCurFrame( 0 )
       , m_bPendingUpload( false )
       , m_bPendingMeshUpload( true )
       , m_bPendingTextureUpload( true )
       , m_uLastUploadedGeneration( 0 )
-      , m_SpriteData( MAX_SPRITES )
+      , m_SpriteData( MaxSprites )
       , m_VertexShader( VK_NULL_HANDLE )
     {
         B33_LOG( Core::Debug::Info, L"Creating a pipeline!" );
     }
 
-    __B33_API ~SpritesPipeline();
+    __B33_API ~SpritesPipeline() noexcept;
 
   public:
     __B33_API virtual void Update() override final;
@@ -71,7 +88,14 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
 
     __B33_API virtual void Reset() override final;
 
-    ::size_t GetPushConstantsByteSizeImpl()
+    void UpdateSprite( usize i, SpriteData sd )
+    {
+        m_bPendingUpload  = true;
+        m_SpriteData[ i ] = sd;
+    }
+
+  public:
+    usize GetPushConstantsByteSizeImpl()
     {
         return sizeof( m_Vpc );
     }
@@ -93,42 +117,35 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
 
     __B33_API ::VkDescriptorPool CreateDescriptorPoolImpl();
 
-  public:
-    void UpdateSprite( size_t i, SpriteData sd )
-    {
-        m_bPendingUpload  = true;
-        m_SpriteData[ i ] = sd;
-    }
+  private:
+    UploadDescriptor GetUniformUploadDescriptor( const SharedPtr<GPUStreamBuffer> &outBuffer,
+                                                 const EShaderResource            &sr );
 
   private:
-    UploadDescriptor GetUniformUploadDescriptor( const ::std::shared_ptr<GPUStreamBuffer> &outBuffer,
-                                                 const EShaderResource                    &sr );
-
-  private:
-    ::B33::Rendering::SpritesPushConstants               m_Vpc = {};
-    ::B33::Rendering::ImgBuffer                          m_pTexture;
-    ::std::shared_ptr<::B33::Rendering::GPUBuffer>       m_pStageTexture;
-    ::std::shared_ptr<::B33::Rendering::GPUBuffer>       m_pQuadBuffer;
-    ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> m_pStageQuadBuffer;
+    SpritesPushConstants       m_Vpc = {};
+    ImgBuffer                  m_pTexture;
+    SharedPtr<GPUBuffer>       m_pStageTexture;
+    SharedPtr<GPUBuffer>       m_pQuadBuffer;
+    SharedPtr<GPUStreamBuffer> m_pStageQuadBuffer;
 
     struct PerFrame
     {
-        bool                                                 bInit;
-        ::uint64_t                                           uLastUploadedGeneration;
-        ::std::shared_ptr<::B33::Rendering::GPUBuffer>       SpriteInstances;
-        ::std::shared_ptr<::B33::Rendering::GPUStreamBuffer> StageSpriteInstances;
-        ImgBuffer                                            DepthImg;
-        ::VkDescriptorSet                                    DescSet = VK_NULL_HANDLE;
+        bool                       bInit;
+        u64                        uLastUploadedGeneration;
+        SharedPtr<GPUBuffer>       SpriteInstances;
+        SharedPtr<GPUStreamBuffer> StageSpriteInstances;
+        ImgBuffer                  DepthImg;
+        ::VkDescriptorSet          DescSet = VK_NULL_HANDLE;
     };
 
-    ::std::vector<PerFrame> m_PerFrameResources       = {};
-    ::uint32_t              m_uCurFrame               = -1;
-    bool                    m_bPendingUpload          = false;
-    bool                    m_bPendingMeshUpload      = false;
-    bool                    m_bPendingTextureUpload   = false;
-    ::uint64_t              m_uLastUploadedGeneration = -1;
+    Vector<PerFrame> m_PerFrameResources       = {};
+    u32              m_uCurFrame               = -1;
+    bool             m_bPendingUpload          = false;
+    bool             m_bPendingMeshUpload      = false;
+    bool             m_bPendingTextureUpload   = false;
+    u64              m_uLastUploadedGeneration = -1;
 
-    ::std::vector<SpriteData> m_SpriteData = {};
+    Vector<SpriteData> m_SpriteData = {};
 
 
     ::VkShaderModule m_VertexShader = VK_NULL_HANDLE;
@@ -136,4 +153,4 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
 };
 
 } // namespace B33::Rendering
-#endif // !B33_PIPELINE_SPRITES_H
+#endif // !B33_PIPELINE_SPRITES_HPP

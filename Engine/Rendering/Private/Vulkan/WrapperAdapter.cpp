@@ -1,4 +1,4 @@
-#include "B33Rendering.hpp"
+#include "B33Rendering.h"
 
 #include "Vulkan/ErrorHandling.hpp"
 #include "Vulkan/WrapperAdapter.hpp"
@@ -19,7 +19,7 @@ AdapterWrapper::AdapterWrapper()
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-AdapterWrapper::~AdapterWrapper()
+AdapterWrapper::~AdapterWrapper() noexcept
 {
     if ( m_Device != VK_NULL_HANDLE )
     {
@@ -30,10 +30,10 @@ AdapterWrapper::~AdapterWrapper()
 }
 
 // Private // ---------------------------------------------------------------------------------------------------------
-uint32_t AdapterWrapper::ChooseQueueFamily( VkPhysicalDevice gpu, const uint32_t uFlags ) const
+u32 AdapterWrapper::ChooseQueueFamily( VkPhysicalDevice gpu, const u32 uFlags ) const
 {
     B33_TRACE( L"AdapterWrapper::ChooseQueueFamily()" );
-    uint32_t                        uFamilyCount;
+    u32                             uFamilyCount;
     vector<VkQueueFamilyProperties> vProperties    = {};
     VkPhysicalDevice                physicalDevice = gpu;
 
@@ -52,7 +52,7 @@ uint32_t AdapterWrapper::ChooseQueueFamily( VkPhysicalDevice gpu, const uint32_t
         throw B33_EXCEPT( "Ohh nooo... Vulkan isn't working!!!" );
     }
 
-    for ( uint32_t i = 0; i < uFamilyCount; ++i )
+    for ( u32 i = 0; i < uFamilyCount; ++i )
         if ( vProperties[ i ].queueFlags & uFlags )
             return i;
 
@@ -62,9 +62,9 @@ uint32_t AdapterWrapper::ChooseQueueFamily( VkPhysicalDevice gpu, const uint32_t
 
 // --------------------------------------------------------------------------------------------------------------------
 VkDevice AdapterWrapper::CreateDevice( VkPhysicalDevice            gpu,
-                                       const vector<const char *> &vExtensions,
+                                       const Vector<const char *> &vExtensions,
                                        const void                 *pFeatures,
-                                       const uint32_t              uFamilyIndex ) const
+                                       const u32                   uFamilyIndex ) const
 {
     B33_TRACE( L"AdapterWrapper::CreateDevice()" );
     VkDevice device            = VK_NULL_HANDLE;
@@ -81,7 +81,7 @@ VkDevice AdapterWrapper::CreateDevice( VkPhysicalDevice            gpu,
     createInfo.pNext                   = pFeatures;
     createInfo.queueCreateInfoCount    = 1;
     createInfo.pQueueCreateInfos       = &queueCreateInfo;
-    createInfo.enabledExtensionCount   = static_cast<uint32_t>( !vExtensions.empty() ? vExtensions.size() : 0 );
+    createInfo.enabledExtensionCount   = static_cast<u32>( !vExtensions.empty() ? vExtensions.size() : 0 );
     createInfo.ppEnabledExtensionNames = !vExtensions.empty() ? &vExtensions[ 0 ] : NULL;
     createInfo.pEnabledFeatures        = NULL;
 
@@ -91,7 +91,7 @@ VkDevice AdapterWrapper::CreateDevice( VkPhysicalDevice            gpu,
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-VkQueue AdapterWrapper::CreateQueue( VkDevice dv, const uint32_t uQueueIndex ) const
+VkQueue AdapterWrapper::CreateQueue( VkDevice dv, const u32 uQueueIndex ) const
 {
     B33_TRACE( L"AdapterWrapper::CreateQueue()" );
     VkQueue graphicsQueue;

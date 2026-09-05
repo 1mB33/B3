@@ -1,7 +1,7 @@
-#if !defined(B33_UPLOAD_DESCRIPTOR_H)
-#define B33_UPLOAD_DESCRIPTOR_H
+#if !defined( B33_UPLOAD_DESCRIPTOR_HPP )
+#    define B33_UPLOAD_DESCRIPTOR_HPP
 
-#include "Vulkan/Buffers/GPUBuffer.hpp"
+#    include "Vulkan/Buffers/GPUBuffer.hpp"
 
 namespace B33::Rendering
 {
@@ -14,6 +14,9 @@ enum EUploadType
 
 struct UploadDescriptor
 {
+    template <typename T>
+    using SharedPtr = ::std::shared_ptr<T>;
+
     template <typename T>
     constexpr decltype( auto ) Forward( T &arg ) noexcept
     {
@@ -49,11 +52,11 @@ struct UploadDescriptor
     __B33_API UploadDescriptor &operator=( UploadDescriptor &&other ) noexcept;
 
   public:
-    ::VkDescriptorBufferInfo     BufferInfo;
-    ::VkWriteDescriptorSet       Write;
-    EUploadType                  Type;
-    ::std::shared_ptr<GPUBuffer> Buffer;
+    ::VkDescriptorBufferInfo BufferInfo;
+    ::VkWriteDescriptorSet   Write;
+    EUploadType              Type;
+    SharedPtr<GPUBuffer>     Buffer;
 };
 
 } // namespace B33::Rendering
-#endif //! B33_UPLOAD_DESCRIPTOR_H
+#endif //! B33_UPLOAD_DESCRIPTOR_HPP
