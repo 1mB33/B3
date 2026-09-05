@@ -34,25 +34,25 @@ class IBaseWindow
     }
 
     template <typename T>
-    constexpr decltype( auto ) MakeShared() noexcept
+    constexpr decltype( auto ) MakeShared()
     {
         return ::std::make_shared<T>();
     }
 
     template <typename T>
-    constexpr decltype( auto ) MakeUnique() noexcept
+    constexpr decltype( auto ) MakeUnique()
     {
         return ::std::make_unique<T>();
     }
 
     template <typename T, typename U>
-    constexpr decltype( auto ) MakeShared( U &&arg ) noexcept
+    constexpr decltype( auto ) MakeShared( U &&arg )
     {
         return ::std::make_shared<T>( Forward<U>( arg ) );
     }
 
     template <typename T, typename U>
-    constexpr decltype( auto ) MakeUnique( U &&arg ) noexcept
+    constexpr decltype( auto ) MakeUnique( U &&arg )
     {
         return ::std::make_unique<T>( Forward<U>( arg ) );
     }

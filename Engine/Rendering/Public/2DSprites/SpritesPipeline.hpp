@@ -27,13 +27,13 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
     using iVec3 = ::B33::Math::iVec3;
 
     template <typename T>
-    constexpr decltype( auto ) MakeShared() noexcept
+    constexpr decltype( auto ) MakeShared()
     {
         return ::std::make_shared<T>();
     }
 
     template <typename T, typename U>
-    constexpr decltype( auto ) MakeShared( U &&arg ) noexcept
+    constexpr decltype( auto ) MakeShared( U &&arg )
     {
         return ::std::make_shared<T>( Forward<U>( arg ) );
     }
