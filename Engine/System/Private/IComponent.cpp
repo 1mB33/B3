@@ -8,7 +8,7 @@ namespace B33::System
 using namespace std;
 using namespace B33;
 
-void ComponentInstanceRegister::RegisterInternal( const ::std::string_view &className, ComponentFactory factory )
+void ComponentInstanceRegister::RegisterInternal( const StringView &className, ComponentFactory factory )
 {
     EngineLoop::m_ComponentRegistry[ className ] = factory;
 }

@@ -1,4 +1,3 @@
-#include "B33Core.h"
 #if !defined( B33_CALL_HPP )
 #    define B33_CALL_HPP
 

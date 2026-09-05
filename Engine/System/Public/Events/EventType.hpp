@@ -4,8 +4,8 @@
 namespace B33::System
 {
 
-typedef uint32_t EventId;
-typedef size_t   EventAddr;
+typedef u32   EventId;
+typedef usize EventAddr;
 
 enum EEventHandleType
 {
@@ -15,5 +15,4 @@ enum EEventHandleType
 };
 
 } // namespace B33::System
-
 #endif

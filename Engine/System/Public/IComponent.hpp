@@ -1,10 +1,8 @@
 #if !defined( B33_ICOMPONENT_H )
 #    define B33_ICOMPONENT_H
 
-#    include "B33Core.h"
-#    include "B33System.hpp"
+#    include <B33Core.h>
 #    include "Synchronization/DeltaTime.hpp"
-#    include "Borrowed.hpp"
 
 namespace B33::System
 {
@@ -23,11 +21,15 @@ using ComponentFactory  = ComponentInstance ( * )();
 class ComponentAbstractBase
 {
     friend class EngineLoop;
-
     friend class ComponentBridge;
 
+    using Ai32         = ::std::atomic_int32_t;
+    using ABool        = ::std::atomic_bool;
+    using Mutex        = ::std::mutex;
+    using ConditionVar = ::std::condition_variable;
+
   public:
-    virtual ::B33::System::EComponentType GetComponentType() = 0;
+    virtual EComponentType GetComponentType() = 0;
 
   public:
     ComponentAbstractBase()
@@ -39,7 +41,7 @@ class ComponentAbstractBase
     {
     }
 
-    virtual ~ComponentAbstractBase() = default;
+    virtual ~ComponentAbstractBase() noexcept = default;
 
   public:
     float GetLocalDelta()
@@ -81,53 +83,55 @@ class ComponentAbstractBase
         m_UpdateCount.store( m_UpdateCount.load() - 1 );
     }
 
-    int32_t GetCount()
+    i32 GetCount()
     {
         return m_UpdateCount.load();
     }
 
   private:
-    ::std::atomic_int32_t     m_UpdateCount;
-    ::std::mutex              m_mUsed;
-    ::std::atomic_bool        m_bFree;
-    ::std::condition_variable m_Conditional;
-    ::B33::Core::DeltaTime    m_LocalDelta;
+    Ai32            m_UpdateCount;
+    Mutex           m_mUsed;
+    ABool           m_bFree;
+    ConditionVar    m_Conditional;
+    Core::DeltaTime m_LocalDelta;
 };
 
 class Component : public ComponentAbstractBase
 {
   public:
-    virtual ::B33::System::EComponentType GetComponentType() override final
+    virtual EComponentType GetComponentType() override final
     {
-        return ::B33::System::EComponentType::Default;
+        return EComponentType::Default;
     }
 };
 
 class ComponentAsync : public ComponentAbstractBase
 {
   public:
-    virtual ::B33::System::EComponentType GetComponentType() override
+    virtual EComponentType GetComponentType() override
     {
-        return ::B33::System::EComponentType::Async;
+        return EComponentType::Async;
     }
 };
 
 class ComponentAsyncUpdateOnly : public ComponentAsync
 {
   public:
-    virtual ::B33::System::EComponentType GetComponentType() override final
+    virtual EComponentType GetComponentType() override final
     {
-        return ::B33::System::EComponentType::AsyncUpdateOnly;
+        return EComponentType::AsyncUpdateOnly;
     }
 };
 
 class ComponentInstanceRegister
 {
+    using StringView = ::std::string_view;
+
   private:
     ComponentInstanceRegister() = default;
 
   public:
-    ~ComponentInstanceRegister() = default;
+    ~ComponentInstanceRegister() noexcept = default;
 
     ComponentInstanceRegister( ComponentInstanceRegister && )      = default;
     ComponentInstanceRegister( const ComponentInstanceRegister & ) = default;
@@ -137,19 +141,19 @@ class ComponentInstanceRegister
 
   public:
     template <class COMPONENT_DERIVED>
-    static constexpr ComponentInstanceRegister Register( const ::std::string_view &className )
+    static constexpr ComponentInstanceRegister Register( const StringView &className )
     {
         return Register( className, &COMPONENT_DERIVED::GetComponentFactory );
     }
 
-    static ComponentInstanceRegister Register( const ::std::string_view &className, ComponentFactory factory )
+    static ComponentInstanceRegister Register( const StringView &className, ComponentFactory factory )
     {
         RegisterInternal( className, factory );
         return {};
     }
 
   private:
-    __B33_API static void RegisterInternal( const ::std::string_view &className, ComponentFactory factory );
+    __B33_API static void RegisterInternal( const StringView &className, ComponentFactory factory );
 };
 
 #    define B33_COMPONENT( CLASS_NAME )                                                                                \

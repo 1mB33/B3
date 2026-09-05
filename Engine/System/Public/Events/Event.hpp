@@ -1,8 +1,7 @@
 #if !defined( B33_EVENT_HPP )
 #    define B33_EVENT_HPP
 
-#    include "B33System.hpp"
-#    include "Unknown.hpp"
+#    include <Unknown.hpp>
 
 namespace B33::System
 {

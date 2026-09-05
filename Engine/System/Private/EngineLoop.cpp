@@ -1,8 +1,6 @@
-#include "B33Core.h"
 #include "B33System.hpp"
-#include "AppStatus.hpp"
+
 #include "ComponentBridge.hpp"
-#include "Debug/Assert.hpp"
 #include "EngineLoop.hpp"
 #include "IComponent.hpp"
 
@@ -16,8 +14,8 @@ void EngineLoop::InitializeComponents()
 {
     m_bInitialized = true;
     m_Components.clear();
-    m_Components[::B33::System::EComponentType::Default ] = vector<ComponentAbstractBase *> {};
-    m_Components[::B33::System::EComponentType::Async ]   = vector<ComponentAbstractBase *> {};
+    m_Components[ EComponentType::Default ] = Vector<ComponentAbstractBase *> {};
+    m_Components[ EComponentType::Async ]   = Vector<ComponentAbstractBase *> {};
 
     for ( auto &requiredComponent : m_ComponentOrderRegistry )
     {
@@ -119,7 +117,7 @@ void EngineLoop::DestroyComponents()
     }
 }
 
-void EngineLoop::AddComponentInternal( ::std::string_view componentName )
+void EngineLoop::AddComponentInternal( StringView componentName )
 {
     constexpr auto asyncCall = +[]( ComponentAbstractBase *pComponent, ComponentBridge *pBridge )
     {
@@ -145,7 +143,7 @@ void EngineLoop::AddComponentInternal( ::std::string_view componentName )
                 component->Unlock();
             }
 
-            m_Components[::B33::System::EComponentType::Default ].push_back( component );
+            m_Components[ EComponentType::Default ].push_back( component );
             break;
         }
         case Async:
@@ -155,7 +153,7 @@ void EngineLoop::AddComponentInternal( ::std::string_view componentName )
 
             component->SetDeltaRefrenceFrame();
 
-            m_Components[::B33::System::EComponentType::Async ].push_back( component );
+            m_Components[ EComponentType::Async ].push_back( component );
             break;
         }
         case AsyncUpdateOnly:
@@ -167,7 +165,7 @@ void EngineLoop::AddComponentInternal( ::std::string_view componentName )
                 component->Unlock();
             }
 
-            m_Components[::B33::System::EComponentType::Async ].push_back( component );
+            m_Components[ EComponentType::Async ].push_back( component );
             break;
         }
         default:

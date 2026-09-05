@@ -37,7 +37,7 @@ void EventDispatcherInstance::Trigger( EventId eventId )
         B33_TRACE( L"Dispatching event to %p", pCall );
         pCall();
     }
-    B33_TRACE( L"Dispatching event to %d listeners", m_RegisteredEventsArgs[eventId].size() );
+    B33_TRACE( L"Dispatching event to %d listeners", m_RegisteredEventsArgs[ eventId ].size() );
     for ( auto &call : m_RegisteredEventsArgs[ eventId ] )
     {
         B33_TRACE( L"Dispatching event to %p", call.get() );

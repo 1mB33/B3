@@ -1,8 +1,7 @@
-#if !defined(B33_GROUP_HPP)
-#define B33_GROUP_HPP
+#if !defined( B33_GROUP_HPP )
+#    define B33_GROUP_HPP
 
-#include "B33Core.h"
-#include "B33System.hpp"
+#    include <B33Core.h>
 
 namespace B33::System
 {
@@ -11,27 +10,36 @@ namespace B33::System
 template <typename SHARED_DATA, size_t POOL_SIZE = 64, typename... PER_OBJECT>
 class GroupMemory
 {
+    template <typename... T>
+    using Tuple = ::std::tuple<T...>;
+
+    template <typename T, typename U>
+    static constexpr decltype( auto ) IsSame()
+    {
+        return ::std::is_same_v<T, U>;
+    }
+
     template <typename T, typename... Ts>
-    static constexpr size_t CountOccurrences = ( 0 + ... + ::std::is_same_v<T, Ts> );
+    static constexpr size_t CountOccurrences = ( 0 + ... + IsSame<T, Ts>() );
 
     template <typename T, typename Tuple>
     struct TupleIndex;
 
     template <typename T, typename... Ts>
-    struct TupleIndex<T, ::std::tuple<T, Ts...>>
+    struct TupleIndex<T, Tuple<T, Ts...>>
     {
         static constexpr size_t value = 0;
     };
 
     template <typename T, typename U, typename... Ts>
-    struct TupleIndex<T, ::std::tuple<U, Ts...>>
+    struct TupleIndex<T, Tuple<U, Ts...>>
     {
-        static constexpr size_t value = 1 + TupleIndex<T, ::std::tuple<Ts...>>::value;
+        static constexpr size_t value = 1 + TupleIndex<T, Tuple<Ts...>>::value;
     };
 
     struct Metadata
     {
-        size_t uByteSize;
+        usize uByteSize;
     };
 
     using AllocatedMemoryPerDataType = ::std::vector<char>;
@@ -63,7 +71,7 @@ class GroupMemory
         ReallocateAllDataPools();
     }
 
-    ~GroupMemory()
+    ~GroupMemory() noexcept
     {
         B33_TRACE( L"Instance destroyed" );
     }
@@ -92,13 +100,13 @@ class GroupMemory
 
   public:
     template <typename T>
-    T &GetValue( size_t entityId )
+    T &GetValue( usize entityId )
     {
         B33_ASSERT_MSG( ( CountOccurrences<T, PER_OBJECT...> == 1 ),
                         "Group: T appears zero or multiple times in PER_OBJECT — "
                         "use GetValue<Index>() or wrap duplicate primitive types in distinct tag structs." );
 
-        constexpr size_t uIndex = TupleIndex<T, ::std::tuple<PER_OBJECT...>>::value;
+        constexpr usize uIndex = TupleIndex<T, Tuple<PER_OBJECT...>>::value;
         B33_ASSERT( entityId >= 0 && entityId < m_uItemsCount );
 
         char *base = m_Data[ uIndex ].data();
@@ -113,17 +121,17 @@ class GroupMemory
                         "Group: T appears zero or multiple times in PER_OBJECT — "
                         "use GetValue<Index>() or wrap duplicate primitive types in distinct tag structs." );
 
-        constexpr size_t uIndex = TupleIndex<T, ::std::tuple<PER_OBJECT...>>::value;
+        constexpr usize uIndex = TupleIndex<T, Tuple<PER_OBJECT...>>::value;
 
         char *base = m_Data[ uIndex ].data();
 
         return reinterpret_cast<T *>( base );
     }
 
-    template <size_t Index>
-    auto &GetValue( size_t entityId )
+    template <usize Index>
+    auto &GetValue( usize entityId )
     {
-        using T = ::std::tuple_element_t<Index, ::std::tuple<PER_OBJECT...>>;
+        using T = ::std::tuple_element_t<Index, Tuple<PER_OBJECT...>>;
 
         B33_ASSERT_MSG( ( Index < sizeof...( PER_OBJECT ) ), "Group: value index out of range" );
 
@@ -153,7 +161,7 @@ class GroupMemory
      * @param mem Vector of data type
      * @param typeSize Size of type in bytes 
      */
-    void ReallocatePool( AllocatedMemoryPerDataType &mem, size_t typeSize )
+    void ReallocatePool( AllocatedMemoryPerDataType &mem, usize typeSize )
     {
         mem.resize( mem.size() + POOL_SIZE * typeSize );
     }
@@ -171,8 +179,8 @@ class GroupMemory
     SHARED_DATA m_SharedData  = {};
     DataVector  m_Data        = {};
     DataTable   m_Table       = {};
-    size_t      m_uItemsCount = -1;
-    size_t      m_uReserved   = -1;
+    usize       m_uItemsCount = -1;
+    usize       m_uReserved   = -1;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -180,6 +188,30 @@ template <typename SHARED_DATA, size_t POOL_SIZE = 64, typename... PER_OBJECT>
 class Group
 {
     using GroupInstanceT = GroupMemory<SHARED_DATA, POOL_SIZE, PER_OBJECT...>;
+
+    template <typename T>
+    static constexpr decltype( auto ) Forward( T &arg ) noexcept
+    {
+        return ::std::forward<T>( arg );
+    }
+
+    template <typename T>
+    static constexpr decltype( auto ) Forward( T &&arg ) noexcept
+    {
+        return ::std::forward<T>( arg );
+    }
+
+    template <typename T>
+    static constexpr decltype( auto ) MakeShared()
+    {
+        return ::std::make_shared<T>();
+    }
+
+    template <typename T, typename U>
+    static constexpr decltype( auto ) MakeShared( U &&arg )
+    {
+        return ::std::make_shared<T>( Forward<U>( arg ) );
+    }
 
   public:
     using InstanceSharedPtr = ::std::shared_ptr<GroupInstanceT>;
@@ -192,7 +224,7 @@ class Group
 
     ~Group()
     {
-        const size_t uCountWithoutLocal = m_pInstanceLocal.use_count() - 1;
+        const usize uCountWithoutLocal = m_pInstanceLocal.use_count() - 1;
         if ( uCountWithoutLocal == 1 )
         {
             m_pInstance = nullptr;
@@ -220,7 +252,7 @@ class Group
     {
         if ( m_pInstance == nullptr )
         {
-            m_pInstance = ::std::make_shared<GroupInstanceT>();
+            m_pInstance = MakeShared<GroupInstanceT>();
         }
         return m_pInstance;
     }
@@ -228,7 +260,7 @@ class Group
   private:
     inline static InstanceSharedPtr m_pInstance      = nullptr;
     InstanceSharedPtr               m_pInstanceLocal = nullptr;
-    size_t                          m_uIndex         = -1;
+    usize                           m_uIndex         = -1;
 };
 
 
