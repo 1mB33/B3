@@ -1,20 +1,20 @@
-#ifndef B33_VOXEL_H
-#define B33_VOXEL_H
+#if !defined( B33_VOXEL_HPP )
+#    define B33_VOXEL_HPP
 
-#include "B33CoreMinimal.h"
+#    include <B33CoreMinimal.h>
 
 namespace B33::Rendering
 {
 
 struct alignas( 16 ) Voxel
 {
-    constexpr const static ::uint32_t MaxPerInstance = 26;
-    constexpr const static ::uint32_t FullSolid      = -1;
+    constexpr const static u32 MaxPerInstance = 26;
+    constexpr const static u32 FullSolid      = -1;
 
-    ::uint32_t Type;
-    ::uint32_t Color;
-    ::uint32_t Id[ MaxPerInstance ];
+    u32 Type;
+    u32 Color;
+    u32 Id[ MaxPerInstance ];
 };
 
 } // namespace B33::Rendering
-#endif // !B33_VOXEL_H
+#endif // !B33_VOXEL_HPP

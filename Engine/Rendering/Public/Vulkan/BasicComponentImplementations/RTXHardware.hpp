@@ -1,8 +1,7 @@
-#ifndef B33_RTX_HARDWARE_H
-#define B33_RTX_HARDWARE_H
+#if !defined( B33_RTX_HARDWARE_HPP )
+#    define B33_RTX_HARDWARE_HPP
 
-#include "Vulkan/Instance.hpp"
-#include "Vulkan/IHardware.hpp"
+#    include "Vulkan/IHardware.hpp"
 
 namespace B33::Rendering
 {
@@ -13,7 +12,7 @@ namespace B33::Rendering
  * - accelerationStructure
  * - bufferDeviceAddress
  **/
-class RTXHardware : public ::B33::Rendering::IHardware<RTXHardware>
+class RTXHardware : public IHardware<RTXHardware>
 {
     // Interface Implementation // ------------------------------------------------------------------------------------
   private:
@@ -21,4 +20,4 @@ class RTXHardware : public ::B33::Rendering::IHardware<RTXHardware>
 };
 
 } // namespace B33::Rendering
-#endif // !B33_RTX_HARDWARE_H
+#endif // !B33_RTX_HARDWARE_HPP

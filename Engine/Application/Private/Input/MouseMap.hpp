@@ -1,29 +1,44 @@
-#ifndef B33_MOUSE_MAP_H
-#define B33_MOUSE_MAP_H
+#if !defined( B33_MOUSE_MAP_H )
+#    define B33_MOUSE_MAP_H
 
-#include "IBindMap.hpp"
+#    include "IBindMap.hpp"
 
 namespace B33::App
 {
 
 class MouseMap : public IBindMap<MouseMap>
 {
-    struct DataForActionReplay
+    template <typename T>
+    using Vector = ::std::vector<T>;
+
+    struct ActionReplayData
     {
-        void         *pThis;
-        AbMouseAction Action;
+        void          *pThis;
+        B33MouseAction Action;
     };
 
   public:
-    void BindActionImpl( const AbInputBind &ib, void *pThis, AbAction a, AbMouseAction ma );
+    MouseMap() = default;
 
-    void UnbindActionImpl( const AbInputBind &ib, void *pThis );
+    ~MouseMap() noexcept = default;
 
   public:
-    void PlayAction( const float fDelta, int32_t fX, int32_t fY );
+    MouseMap( const MouseMap & )            = default;
+    MouseMap &operator=( const MouseMap & ) = default;
+
+    MouseMap( MouseMap && )            = default;
+    MouseMap &operator=( MouseMap && ) = default;
+
+  public:
+    void BindActionImpl( const B33InputBind &ib, void *pThis, B33Action a, B33MouseAction ma );
+
+    void UnbindActionImpl( const B33InputBind &ib, void *pThis );
+
+  public:
+    void PlayAction( const float fDelta, i32 fX, i32 fY ) noexcept;
 
   private:
-    ::std::vector<DataForActionReplay> m_vMouseBinds;
+    Vector<ActionReplayData> m_vMouseBinds;
 };
 
 } // namespace B33::App

@@ -13,7 +13,7 @@ __B33_ATTRIBUTE_MIGHT_BE_UNUSED static struct Runnable
 {
     Runnable()
     {
-        B33_INFO(L"Spawing AppResources on main thread");
+        B33_INFO( L"Spawing AppResources on main thread" );
         AppResources::Get();
     }
 } MakeSureThatAppResourcesAreOnMainThread = {};
@@ -22,17 +22,17 @@ __B33_ATTRIBUTE_MIGHT_BE_UNUSED static struct Runnable
 AppResources::AppResources()
   : m_wstrExePathW( InternalGetExecutablePathW() )
   , m_strExePathA( InternalGetExecutablePathA( m_wstrExePathW ) )
-  , m_MainThreadId( ::std::this_thread::get_id() )
+  , m_MainThreadId( this_thread::get_id() )
 {
 }
 
 // Public // ----------------------------------------------------------------------------------------------------------
-const ::std::wstring &AppResources::GetExecutablePathW() const
+const AppResources::WString &AppResources::GetExecutablePathW() const
 {
     return m_wstrExePathW;
 }
 
-const ::std::string &AppResources::GetExecutablePathA() const
+const AppResources::String &AppResources::GetExecutablePathA() const
 {
     return m_strExePathA;
 }
@@ -51,7 +51,7 @@ AppResources &AppResources::Get()
 
 // Private // ---------------------------------------------------------------------------------------------------------
 #if defined( __linux__ )
-wstring AppResources::InternalGetExecutablePathW()
+AppResources::WString AppResources::InternalGetExecutablePathW()
 {
     char    sPath[ B33_LONG_STRING ];
     ssize_t uLen = readlink( "/proc/self/exe", sPath, sizeof( sPath ) - 1 );
@@ -72,7 +72,7 @@ wstring AppResources::InternalGetExecutablePathW()
 
 #elif defined( __APPLE__ )
 // ---------------------------------------------------------------------------------------------------------------------
-wstring AppResources::InternalGetExecutablePathW()
+AppResources::WString AppResources::InternalGetExecutablePathW()
 {
     char     sPath[ B33_LONG_STRING ];
     uint32_t uLen = B33_LONG_STRING;
@@ -92,24 +92,22 @@ wstring AppResources::InternalGetExecutablePathW()
 }
 
 #elif _WIN32
-
 // --------------------------------------------------------------------------------------------------------------------
-wstring AppResources::InternalGetExecutablePathW()
+AppResources::WString AppResources::InternalGetExecutablePathW()
 {
     return wstring( L"./" );
 }
-
 #endif // !__linux__
 
 // --------------------------------------------------------------------------------------------------------------------
-string AppResources::InternalGetExecutablePathA( const ::std::wstring wstrBase )
+AppResources::String AppResources::InternalGetExecutablePathA( const AppResources::WString wstrBase )
 {
-    size_t len = std::wcstombs( nullptr, wstrBase.c_str(), 0 );
+    size_t len = wcstombs( nullptr, wstrBase.c_str(), 0 );
 
     if ( len != static_cast<size_t>( -1 ) )
     {
-        std::string str( len, '\0' );
-        std::wcstombs( &str[ 0 ], wstrBase.c_str(), len );
+        string str( len, '\0' );
+        wcstombs( &str[ 0 ], wstrBase.c_str(), len );
         return str;
     }
 

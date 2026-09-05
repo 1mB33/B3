@@ -1,7 +1,6 @@
 #if !defined( B33_EVENT_DISPATCHER_INSTANCE_HPP )
 #    define B33_EVENT_DISPATCHER_INSTANCE_HPP
 
-#    include "B33System.hpp"
 #    include "Call.hpp"
 #    include "EventType.hpp"
 
@@ -19,7 +18,7 @@ class EventDispatcherInstance
 
   public:
     __B33_API EventDispatcherInstance();
-    ~EventDispatcherInstance() = default;
+    ~EventDispatcherInstance() noexcept = default;
 
   public:
     EventDispatcherInstance( EventDispatcherInstance && )                 = default;
@@ -44,7 +43,7 @@ class EventDispatcherInstance
         B33_TRACE( L"Call ptr %p", c.get() );
 
         m_RegisteredEventsArgs[ eventId ].push_back( ::std::move( c ) );
-        B33_TRACE( L"New registered arg events size %d", m_RegisteredEventsArgs[eventId].size() );
+        B33_TRACE( L"New registered arg events size %d", m_RegisteredEventsArgs[ eventId ].size() );
 
         return reinterpret_cast<EventAddr>( m_RegisteredEventsArgs[ eventId ].back().get() );
     }
@@ -59,7 +58,5 @@ class EventDispatcherInstance
     EventSet             m_RegisteredEvents     = {};
     EventSetObjectMethod m_RegisteredEventsArgs = {};
 };
-
 } // namespace B33::System
-
 #endif

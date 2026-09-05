@@ -1,9 +1,9 @@
-#ifndef B33_CUBE_H
-#define B33_CUBE_H
+#if !defined( B33_CUBE_HPP )
+#    define B33_CUBE_HPP
 
-#include "B33Math.hpp"
+#    include <B33Core.h>
 
-#include "Primitives/Object.hpp"
+#    include "Primitives/Object.hpp"
 
 namespace B33::Math
 {
@@ -34,4 +34,4 @@ class alignas( 16 ) Cube : public WorldObject
 };
 
 } // namespace B33::Math
-#endif // !B33_CUBE_H
+#endif // !B33_CUBE_HPP

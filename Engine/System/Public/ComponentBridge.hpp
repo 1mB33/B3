@@ -1,7 +1,8 @@
-#ifndef B33_COMPONENT_BRIDGE_H
-#define B33_COMPONENT_BRIDGE_H
+#if !defined( B33_COMPONENT_BRIDGE_HPP )
+#    define B33_COMPONENT_BRIDGE_HPP
 
-#include "IComponent.hpp"
+#    include <Borrowed.hpp>
+#    include "IComponent.hpp"
 
 namespace B33::System
 {
@@ -16,9 +17,18 @@ class BorrowedComponent
         m_Component.Lock();
     }
 
-    ~BorrowedComponent()
+    ~BorrowedComponent() noexcept
     {
-        m_Component.Unlock();
+        using ::std::exception;
+
+        try
+        {
+            m_Component.Unlock();
+        }
+        catch ( const exception &e )
+        {
+            __B33_BEBUG_BREAK_POINT( e.what() )
+        }
     }
 
   public:
@@ -42,13 +52,17 @@ class ComponentBridge
 {
     friend class EngineLoop;
 
+    using String           = ::std::string;
+    using StringView       = ::std::string_view;
+    using ComponentMapType = ::std::unordered_map<::std::string_view, ::std::unique_ptr<ComponentAbstractBase>>;
+
   public:
     ComponentBridge()
       : m_ComponentMap()
     {
     }
 
-    ~ComponentBridge() = default;
+    ~ComponentBridge() noexcept = default;
 
     ComponentBridge( const ComponentBridge & ) = delete;
     ComponentBridge( ComponentBridge && )      = delete;
@@ -57,13 +71,13 @@ class ComponentBridge
     ComponentBridge &operator=( ComponentBridge && )      = delete;
 
   public:
-    __B33_API ComponentAbstractBase &QueryComponent( ::std::string strComponentName )
+    __B33_API ComponentAbstractBase &QueryComponent( String strComponentName )
     {
         B33_ASSERT( m_ComponentMap.find( strComponentName ) != m_ComponentMap.end() );
         return *m_ComponentMap[ strComponentName ].get();
     }
 
-    ComponentAbstractBase *QueryComponentByClassName( ::std::string_view ComponentDerived )
+    ComponentAbstractBase *QueryComponentByClassName( StringView ComponentDerived )
     {
         B33_ASSERT( m_ComponentMap.find( ComponentDerived ) != m_ComponentMap.end() );
         ComponentAbstractBase *result = m_ComponentMap[ ComponentDerived ].get();
@@ -71,17 +85,17 @@ class ComponentBridge
     }
 
     template <class COMPONENT_DERIVED>
-    BorrowedComponent<COMPONENT_DERIVED> QueryComponent()
+    Core::Borrowed<COMPONENT_DERIVED> QueryComponent()
     {
         B33_ASSERT( m_ComponentMap.find( COMPONENT_DERIVED::GetComponentName() ) != m_ComponentMap.end() );
         ComponentAbstractBase *result        = m_ComponentMap[ COMPONENT_DERIVED::GetComponentName() ].get();
         COMPONENT_DERIVED     *resultDerived = dynamic_cast<COMPONENT_DERIVED *>( result );
-        return BorrowedComponent<COMPONENT_DERIVED>( *resultDerived );
+        return Core::Borrowed<COMPONENT_DERIVED>( &resultDerived->m_mUsed, resultDerived );
     }
 
   private:
-    ::std::unordered_map<::std::string_view, ::std::unique_ptr<ComponentAbstractBase>> m_ComponentMap = {};
+    ComponentMapType m_ComponentMap = {};
 };
 
 } // namespace B33::System
-#endif // !B33_COMPONENT_BRIDGE_H
+#endif // !B33_COMPONENT_BRIDGE_HPP

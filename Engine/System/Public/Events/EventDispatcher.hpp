@@ -1,7 +1,6 @@
 #if !defined( B33_EVENT_DISPATCHER_HPP )
 #    define B33_EVENT_DISPATCHER_HPP
 
-#    include "B33System.hpp"
 #    include "EventHandle.hpp"
 #    include "EventDispatcherInstance.hpp"
 
@@ -13,10 +12,22 @@ class EventDispatcher
     using FnPtr                   = void ( * )();
     using SharedDispacherInstance = ::std::shared_ptr<EventDispatcherInstance>;
 
+    template <typename T>
+    static constexpr decltype( auto ) MakeShared()
+    {
+        return ::std::make_shared<T>();
+    }
+
+    template <typename T, typename U>
+    static constexpr decltype( auto ) MakeShared( U &&arg )
+    {
+        return ::std::make_shared<T>( Forward<U>( arg ) );
+    }
+
   public:
     __B33_API EventDispatcher();
 
-    ~EventDispatcher() = default;
+    ~EventDispatcher() noexcept = default;
 
   public:
     EventDispatcher &operator=( EventDispatcher && )      = default;
@@ -61,5 +72,4 @@ class EventDispatcher
 };
 
 } // namespace B33::System
-
 #endif

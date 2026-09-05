@@ -1,7 +1,7 @@
-#ifndef B22_VEC2_H
-#define B22_VEC2_H
+#if !defined( B33_VEC2_HPP )
+#    define B33_VEC2_HPP
 
-#include "B33Core.h"
+#    include <B33Core.h>
 
 namespace B33::Math
 {
@@ -9,10 +9,10 @@ namespace B33::Math
 // ---------------------------------------------------------------------------------------------------------------------
 struct alignas( 16 ) Vec2
 {
-    static constexpr size_t Size = 2;
+    static constexpr usize Size = 2;
 
   public:
-    Vec2()
+    Vec2() noexcept
       : x( 0.f )
       , y( 0.f )
     {
@@ -25,7 +25,7 @@ struct alignas( 16 ) Vec2
     }
 
     template <typename Vector>
-    explicit Vec2( Vector v )
+    explicit Vec2( Vector v ) noexcept
       : x( v.x )
       , y( v.y )
     {
@@ -46,7 +46,7 @@ struct alignas( 16 ) Vec2
 
   public:
     template <typename Vector>
-    static Vec2 ToVec( Vector v )
+    static Vec2 ToVec( Vector v ) noexcept
     {
         return Vec2( v.x, v.y );
     }
@@ -55,28 +55,28 @@ struct alignas( 16 ) Vec2
 // ---------------------------------------------------------------------------------------------------------------------
 struct alignas( 16 ) iVec2
 {
-    static constexpr size_t Size = 2;
+    static constexpr usize Size = 2;
 
   public:
-    iVec2()
+    iVec2() noexcept
       : x( 0 )
       , y( 0 )
     {
     }
 
-    explicit iVec2( int32_t x, int32_t y = 0 )
+    explicit iVec2( i32 x, i32 y = 0 ) noexcept
       : x( x )
       , y( y )
     {
     }
 
-    explicit iVec2( Vec2 v )
+    explicit iVec2( Vec2 v ) noexcept
       : x( v.x )
       , y( v.y )
     {
     }
 
-    ~iVec2() = default;
+    ~iVec2() noexcept = default;
 
   public:
     iVec2( iVec2 && ) noexcept = default;
@@ -91,11 +91,11 @@ struct alignas( 16 ) iVec2
 
   public:
     template <typename Vector>
-    static iVec2 ToVec( Vector v )
+    static iVec2 ToVec( Vector v ) noexcept
     {
         return iVec2( v.x, v.y );
     }
 };
 
-} // namespace B22::Math
-#endif // !B22_VEC2_H
+} // namespace B33::Math
+#endif // !B33_VEC2_HPP

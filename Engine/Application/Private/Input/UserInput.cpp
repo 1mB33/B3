@@ -1,4 +1,4 @@
-#include "B33Core.h"
+#include "B33App.h"
 
 #include "Input/ControllerObject.hpp"
 #include "Input/InputEvents.h"
@@ -25,8 +25,8 @@ struct UserInput::UserInputImpl
     MouseMap MotionMouseMap;
 };
 
-// --------------------------------------------------------------------------------------------------------------------
-UserInput::UserInput( ::std::shared_ptr<WindowDesc> pWd )
+// Constructors // ----------------------------------------------------------------------------------------------------
+UserInput::UserInput( SharedPtr<WindowDesc> pWd )
   : WindowListener( pWd )
   , m_bIsCapturing( false )
   , m_BindsHandles()
@@ -51,7 +51,7 @@ UserInput::UserInput( const UserInput &other ) noexcept
 // --------------------------------------------------------------------------------------------------------------------
 UserInput &UserInput::operator=( const UserInput &other ) noexcept
 {
-    WindowListener::operator=(other);
+    WindowListener::operator=( other );
     this->m_bIsCapturing          = false;
     this->m_BindsHandles          = other.m_BindsHandles;
     this->m_vCurrentlyPressedKeys = {};
@@ -73,7 +73,7 @@ UserInput::UserInput( UserInput &&other ) noexcept
 // --------------------------------------------------------------------------------------------------------------------
 UserInput &UserInput::operator=( UserInput &&other ) noexcept
 {
-    WindowListener::operator=(other);
+    WindowListener::operator=( other );
     this->m_bIsCapturing          = false;
     this->m_BindsHandles          = ::std::move( other.m_BindsHandles );
     this->m_vCurrentlyPressedKeys = {};
@@ -82,19 +82,19 @@ UserInput &UserInput::operator=( UserInput &&other ) noexcept
     return *this;
 }
 
-// ---------------------------------------------------------------------------------------------------------------------
+// Public // ----------------------------------------------------------------------------------------------------------
 void UserInput::StartCapturing()
 {
     if ( !this->GetWindowDesc() )
     {
-        Logger::Get().Log( Warning, L"UserInput::StartCapturing() -> Cannot start the capture, window desc is null." );
-        Logger::Get().Log( Warning, L"UserInput::StartCapturing() -> Setting stop on the capture for safety." );
+        B33_WARNING( L"UserInput::StartCapturing() -> Cannot start the capture, window desc is null." );
+        B33_WARNING( L"UserInput::StartCapturing() -> Setting stop on the capture for safety." );
         StopCapturing();
         return;
     }
 
     if ( m_bIsCapturing )
-        Logger::Get().Log( Warning, L"UserInput::StartCapturing() -> Already capturing." );
+        B33_WARNING( L"UserInput::StartCapturing() -> Already capturing." );
 
     m_bIsCapturing = true;
 }
@@ -103,7 +103,7 @@ void UserInput::StartCapturing()
 void UserInput::StopCapturing()
 {
     if ( !m_bIsCapturing )
-        Logger::Get().Log( Warning, L"UserInput::StopCapturing() -> Is NOT capturing already." );
+        B33_WARNING( L"UserInput::StopCapturing() -> Is NOT capturing already." );
 
     m_bIsCapturing = false;
 }
@@ -123,7 +123,7 @@ void UserInput::Update( const float fDelta )
     // Always replay the continuos keybinds that are currently pressed
     if ( m_vCurrentlyPressedKeys.any() )
     {
-        for ( AbKeyId i = 0; i < B33_KEY_COUNT; ++i )
+        for ( B33KeyId i = 0; i < B33_KEY_COUNT; ++i )
         {
             if ( !m_vCurrentlyPressedKeys.test( i ) )
                 continue;
@@ -134,13 +134,13 @@ void UserInput::Update( const float fDelta )
 
     while ( !pWindowDesc->Data.InputStruct.empty() )
     {
-        AbInputStruct &is = pWindowDesc->Data.InputStruct.front();
+        B33InputStruct &is = pWindowDesc->Data.InputStruct.front();
 
         switch ( is.Event )
         {
-            case EAbInputEvents::AbKeyPress:
+            case EB33InputEvents::B33KeyPress:
             {
-                AbKeyId key = is.Keyboard.KeyId;
+                B33KeyId key = is.Keyboard.KeyId;
 
                 if ( key <= B33_INVALID_KEY || key >= B33_KEY_COUNT )
                     break;
@@ -156,9 +156,9 @@ void UserInput::Update( const float fDelta )
                 break;
             }
 
-            case EAbInputEvents::AbKeyRelease:
+            case EB33InputEvents::B33KeyRelease:
             {
-                AbKeyId key = is.Keyboard.KeyId;
+                B33KeyId key = is.Keyboard.KeyId;
 
                 if ( key <= B33_INVALID_KEY || key >= B33_KEY_COUNT )
                     break;
@@ -172,9 +172,9 @@ void UserInput::Update( const float fDelta )
                 break;
             }
 
-            case EAbInputEvents::AbButtonPress:
+            case EB33InputEvents::B33ButtonPress:
             {
-                AbKeyId button = is.Keyboard.KeyId;
+                B33KeyId button = is.Keyboard.KeyId;
 
                 if ( button <= B33_INVALID_BUTTON || button >= B33_MOUSE_BUTTONS_COUNT )
                     break;
@@ -183,9 +183,9 @@ void UserInput::Update( const float fDelta )
                 break;
             }
 
-            case EAbInputEvents::AbButtonRelease:
+            case EB33InputEvents::B33ButtonRelease:
             {
-                AbKeyId button = is.Keyboard.KeyId;
+                B33KeyId button = is.Keyboard.KeyId;
 
                 if ( button <= B33_INVALID_BUTTON || button >= B33_MOUSE_BUTTONS_COUNT )
                     break;
@@ -194,7 +194,7 @@ void UserInput::Update( const float fDelta )
                 break;
             }
 
-            case EAbInputEvents::AbMotion:
+            case EB33InputEvents::B33Motion:
             {
                 m_pImpl->MotionMouseMap.PlayAction( fDelta, is.Mouse.MouseX, is.Mouse.MouseY );
                 is.Mouse.MouseX = 0;
@@ -208,11 +208,15 @@ void UserInput::Update( const float fDelta )
             pWindowDesc->Data.InputStruct.pop();
     }
 
-    pWindowDesc->Data.LastEvent &= ~EAbWindowEvents::Input;
+    pWindowDesc->Data.LastEvent &= ~EB33WindowEvents::Input;
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-void UserInput::Bind( void *pThis, ControllerObject *pCo, AbAction action, AbMouseAction mouseAction, AbInputBind bind )
+void UserInput::Bind( void             *pThis,
+                      ControllerObject *pCo,
+                      B33Action         action,
+                      B33MouseAction    mouseAction,
+                      B33InputBind      bind )
 {
     if ( pCo->m_pUserInput.lock().get() != this )
     {
@@ -221,7 +225,7 @@ void UserInput::Bind( void *pThis, ControllerObject *pCo, AbAction action, AbMou
         return;
     }
 
-    if ( bind.Type & EAbBindType::Keyboard )
+    if ( bind.Type & EB33BindType::Keyboard )
     {
         if ( bind.Keyboard.KeyCode <= B33_INVALID_KEY || bind.Keyboard.KeyCode >= B33_KEY_COUNT )
         {
@@ -233,13 +237,13 @@ void UserInput::Bind( void *pThis, ControllerObject *pCo, AbAction action, AbMou
 
         switch ( bind.Keyboard.KeyState )
         {
-            case EAbOnState::Press:
+            case EB33OnState::Press:
                 m_pImpl->KeyPressMap.BindAction( bind, pThis, action, nullptr );
                 break;
-            case EAbOnState::Release:
+            case EB33OnState::Release:
                 m_pImpl->KeyReleaseMap.BindAction( bind, pThis, action, nullptr );
                 break;
-            case EAbOnState::Continuous:
+            case EB33OnState::Continuous:
                 m_pImpl->KeyContinuous.BindAction( bind, pThis, action, nullptr );
                 break;
             default:
@@ -248,14 +252,14 @@ void UserInput::Bind( void *pThis, ControllerObject *pCo, AbAction action, AbMou
                                    bind.Keyboard.KeyState );
         }
     }
-    else if ( bind.Type & EAbBindType::MouseButton )
+    else if ( bind.Type & EB33BindType::MouseButton )
     {
         switch ( bind.Keyboard.KeyState )
         {
-            case EAbOnState::Press:
+            case EB33OnState::Press:
                 m_pImpl->ButtonPressMap.BindAction( bind, pThis, action, nullptr );
                 break;
-            case EAbOnState::Release:
+            case EB33OnState::Release:
                 m_pImpl->ButtonReleaseMap.BindAction( bind, pThis, action, nullptr );
                 break;
             default:
@@ -264,7 +268,7 @@ void UserInput::Bind( void *pThis, ControllerObject *pCo, AbAction action, AbMou
                                    bind.Keyboard.KeyState );
         }
     }
-    else if ( bind.Type & EAbBindType::Mouse )
+    else if ( bind.Type & EB33BindType::Mouse )
     {
         m_pImpl->MotionMouseMap.BindAction( bind, pThis, nullptr, mouseAction );
     }
@@ -280,10 +284,9 @@ void UserInput::Unbind( ControllerObject *pCo )
 
     if ( handle == m_BindsHandles.end() )
     {
-        Logger::Get().Log( Warning,
-                           L"Cannot unbind this bind from this UserInput, because UserInput doesn't handles it. "
-                           "[Controller address: %p]",
-                           pCo );
+        B33_ERROR( L"Cannot unbind this bind from this UserInput, because UserInput doesn't handles it. "
+                   "[Controller address: %p]",
+                   pCo );
         return;
     }
     B33_LOG( Info, L"Unbind [Controller address: %p]", pCo );
@@ -292,26 +295,25 @@ void UserInput::Unbind( ControllerObject *pCo )
     {
         auto &bind = bindHandle.Ib;
 
-        if ( bind.Type & EAbBindType::Keyboard )
+        if ( bind.Type & EB33BindType::Keyboard )
         {
             switch ( bind.Keyboard.KeyState )
             {
-                case EAbOnState::Press:
+                case EB33OnState::Press:
                     m_pImpl->KeyPressMap.UnbindAction( bind, bindHandle.pThis );
                     break;
-                case EAbOnState::Release:
+                case EB33OnState::Release:
                     m_pImpl->KeyReleaseMap.UnbindAction( bind, bindHandle.pThis );
                     break;
-                case EAbOnState::Continuous:
+                case EB33OnState::Continuous:
                     m_pImpl->KeyContinuous.UnbindAction( bind, bindHandle.pThis );
                     break;
                 default:
-                    Logger::Get().Log( Error,
-                                       L"Key state wasn't valid? Coulnd't map the bind. [KeyState: %d]",
-                                       bind.Keyboard.KeyState );
+                    B33_ERROR( L"Key state wasn't valid? Coulnd't map the bind. [KeyState: %d]",
+                               bind.Keyboard.KeyState );
             }
         }
-        else if ( bind.Type & EAbBindType::Mouse )
+        else if ( bind.Type & EB33BindType::Mouse )
         {
             m_pImpl->MotionMouseMap.UnbindAction( bind, bindHandle.pThis );
         }

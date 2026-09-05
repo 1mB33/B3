@@ -1,7 +1,5 @@
 #include "B33Core.h"
-#include "Debug/Logger.hpp"
 #include "Synchronization/JobSystem.hpp"
-#include <thread>
 
 namespace B33::Core
 {
@@ -9,12 +7,12 @@ namespace B33::Core
 using namespace std;
 using namespace B33;
 
-void JobSystem::JobProcessorLoop( mutex              &mutex,
-                                  condition_variable &condition,
-                                  atomic_bool        &IsWorking,
-                                  atomic_bool        &IsFree,
+void JobSystem::JobProcessorLoop( Mutex        &mutex,
+                                  ConditionVar &condition,
+                                  ABool        &IsWorking,
+                                  ABool        &IsFree,
 #if defined( _B33_DEBUG )
-                                  atomic_bool &IsError,
+                                  ABool &IsError,
 #endif
                                   Job &currentJob )
 {
@@ -65,7 +63,7 @@ void JobSystem::JobProcessorLoop( mutex              &mutex,
 }
 
 JobSystem::JobSystem()
-  : m_Threads( ::std::thread::hardware_concurrency() - 2 )
+  : m_Threads( Thread::hardware_concurrency() - 2 )
   , m_uHead( 0 )
   , m_IsError( false )
 {
@@ -74,16 +72,16 @@ JobSystem::JobSystem()
         B33_TRACE( L"JobSystem::JobSystem(): Starting one of job processors" );
         t.IsFree.store( true );
         t.IsWorking.store( true );
-        t.CurrentJob = { nullptr };
-        t.Thread     = thread( &JobSystem::JobProcessorLoop,
-                               ref( t.Mutex ),
-                               ref( t.Condition ),
-                               ref( t.IsWorking ),
-                               ref( t.IsFree ),
+        t.CurrentJob   = { nullptr };
+        t.ThreadHandle = Thread( &JobSystem::JobProcessorLoop,
+                                 ref( t.LocalMutex ),
+                                 ref( t.Condition ),
+                                 ref( t.IsWorking ),
+                                 ref( t.IsFree ),
 #if defined( _B33_DEBUG )
-                           ref( m_IsError ),
+                                 ref( m_IsError ),
 #endif
-                           ref( t.CurrentJob ) );
+                                 ref( t.CurrentJob ) );
     }
 }
 
@@ -91,16 +89,16 @@ JobSystem::~JobSystem()
 {
     for ( auto &t : m_Threads )
     {
-        B33_TRACE( L"JobSystem::~JobSystem(): Stopping one of job processors: %d", t.Thread.get_id() );
+        B33_TRACE( L"JobSystem::~JobSystem(): Stopping one of job processors: %d", t.ThreadHandle.get_id() );
         if ( m_IsError.load() )
         {
-            t.Thread.~thread();
+            t.ThreadHandle.~thread();
         }
-        else if ( t.Thread.joinable() )
+        else if ( t.ThreadHandle.joinable() )
         {
             t.IsWorking.store( false );
             t.Condition.notify_all();
-            t.Thread.join();
+            t.ThreadHandle.join();
         }
     }
     B33_TRACE( L"JobSystem::~JobSystem(): Finished" );
@@ -112,7 +110,7 @@ void JobSystem::BlockAndWait()
     {
         if ( !t.IsFree.load() )
         {
-            unique_lock ul( t.Mutex );
+            unique_lock ul( t.LocalMutex );
             t.Condition.wait( ul,
                               [ & ]()
                               {
@@ -143,7 +141,7 @@ void JobSystem::PushJobInternal( Job newJob )
 
     if ( !headThread.IsFree.load() )
     {
-        unique_lock ul( headThread.Mutex );
+        unique_lock ul( headThread.LocalMutex );
         headThread.Condition.wait( ul,
                                    [ & ]()
                                    {

@@ -1,10 +1,10 @@
-#ifndef B33_EMPTYCANVAS_H
-#define B33_EMPTYCANVAS_H
+#if !defined( B33_EMPTYCANVAS_H )
+#    define B33_EMPTYCANVAS_H
 
-#include "B33App.h"
-#include "Input/UserInput.hpp"
-#include "Window/IBaseWindow.hpp"
-#include "Window/WindowPolicy/GameSystemPolicy.hpp"
+#    include <B33Core.h>
+#    include "Input/UserInput.hpp"
+#    include "Window/IBaseWindow.hpp"
+#    include "Window/WindowPolicy/GameSystemPolicy.hpp"
 
 namespace B33::App
 {
@@ -20,24 +20,56 @@ namespace B33::App
 template <bool bManualInputUpdate = false, class GamePolicy = DefaultGameSystemWindowPolicy>
 class EmptyCanvas : public ::B33::App::IBaseWindow<EmptyCanvas<bManualInputUpdate>, GamePolicy>
 {
+    template <typename T>
+    using SharedPtr = ::std::shared_ptr<T>;
+
+    template <typename T>
+    using WeakPtr = ::std::weak_ptr<T>;
+
+    using WString = ::std::wstring;
+
     friend class IBaseWindow<EmptyCanvas<bManualInputUpdate>, GamePolicy>;
 
+    template <typename T>
+    constexpr decltype( auto ) MakeShared()
+    {
+        return ::std::make_shared<T>();
+    }
+
+    template <typename T, typename U>
+    constexpr decltype( auto ) MakeShared( U &&arg )
+    {
+        return ::std::make_shared<T>( Forward<U>( arg ) );
+    }
+
+    template <typename T>
+    constexpr decltype( auto ) Forward( T &arg ) noexcept
+    {
+        return ::std::forward<T>( arg );
+    }
+
+    template <typename T>
+    constexpr decltype( auto ) Forward( T &&arg ) noexcept
+    {
+        return ::std::forward<T>( arg );
+    }
+
   public:
-    EmptyCanvas( std::wstring wstrWindowName, int32_t defaultWidth, int32_t defaultHeigth )
+    EmptyCanvas( WString wstrWindowName, i32 defaultWidth, i32 defaultHeigth )
       : IBaseWindow<EmptyCanvas, GamePolicy>(
-            CreateWindowDesc( std::move( wstrWindowName ), defaultWidth, defaultHeigth ) )
-      , m_pInput( ::std::make_shared<UserInput>( this->GetWindowDesc() ) )
+            CreateWindowDesc( ::std::move( wstrWindowName ), defaultWidth, defaultHeigth ) )
+      , m_pInput( MakeShared<UserInput>( this->GetWindowDesc() ) )
     {
     }
 
     template <class U>
     explicit EmptyCanvas( U &&desc )
-      : IBaseWindow<EmptyCanvas, GamePolicy>( ::std::forward<U>( desc ) )
+      : IBaseWindow<EmptyCanvas, GamePolicy>( Forward<U>( desc ) )
     {
     }
 
   public:
-    ::std::weak_ptr<UserInput> GetInput() const
+    WeakPtr<UserInput> GetInput() const
     {
         return m_pInput;
     }
@@ -46,7 +78,7 @@ class EmptyCanvas : public ::B33::App::IBaseWindow<EmptyCanvas<bManualInputUpdat
     /**
      * @brief It's called on every update
      */
-    void HandleMessageImpl( const float fDelta, __B33_ATTRIBUTE_MIGHT_BE_UNUSED EAbWindowEventsFlags events )
+    void HandleMessageImpl( const float fDelta, __B33_ATTRIBUTE_MIGHT_BE_UNUSED EB33WindowEventsFlags events )
     {
         if constexpr ( !bManualInputUpdate )
         {
@@ -55,7 +87,7 @@ class EmptyCanvas : public ::B33::App::IBaseWindow<EmptyCanvas<bManualInputUpdat
     }
 
   private:
-    ::std::shared_ptr<UserInput> m_pInput;
+    SharedPtr<UserInput> m_pInput;
 };
 
 } // namespace B33::App

@@ -1,11 +1,10 @@
-#ifndef B33_USER_INPUT_H
-#define B33_USER_INPUT_H
+#if !defined( B33_USER_INPUT_HPP )
+#    define B33_USER_INPUT_HPP
 
-#include "Input/Bind.h"
-#include "Input/KeyList.hpp"
-#include "Input/MouseButtonList.hpp"
-#include "Window/WindowDesc.hpp"
-#include "Window/WindowListener.hpp"
+#    include "Input/Bind.h"
+#    include "Input/KeyList.hpp"
+#    include "Window/WindowDesc.hpp"
+#    include "Window/WindowListener.hpp"
 
 namespace B33::App
 {
@@ -16,17 +15,21 @@ class UserInput : public WindowListener
 {
     struct BindHandle
     {
-        AbInputBind Ib;
-        void       *pThis;
+        B33InputBind Ib;
+        void        *pThis;
     };
 
     struct UserInputImpl;
 
+    template <typename T>
+    using SharedPtr = ::std::shared_ptr<T>;
+    template <typename T>
+    using UniquePtr  = ::std::unique_ptr<T>;
     using HandlesMap = ::std::unordered_map<void *, ::std::vector<BindHandle>>;
     using KeysStatus = ::std::bitset<B33_KEY_COUNT>;
 
   public:
-    __B33_API explicit UserInput( ::std::shared_ptr<WindowDesc> pWd = nullptr );
+    __B33_API explicit UserInput( SharedPtr<WindowDesc> pWd = nullptr );
 
     __B33_API ~UserInput();
 
@@ -67,10 +70,10 @@ class UserInput : public WindowListener
      * @param pCo - pointer to an object that controlls life time of pThis
      * @param action - action to be performed, should be null, if we are performing mouse action instead
      * @param mouseAction - mouse action to be performed, should be null, if we are performing action instead
-     * @param bind - AbInputBind struct describing the bind
+     * @param bind - B33InputBind struct describing the bind
      **/
     __B33_API void
-    Bind( void *pThis, ControllerObject *pCo, AbAction action, AbMouseAction mouseAction, AbInputBind bind );
+    Bind( void *pThis, ControllerObject *pCo, B33Action action, B33MouseAction mouseAction, B33InputBind bind );
 
     __B33_API void Unbind( ControllerObject *pCo );
 
@@ -86,8 +89,8 @@ class UserInput : public WindowListener
     HandlesMap m_BindsHandles;
     KeysStatus m_vCurrentlyPressedKeys;
 
-    ::std::unique_ptr<UserInputImpl> m_pImpl;
+    UniquePtr<UserInputImpl> m_pImpl;
 };
 
 } // namespace B33::App
-#endif // !B33_USER_INPUT_H
+#endif // !B33_USER_INPUT_HPP

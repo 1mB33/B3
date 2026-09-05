@@ -6,14 +6,14 @@ namespace B33::System
 class ICall
 {
   public:
-    ICall()          = default;
-    virtual ~ICall() = default;
+    ICall() noexcept          = default;
+    virtual ~ICall() noexcept = default;
 
   public:
-    ICall( ICall && )                 = default;
-    ICall &operator=( ICall && )      = default;
-    ICall( const ICall & )            = default;
-    ICall &operator=( const ICall & ) = default;
+    ICall( ICall && ) noexcept                 = default;
+    ICall &operator=( ICall && ) noexcept      = default;
+    ICall( const ICall & ) noexcept            = default;
+    ICall &operator=( const ICall & ) noexcept = default;
 
   public:
     virtual inline void OnCall() = 0;

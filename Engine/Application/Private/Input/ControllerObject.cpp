@@ -6,6 +6,12 @@ namespace B33::App
 {
 
 // Contructors // -----------------------------------------------------------------------------------------------------
+ControllerObject::ControllerObject() noexcept
+  : m_pUserInput()
+{
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 ControllerObject::~ControllerObject() noexcept
 {
     if ( auto pUserInput = m_pUserInput.lock() )
@@ -18,18 +24,40 @@ ControllerObject::ControllerObject( ControllerObject &&other ) noexcept
 {
 }
 
+// --------------------------------------------------------------------------------------------------------------------
+ControllerObject &ControllerObject::operator=( ControllerObject &&other ) noexcept
+{
+    m_pUserInput = other.m_pUserInput;
+
+    other.UnsignObject();
+
+    return *this;
+}
+
 // Public // ----------------------------------------------------------------------------------------------------------
-void ControllerObject::SignObject( ::std::weak_ptr<UserInput> pUserInput )
+void ControllerObject::SignObject( WeakPtr<UserInput> pUserInput ) noexcept
 {
     // We can be signed by only one UserInput
     if ( !m_pUserInput.expired() )
     {
         B33_ASSERT( m_pUserInput.lock().get() == pUserInput.lock().get() );
-        B33_LOG( Core::Debug::Warning, L"ControllerObject can be signed only by one UserInput." );
+        B33_WARNING( L"ControllerObject can be signed only by one UserInput." );
         return;
     }
 
     m_pUserInput = pUserInput;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+void ControllerObject::UnsignObject() noexcept
+{
+    if ( !m_pUserInput.expired() )
+    {
+        B33_WARNING( L"Calling unsign on unsigned object" );
+        return;
+    }
+
+    m_pUserInput = WeakPtr<UserInput>();
 }
 
 } // namespace B33::App

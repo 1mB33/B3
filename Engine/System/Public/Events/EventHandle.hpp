@@ -1,7 +1,6 @@
 #if !defined( B33_EVENT_HANDLE_HPP )
 #    define B33_EVENT_HANDLE_HPP
 
-#    include "B33System.hpp"
 #    include "EventDispatcherInstance.hpp"
 
 namespace B33::System
@@ -20,7 +19,7 @@ class EventHandle
                            EventAddr                     pAddr     = 0,
                            EEventHandleType              type      = Invalid );
 
-    __B33_API ~EventHandle();
+    __B33_API ~EventHandle() noexcept;
 
   public:
     EventHandle( EventHandle && )                 = default;

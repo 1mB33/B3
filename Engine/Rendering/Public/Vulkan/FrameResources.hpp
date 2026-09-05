@@ -1,12 +1,12 @@
-#ifndef B33_FRAME_RESOURCES_H
-#define B33_FRAME_RESOURCES_H
+#if !defined( B33_FRAME_RESOURCES_HPP )
+#    define B33_FRAME_RESOURCES_HPP
 
 namespace B33::Rendering
 {
 
 struct Frame
 {
-    constexpr static size_t MAX_FRAMES_IN_FLIGHT = 2;
+    constexpr static usize MaxFramesInFlight = 2;
 
     ::VkFence         InFlightFence;
     ::VkSemaphore     ImageAvailable;
@@ -14,4 +14,4 @@ struct Frame
 };
 
 } // namespace B33::Rendering
-#endif // !B33_FRAME_RESOURCES_H
+#endif // !B33_FRAME_RESOURCES_HPP

@@ -10,9 +10,9 @@ template <class DERIVED>
 class IHardware
 {
   public:
-    IHardware() = default;
+    IHardware() noexcept = default;
 
-    ~IHardware() = default;
+    ~IHardware() noexcept = default;
 
   public:
     IHardware( IHardware && ) noexcept            = default;

@@ -1,5 +1,5 @@
-#ifndef B33_ROUGHNESS_PROPERTY_H
-#define B33_ROUGHNESS_PROPERTY_H
+#if !defined( B33_ROUGHNESS_PROPERTY_HPP )
+#    define B33_ROUGHNESS_PROPERTY_HPP
 
 namespace B33::Rendering
 {
@@ -7,6 +7,9 @@ namespace B33::Rendering
 // FIXME: Some compilers add one byte in the empty IMaterialProperties class
 class alignas( 8 ) RoughnessProperty // : public IMaterialProperties
 {
+    template <typename T>
+    using Vector = ::std::vector<T>;
+
   public:
     RoughnessProperty()
       : m_fRoughness( {} )
@@ -14,7 +17,7 @@ class alignas( 8 ) RoughnessProperty // : public IMaterialProperties
     }
 
   public:
-    void SetReflection( float fRef, ::size_t uIndex )
+    void SetReflection( float fRef, usize uIndex )
     {
         if ( fRef >= 0.25f )
         {
@@ -25,8 +28,8 @@ class alignas( 8 ) RoughnessProperty // : public IMaterialProperties
     }
 
   private:
-    ::std::vector<float> m_fRoughness;
+    Vector<float> m_fRoughness;
 };
 
 } // namespace B33::Rendering
-#endif // !B33_ROUGHNESS_PROPERTY_H
+#endif // !B33_ROUGHNESS_PROPERTY_HPP

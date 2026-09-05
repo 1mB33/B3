@@ -57,7 +57,7 @@ void GameLinuxWindowPolicy::OnCreate( WindowDesc *pWd )
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-uint32_t GameLinuxWindowPolicy::OnUpdate( WindowDesc *pWd, XEvent &event )
+u32 GameLinuxWindowPolicy::OnUpdate( WindowDesc *pWd, XEvent &event )
 {
     B33_ASSERT( pWd );
 
@@ -115,8 +115,8 @@ void GameLinuxWindowPolicy::HandleRawInput( WindowDesc *pWd, XEvent &event )
 
     windowData.LastEvent |= Input;
 
-    AbInputStruct is;
-    is.Event        = AbMotion;
+    B33InputStruct is;
+    is.Event        = B33Motion;
     is.Mouse.MouseX = dx;
     is.Mouse.MouseY = dy;
 

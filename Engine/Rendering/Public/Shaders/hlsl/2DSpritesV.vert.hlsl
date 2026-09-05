@@ -21,6 +21,7 @@ StructuredBuffer<SpriteInstance> g_Instances : register( t1 );
 struct VSOutput
 {
     float4 Position     : SV_Position;
+    float2 UV           : TEXCOORD0;
     float4 Color        : COLOR0;
 };
 
@@ -54,7 +55,9 @@ VSOutput main( VSInput input )
 
     float4 clipPos = mul(pc.Proj, viewPos);
 
+    float2 localUV = input.Position * 0.5 + 0.5;
     VSOutput output;
+    output.UV    = localUV;
     output.Position = clipPos;
     output.Color = float4(g_Instances[input.Id].Color.xyz, 1.0);
 

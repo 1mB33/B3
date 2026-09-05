@@ -1,8 +1,9 @@
-#ifndef B33_ROT3_H
-#define B33_ROT3_H
+#if !defined( B33_ROT3_HPP )
+#    define B33_ROT3_HPP
 
-#include "Vec3.hpp"
-#include "Vec4.hpp"
+#    include "Vec3.hpp"
+#    include "Vec3Operators.hpp"
+#    include "Vec4.hpp"
 
 namespace B33::Math
 {
@@ -11,4 +12,4 @@ typedef Vec3 Rot3;
 typedef Vec4 Rot4;
 
 } // namespace B33::Math
-#endif // !B33_ROT3_H
+#endif // !B33_ROT3_HPP

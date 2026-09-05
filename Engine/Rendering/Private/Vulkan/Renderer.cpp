@@ -1,9 +1,10 @@
-#include "B33Rendering.hpp"
+#include "B33Rendering.h"
 
 #include "Vulkan/Renderer.hpp"
 #include "Vulkan/Memory/Memory.hpp"
 #include "Vulkan/ErrorHandling.hpp"
 #include "Vulkan/FrameResources.hpp"
+#include "Window/WindowListener.hpp"
 
 namespace B33::Rendering
 {
@@ -13,7 +14,7 @@ using namespace ::B33::Math;
 
 // Constructors // ----------------------------------------------------------------------------------------------------
 Renderer::Renderer()
-  : m_pWindowDesc( nullptr )
+  : App::WindowListener()
   , m_pInstance( nullptr )
   , m_pHardware( nullptr )
   , m_pDeviceAdapter( nullptr )
@@ -29,16 +30,15 @@ Renderer::Renderer()
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Renderer::~Renderer()
+Renderer::~Renderer() noexcept
 {
     Destroy();
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-void Renderer::InitializeInternal( shared_ptr<WindowDesc> wd )
+void Renderer::InitializeInternal()
 {
-    m_pMemory     = make_shared<Memory>( m_pHardware, m_pDeviceAdapter );
-    m_pWindowDesc = wd;
+    m_pMemory = make_shared<Memory>( m_pHardware, m_pDeviceAdapter );
 
     B33_TRACE( L"Initializing command pool" );
     m_CommandPool = CreateCommandPool( static_pointer_cast<AdapterWrapper>( m_pDeviceAdapter ),
@@ -60,17 +60,17 @@ void Renderer::Update( const float )
 // ---------------------------------------------------------------------------------------------------------------------
 void Renderer::Render()
 {
-    lock_guard lg( m_pWindowDesc->mUpdated );
+    lock_guard lg( GetWindowDesc()->mUpdated );
 
-    if ( m_pWindowDesc->Data.LastEvent & EAbWindowEvents::ChangedBehavior )
+    if ( GetWindowDesc()->Data.LastEvent & EB33WindowEvents::ChangedBehavior )
     {
-        m_pWindowDesc->Data.LastEvent &= ~EAbWindowEvents::ChangedBehavior;
+        GetWindowDesc()->Data.LastEvent &= ~EB33WindowEvents::ChangedBehavior;
         B33_WARNING( L"On update, the window just changed behavior, skipping a frame" );
         RecreateSwapChain();
         return;
     }
 
-    uint32_t       uImageIndex;
+    u32            uImageIndex;
     const VkDevice device     = m_pDeviceAdapter->GetAdapterHandle();
     Frame         &frame      = ( *m_vFrames.get() )[ m_uCurrentFrame ];
     const auto     swapchains = m_pSwapChain->GetSwapChainHandle();
@@ -139,11 +139,11 @@ void Renderer::Render()
         return;
     }
 
-    m_uCurrentFrame = ( m_uCurrentFrame + 1 ) % Frame::MAX_FRAMES_IN_FLIGHT;
+    m_uCurrentFrame = ( m_uCurrentFrame + 1 ) % Frame::MaxFramesInFlight;
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-void Renderer::Destroy()
+void Renderer::Destroy() noexcept
 {
     B33_LOG( Core::Debug::Info, L"Destroying renderer" );
 
@@ -176,7 +176,7 @@ void Renderer::Destroy()
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-VkCommandPool Renderer::CreateCommandPool( shared_ptr<const AdapterWrapper> da, uint32_t uQueueFamily )
+VkCommandPool Renderer::CreateCommandPool( SharedPtr<const AdapterWrapper> da, u32 uQueueFamily )
 {
     VkCommandPool cmdPool;
 
@@ -191,8 +191,8 @@ VkCommandPool Renderer::CreateCommandPool( shared_ptr<const AdapterWrapper> da, 
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-VkCommandBuffer Renderer::CreateCommandBuffer( __B33_ATTRIBUTE_MIGHT_BE_UNUSED shared_ptr<const AdapterWrapper> da,
-                                               VkCommandPool cmdPool )
+VkCommandBuffer Renderer::CreateCommandBuffer( __B33_ATTRIBUTE_MIGHT_BE_UNUSED SharedPtr<const AdapterWrapper> da,
+                                               VkCommandPool                                                   cmdPool )
 {
     VkCommandBuffer cmdBuffer;
 
@@ -211,10 +211,10 @@ VkCommandBuffer Renderer::CreateCommandBuffer( __B33_ATTRIBUTE_MIGHT_BE_UNUSED s
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-Renderer::FramesArray Renderer::CreateFrameResources( const shared_ptr<const AdapterWrapper> &da,
-                                                      __B33_ATTRIBUTE_MIGHT_BE_UNUSED const shared_ptr<Memory> &memory,
-                                                      VkCommandPool                                             cmdPool,
-                                                      __B33_ATTRIBUTE_MIGHT_BE_UNUSED size_t uFrames )
+Renderer::FramesArray Renderer::CreateFrameResources( const SharedPtr<const AdapterWrapper> &da,
+                                                      __B33_ATTRIBUTE_MIGHT_BE_UNUSED const SharedPtr<Memory> &memory,
+                                                      VkCommandPool                                            cmdPool,
+                                                      __B33_ATTRIBUTE_MIGHT_BE_UNUSED usize                    uFrames )
 {
     VkDevice    device = da->GetAdapterHandle();
     FramesArray result;
@@ -226,7 +226,7 @@ Renderer::FramesArray Renderer::CreateFrameResources( const shared_ptr<const Ada
     fenceInfo.sType             = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags             = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    for ( size_t i = 0; i < result.size(); ++i )
+    for ( usize i = 0; i < result.size(); ++i )
     {
         if ( vkCreateSemaphore( device, &semaphoreInfo, NULL, &result[ i ].ImageAvailable ) != VK_SUCCESS ||
              vkCreateFence( device, &fenceInfo, NULL, &result[ i ].InFlightFence ) != VK_SUCCESS )
@@ -278,7 +278,7 @@ void Renderer::DestroyFrameResources()
     {
         auto &frames = *m_vFrames.get();
 
-        for ( size_t i = 0; i < frames.size(); ++i )
+        for ( usize i = 0; i < frames.size(); ++i )
         {
             B33_TRACE( L"Waiting for fence %d", i );
             vkWaitForFences( m_pDeviceAdapter->GetAdapterHandle(), 1, &frames[ i ].InFlightFence, VK_TRUE, 100000 );
@@ -289,7 +289,7 @@ void Renderer::DestroyFrameResources()
         {
             vkDestroySemaphore( m_pDeviceAdapter->GetAdapterHandle(), sem, nullptr );
         }
-        for ( size_t i = 0; i < frames.size(); ++i )
+        for ( usize i = 0; i < frames.size(); ++i )
         {
             B33_TRACE( L"Destroying frame %d", i );
             vkDestroySemaphore( m_pDeviceAdapter->GetAdapterHandle(), frames[ i ].ImageAvailable, nullptr );
@@ -306,7 +306,7 @@ void Renderer::DestroyFrameResources()
 void Renderer::RecreateSwapChain()
 {
     B33_INFO( L"Recreating swapchain" );
-    if ( m_pWindowDesc->Data.bIsAlive == false )
+    if ( GetWindowDesc()->Data.bIsAlive == false )
     {
         B33_ERROR( L"RecreateSwapChain with dead window!!!" );
         return;
@@ -323,7 +323,7 @@ void Renderer::RecreateSwapChain()
     m_pSwapChain = make_unique<Swapchain>( m_pInstance,
                                            static_pointer_cast<HardwareWrapper>( m_pHardware ),
                                            static_pointer_cast<AdapterWrapper>( m_pDeviceAdapter ),
-                                           m_pWindowDesc );
+                                           GetWindowDesc() );
 
     for ( auto &pipeline : m_PipelineMap )
         pipeline.second->SetNewSwapChain( m_pSwapChain.get() );
@@ -331,7 +331,7 @@ void Renderer::RecreateSwapChain()
     CreateRenederSyncResources( m_pDeviceAdapter, m_pSwapChain.get(), m_vRenderFinished );
 
     m_vFrames = make_unique<FramesArray>(
-        CreateFrameResources( m_pDeviceAdapter, m_pMemory, m_CommandPool, Frame::MAX_FRAMES_IN_FLIGHT ) );
+        CreateFrameResources( m_pDeviceAdapter, m_pMemory, m_CommandPool, Frame::MaxFramesInFlight ) );
     m_uCurrentFrame = 0;
 
 
@@ -339,9 +339,9 @@ void Renderer::RecreateSwapChain()
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void Renderer::CreateRenederSyncResources( const ::std::shared_ptr<const ::B33::Rendering::AdapterWrapper> &da,
-                                           const ::B33::Rendering::Swapchain                               *sc,
-                                           ::std::vector<VkSemaphore>                                      &out )
+void Renderer::CreateRenederSyncResources( const SharedPtr<const AdapterWrapper> &da,
+                                           const Swapchain                       *sc,
+                                           Vector<VkSemaphore>                   &out )
 {
     VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType                 = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;

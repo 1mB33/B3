@@ -3,5 +3,6 @@
 #        define B33_MINIMAL_APPLE_INLCUDES_H
 #        include <mach-o/dyld.h>
 #        include <unistd.h>
+#        include <signal.h>
 #    endif
 #endif

@@ -1,7 +1,7 @@
-#ifndef B33_DELTA_TIME_H
-#define B33_DELTA_TIME_H
+#if !defined( B33_DELTA_TIME_HPP )
+#    define B33_DELTA_TIME_HPP
 
-#include "B33Core.h"
+#    include "B33Core.h"
 
 namespace B33::Core
 {
@@ -15,7 +15,7 @@ class DeltaTime
   public:
     __B33_API DeltaTime();
 
-    ~DeltaTime() = default;
+    ~DeltaTime() noexcept = default;
 
   public:
     DeltaTime( const DeltaTime & ) noexcept            = default;
@@ -47,4 +47,4 @@ class DeltaTime
 };
 
 } // namespace B33::Core
-#endif //! B33_DELTA_TIME_H
+#endif //! B33_DELTA_TIME_HPP

@@ -24,6 +24,7 @@ SET(BEE_CORE_HEADRES
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/B33CoreMinimal.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Attributes.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/B33Core.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Borrowed.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Synchronization/FpsLimiter.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Synchronization/DeltaTime.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Utility.hpp"

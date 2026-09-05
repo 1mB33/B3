@@ -107,7 +107,7 @@ void WindowModeGameWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM
         case WM_INPUT:
         {
             static ::std::vector<BYTE> vRi = {};
-            AbInputStruct              is  = {};
+            B33InputStruct             is  = {};
             UINT                       cbSize;
             UINT                       cbSize2;
             size_t                     uRiRead;
@@ -119,12 +119,12 @@ void WindowModeGameWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM
                 return;
             }
 
-            if (cbSize == 0)
+            if ( cbSize == 0 )
             {
                 return;
             }
 
-            cbSize2 = (cbSize + 1) * 16;
+            cbSize2 = ( cbSize + 1 ) * 16;
             if ( vRi.size() < cbSize2 )
                 vRi.resize( cbSize2 );
 
@@ -135,8 +135,8 @@ void WindowModeGameWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM
                 return;
             }
 
-            pWd->Data.LastEvent |= EAbWindowEvents::Input;
-            is.Event = EAbInputEvents::AbMotion;
+            pWd->Data.LastEvent |= EB33WindowEvents::Input;
+            is.Event = EB33InputEvents::B33Motion;
             pRi      = reinterpret_cast<PRAWINPUT>( &vRi[ 0 ] );
             for ( size_t i = 0; i < uRiRead; ++i, pRi = NEXTRAWINPUTBLOCK( pRi ) )
             {

@@ -5,24 +5,26 @@
 namespace B33::Core
 {
 
+using namespace std;
+
 // --------------------------------------------------------------------------------------------------------------------
-::std::string ColorizeTerminal::Colorize( ::std::string strText, EColors color )
+ColorizeTerminal::String ColorizeTerminal::Colorize( ColorizeTerminal::String strText, EColors color )
 {
     switch ( color )
     {
-        case BrigthBlack:
+        case BrightBlack:
 #if defined( __APPLE__ ) || defined( __linux__ )
             return "\033[90m" + strText + "\033[0m";
 #endif
-        case BrigthGreen:
+        case BrightGreen:
 #if defined( __APPLE__ ) || defined( __linux__ )
             return "\033[92m" + strText + "\033[0m";
 #endif
-        case BrigthYellow:
+        case BrightYellow:
 #if defined( __APPLE__ ) || defined( __linux__ )
             return "\033[93m" + strText + "\033[0m";
 #endif
-        case BrigthRed:
+        case BrightRed:
 #if defined( __APPLE__ ) || defined( __linux__ )
             return "\033[91m" + strText + "\033[0m";
 #endif
@@ -36,23 +38,23 @@ namespace B33::Core
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-::std::wstring ColorizeTerminal::Colorize( ::std::wstring wstrText, EColors color )
+ColorizeTerminal::WString ColorizeTerminal::Colorize( ColorizeTerminal::WString wstrText, EColors color )
 {
     switch ( color )
     {
-        case BrigthBlack:
+        case BrightBlack:
 #if defined( __APPLE__ ) || defined( __linux__ )
             return L"\033[90m" + wstrText + L"\033[0m";
 #endif
-        case BrigthGreen:
+        case BrightGreen:
 #if defined( __APPLE__ ) || defined( __linux__ )
             return L"\033[92m" + wstrText + L"\033[0m";
 #endif
-        case BrigthYellow:
+        case BrightYellow:
 #if defined( __APPLE__ ) || defined( __linux__ )
             return L"\033[93m" + wstrText + L"\033[0m";
 #endif
-        case BrigthRed:
+        case BrightRed:
 #if defined( __APPLE__ ) || defined( __linux__ )
             return L"\033[91m" + wstrText + L"\033[0m";
 #endif

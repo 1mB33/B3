@@ -8,21 +8,22 @@ void MainWindow::Initialize( ::B33::System::ComponentBridge & )
 {
     B33_TRACE( L"MainWindow initialize" );
     m_WindowInstance.Create();
-    m_WindowPuppet.BindToInput( m_WindowInstance.GetInput().lock(),
-                                {
-                                    { WindowMasterController::UseActionSetWindowMode,
-                                      AbInputBind { .Type     = Keyboard,
-                                                    .Keyboard = AbKeyboardBind { .KeyState = EAbOnState::Press,
-                                                                                 .KeyCode  = B33::App::B33_KEY_F1 } } },
-                                    { WindowMasterController::UseActionSetWindowBorderless,
-                                      AbInputBind { .Type     = Keyboard,
-                                                    .Keyboard = AbKeyboardBind { .KeyState = EAbOnState::Press,
-                                                                                 .KeyCode  = B33::App::B33_KEY_F2 } } },
-                                    { WindowMasterController::UseActionExit,
-                                      AbInputBind { .Type     = Keyboard,
-                                                    .Keyboard = AbKeyboardBind { .KeyState = EAbOnState::Press,
-                                                                                 .KeyCode = B33::App::B33_KEY_ESC } } },
-                                } );
+    m_WindowPuppet.BindToInput(
+        m_WindowInstance.GetInput().lock(),
+        {
+            { WindowMasterController::UseActionSetWindowMode,
+              B33InputBind {
+                  .Type     = Keyboard,
+                  .Keyboard = B33KeyboardBind { .KeyState = EB33OnState::Press, .KeyCode = B33::App::B33_KEY_F1 } } },
+            { WindowMasterController::UseActionSetWindowBorderless,
+              B33InputBind {
+                  .Type     = Keyboard,
+                  .Keyboard = B33KeyboardBind { .KeyState = EB33OnState::Press, .KeyCode = B33::App::B33_KEY_F2 } } },
+            { WindowMasterController::UseActionExit,
+              B33InputBind {
+                  .Type     = Keyboard,
+                  .Keyboard = B33KeyboardBind { .KeyState = EB33OnState::Press, .KeyCode = B33::App::B33_KEY_ESC } } },
+        } );
 
     m_WindowInstance.Show();
     m_WindowInstance.GetInput().lock()->StartCapturing();
@@ -30,7 +31,7 @@ void MainWindow::Initialize( ::B33::System::ComponentBridge & )
 
 void MainWindow::Update( float fDelta, ::B33::System::ComponentBridge & )
 {
-    B33_TRACE(L"Window update");
+    B33_TRACE( L"Window update" );
     m_WindowInstance.Update( fDelta );
     m_WindowInstance.GetInput().lock()->Update( fDelta );
 }

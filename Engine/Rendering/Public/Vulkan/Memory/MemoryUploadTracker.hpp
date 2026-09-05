@@ -1,7 +1,7 @@
-#ifndef B33_MEMORY_UPLOAD_TRACKER_H
-#define B33_MEMORY_UPLOAD_TRACKER_H
+#if !defined( B33_MEMORY_UPLOAD_TRACKER_HPP )
+#    define B33_MEMORY_UPLOAD_TRACKER_HPP
 
-#include "B33CoreMinimal.h"
+#    include <B33CoreMinimal.h>
 
 namespace B33::Rendering
 {
@@ -18,7 +18,7 @@ class MemoryUploadTracker
   public:
     __B33_API MemoryUploadTracker();
 
-    ~MemoryUploadTracker() = default;
+    ~MemoryUploadTracker() noexcept = default;
 
   public:
     MemoryUploadTracker( const MemoryUploadTracker & ) noexcept            = default;
@@ -50,4 +50,4 @@ class MemoryUploadTracker
 };
 
 } // namespace B33::Rendering
-#endif //! B33_MEMORY_UPLOAD_TRACKER_H
+#endif //! B33_MEMORY_UPLOAD_TRACKER_HPP

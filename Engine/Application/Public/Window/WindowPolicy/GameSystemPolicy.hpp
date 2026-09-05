@@ -1,29 +1,29 @@
-#ifndef B33_GAME_SYSTEM_POLICY_H
-#define B33_GAME_SYSTEM_POLICY_H
+#if !defined( B33_GAME_SYSTEM_POLICY_HPP )
+#    define B33_GAME_SYSTEM_POLICY_HPP
 
-#include "B33App.h"
+#    include <B33Core.h>
 
-#if defined( _WIN32 )
-#    include "Window/WindowPolicy/Win32/BorderlessGameWin32Policy.hpp"
-#    include "Window/WindowPolicy/Win32/WindowModeGameWin32Policy.hpp"
-#elif defined( __linux__ )
-#    include "Window/WindowPolicy/Linux/GameLinuxPolicy.hpp"
-#elif defined( __APPLE__ )
-#    include "Window/WindowPolicy/Apple/MetalApplePolicy.hpp"
-#endif // !_WIN32
+#    if defined( _WIN32 )
+#        include "Window/WindowPolicy/Win32/BorderlessGameWin32Policy.hpp"
+#        include "Window/WindowPolicy/Win32/WindowModeGameWin32Policy.hpp"
+#    elif defined( __linux__ )
+#        include "Window/WindowPolicy/Linux/GameLinuxPolicy.hpp"
+#    elif defined( __APPLE__ )
+#        include "Window/WindowPolicy/Apple/MetalApplePolicy.hpp"
+#    endif // !_WIN32
 
 namespace B33::App
 {
 
 typedef
-#if defined( _WIN32 )
+#    if defined( _WIN32 )
     WindowModeGameWin32WindowPolicy
-#elif defined( __linux__ )
+#    elif defined( __linux__ )
     GameLinuxWindowPolicy
-#elif defined( __APPLE__ )
+#    elif defined( __APPLE__ )
     MetalAppleWindowPolicy
-#endif // !_WIN32
+#    endif // !_WIN32
         DefaultGameSystemWindowPolicy;
 
 } // namespace B33::App
-#endif // !B33_GAME_SYSTEM_POLICY_H
+#endif // !B33_GAME_SYSTEM_POLICY_HPP

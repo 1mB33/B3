@@ -1,9 +1,9 @@
-#ifndef B33_IPIPELINE_H
-#define B33_IPIPELINE_H
+#if !defined( B33_IPIPELINE_HPP )
+#    define B33_IPIPELINE_HPP
 
-#include "Unknown.hpp"
-#include "Vulkan/IPushConstants.hpp"
-#include "Vulkan/WrapperPipeline.hpp"
+#    include <Unknown.hpp>
+#    include "Vulkan/IPushConstants.hpp"
+#    include "Vulkan/WrapperPipeline.hpp"
 
 namespace B33::Rendering
 {
@@ -21,7 +21,7 @@ class IPipeline
     {
     }
 
-    virtual ~IPipeline() = default;
+    virtual ~IPipeline() noexcept = default;
 
   public:
     IPipeline( IPipeline && )      = default;
@@ -31,13 +31,13 @@ class IPipeline
     IPipeline &operator=( const IPipeline & ) noexcept = default;
 
   protected:
-    using PipelineWrapper::GetAdaterInternal;
-    using PipelineWrapper::GetDescriptorLayoutInternal;
-    using PipelineWrapper::GetDescriptorPoolInternal;
+    using PipelineWrapper::GetAdater;
+    using PipelineWrapper::GetDescriptorLayout;
+    using PipelineWrapper::GetDescriptorPool;
 
     // Interface // ---------------------------------------------------------------------------------------------------
   public:
-    ::size_t GetPushConstantsByteSize()
+    ::usize GetPushConstantsByteSize()
     {
         return static_cast<Derived *>( this )->GetPushConstantsByteSizeImpl();
     }
@@ -75,4 +75,4 @@ class IPipeline
 };
 
 } // namespace B33::Rendering
-#endif // !B33_IPIPELINE_H
+#endif // !B33_IPIPELINE_HPP

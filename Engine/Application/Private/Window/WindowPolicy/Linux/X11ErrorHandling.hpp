@@ -2,7 +2,7 @@
 #    ifndef B33_X11_ERROR_HANDLING_H
 #        define B33_X11_ERROR_HANDLING_H
 
-#        include "B33Core.h"
+#        include <B33Core.h>
 
 namespace B33::Core
 {

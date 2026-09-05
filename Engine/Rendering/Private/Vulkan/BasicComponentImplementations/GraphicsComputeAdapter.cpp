@@ -1,4 +1,4 @@
-#include "B33Rendering.hpp"
+#include "B33Rendering.h"
 
 #include "Vulkan/BasicComponentImplementations/GraphicsComputeAdapter.hpp"
 
@@ -24,7 +24,7 @@ void *GraphicsComputeAdapter::GetFeaturesImpl() const
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-uint32_t GraphicsComputeAdapter::GetQueueFlagsImpl() const
+u32 GraphicsComputeAdapter::GetQueueFlagsImpl() const
 {
     return ::VK_QUEUE_COMPUTE_BIT;
 }

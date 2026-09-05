@@ -1,4 +1,4 @@
-#include "B33Rendering.hpp"
+#include "B33Rendering.h"
 
 #include "Vulkan/ErrorHandling.hpp"
 #include "Vulkan/BasicComponentImplementations/MinimalHardware.hpp"
@@ -11,7 +11,7 @@ using namespace std;
 // ---------------------------------------------------------------------------------------------------------------------
 VkPhysicalDevice MinimalHardware::ChooseHardwareImpl( VkInstance Instance ) const
 {
-    uint32_t                   uDeviceCount;
+    u32                   uDeviceCount;
     vector<VkPhysicalDevice>   vPhysicalDevices;
     VkPhysicalDevice           chosenPhysicalDevice = VK_NULL_HANDLE;
     VkPhysicalDeviceProperties deviceProperties;

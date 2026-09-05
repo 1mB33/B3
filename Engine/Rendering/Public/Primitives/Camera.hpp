@@ -1,9 +1,8 @@
-#ifndef B33_CAMERA_H
-#define B33_CAMERA_H
+#if !defined( B33_CAMERA_HPP )
+#    define B33_CAMERA_HPP
 
-#include "ExportImport.h"
-#include "Mat44.hpp"
-#include "Primitives/Object.hpp"
+#    include <B33Math.hpp>
+#    include "Primitives/Object.hpp"
 
 namespace B33::Rendering
 {
@@ -49,4 +48,4 @@ class Camera : public ::B33::Math::WorldObject
 };
 
 } // namespace B33::Rendering
-#endif // !B33_CAMERA_H
+#endif // !B33_CAMERA_HPP

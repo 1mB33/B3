@@ -1,15 +1,11 @@
-#include "B33Core.h"
-#include "B33Rendering.hpp"
+#include "B33Rendering.h"
 
-#include "2DSprites/SpritesPipeline.hpp"
-#include "Debug/Assert.hpp"
 #include "Raycaster/VoxelPipeline.hpp"
 #include "Vulkan/ErrorHandling.hpp"
 #include "Vulkan/Buffers/GPUStreamBuffer.hpp"
 #include "Vulkan/FrameResources.hpp"
 #include "Vulkan/Memory/MemoryUploadTracker.hpp"
 #include "Vulkan/Utility.hpp"
-#include "vulkan/vulkan_core.h"
 
 namespace B33::Rendering
 {
@@ -17,53 +13,23 @@ namespace B33::Rendering
 using namespace ::std;
 using namespace ::B33::Math;
 
-// ---------------------------------------------------------------------------------------------------------------------
-VoxelPipeline::~VoxelPipeline()
+// Construtors // -----------------------------------------------------------------------------------------------------
+VoxelPipeline::~VoxelPipeline() noexcept
 {
     if ( m_ShaderModule != VK_NULL_HANDLE )
     {
-        vkDestroyShaderModule( GetAdaterInternal()->GetAdapterHandle(), m_ShaderModule, NULL );
+        vkDestroyShaderModule( GetAdater()->GetAdapterHandle(), m_ShaderModule, NULL );
     }
 
     m_ShaderModule = VK_NULL_HANDLE;
 }
 
-// Public // -----------------------------------------------------------------------------------------------------------
-void VoxelPipeline::CreatePipelineResourcesImpl( ::std::shared_ptr<::B33::Rendering::CubeWorld> pWorld )
-{
-    m_uCurFrame  = 0;
-    m_pVoxelGrid = pWorld;
-
-    for ( uint32_t i = 0; i < Frame::MAX_FRAMES_IN_FLIGHT; ++i )
-    {
-        m_PerFrameResources.push_back( {
-            .pVoxelBuffer     = GetMemoryInternal()->ReserveGPUBuffer( pWorld->GetVoxelsSizeInBytes() ),
-            .pPositionsBuffer = GetMemoryInternal()->ReserveGPUBuffer(
-                pWorld->GetStoredObjects().GetPositions().capacity() * sizeof( Vec3 ) ),
-            .pRotationsBuffer = GetMemoryInternal()->ReserveGPUBuffer(
-                pWorld->GetStoredObjects().GetRotations().capacity() * sizeof( Vec3 ) ),
-            .pHalfSizesBuffer = GetMemoryInternal()->ReserveGPUBuffer(
-                ( /*FIXME: */ (Cubes &)pWorld->GetStoredObjects() ).GetHalfSizes().capacity() * sizeof( Vec3 ) ),
-            .pStageVoxelBuffer    = GetMemoryInternal()->ReserveStagingBuffer( pWorld->GetVoxelsSizeInBytes() ),
-            .pStagePositonsBuffer = GetMemoryInternal()->ReserveStagingBuffer(
-                pWorld->GetStoredObjects().GetPositions().capacity() * sizeof( Vec3 ) ),
-            .pStageRotationsBuffer = GetMemoryInternal()->ReserveStagingBuffer(
-                pWorld->GetStoredObjects().GetRotations().capacity() * sizeof( Vec3 ) ),
-            .pStageHalfSizesBuffer = GetMemoryInternal()->ReserveStagingBuffer(
-                ( /*FIXME: */ (Cubes &)pWorld->GetStoredObjects() ).GetHalfSizes().capacity() * sizeof( Vec3 ) ),
-            .uStorageBuffersFlags     = 0,
-            .uLastStorageBuffersFlags = 0,
-            .DescSet                  = CreateDescriptorSet(),
-        } );
-    }
-}
-
-// --------------------------------------------------------------------------------------------------------------------
+// Public // ----------------------------------------------------------------------------------------------------------
 void VoxelPipeline::Update()
 {
     const auto lastFrameIndex = m_uCurFrame;
     auto      &lastPerFrame   = m_PerFrameResources[ lastFrameIndex ];
-    m_uCurFrame               = ( m_uCurFrame + 1 ) % Frame::MAX_FRAMES_IN_FLIGHT;
+    m_uCurFrame               = ( m_uCurFrame + 1 ) % Frame::MaxFramesInFlight;
     auto &curPerFrame         = m_PerFrameResources[ m_uCurFrame ];
 
     curPerFrame.uStorageBuffersFlags = lastPerFrame.uStorageBuffersFlags & ~curPerFrame.uLastStorageBuffersFlags;
@@ -85,7 +51,7 @@ void VoxelPipeline::Update()
     B33_TRACE( L"Staging on GPU" );
     if ( curPerFrame.uStorageBuffersFlags )
     {
-        GetMemoryInternal()->UploadToStreamBufferDescSet(
+        GetMemory()->UploadToStreamBufferDescSet(
             m_pVoxelGrid->GetGrid().data(),
             m_pVoxelGrid->GetGrid().size() * sizeof( Voxel ),
             GetUniformUploadDescriptor( curPerFrame.pStageVoxelBuffer, VoxelPipeline::EShaderResource::VoxelGrid ) );
@@ -93,7 +59,7 @@ void VoxelPipeline::Update()
 
     if ( curPerFrame.uStorageBuffersFlags & EGridChanged::Position )
     {
-        GetMemoryInternal()->UploadToStreamBufferDescSet(
+        GetMemory()->UploadToStreamBufferDescSet(
             m_pVoxelGrid->GetStoredObjects().GetPositions().data(),
             m_pVoxelGrid->GetStoredObjects().GetPositions().size() * sizeof( Vec3 ),
             GetUniformUploadDescriptor( curPerFrame.pStagePositonsBuffer,
@@ -102,7 +68,7 @@ void VoxelPipeline::Update()
 
     if ( curPerFrame.uStorageBuffersFlags & EGridChanged::Rotation )
     {
-        GetMemoryInternal()->UploadToStreamBufferDescSet(
+        GetMemory()->UploadToStreamBufferDescSet(
             m_pVoxelGrid->GetStoredObjects().GetRotations().data(),
             m_pVoxelGrid->GetStoredObjects().GetRotations().size() * sizeof( Vec3 ),
             GetUniformUploadDescriptor( curPerFrame.pStageRotationsBuffer,
@@ -111,7 +77,7 @@ void VoxelPipeline::Update()
 
     if ( curPerFrame.uStorageBuffersFlags & EGridChanged::HalfSize )
     {
-        GetMemoryInternal()->UploadToStreamBufferDescSet(
+        GetMemory()->UploadToStreamBufferDescSet(
             ( static_cast<const Cubes &>( m_pVoxelGrid->GetStoredObjects() ) ).GetHalfSizes().data(),
             ( static_cast<const Cubes &>( m_pVoxelGrid->GetStoredObjects() ) ).GetHalfSizes().size() * sizeof( Vec3 ),
             GetUniformUploadDescriptor( curPerFrame.pStageHalfSizesBuffer,
@@ -124,7 +90,7 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                                     VkPipelineStageFlagBits lastStage,
                                     VkImageLayout           lastLayout )
 {
-    auto  swapChain   = GetSwapChainInternal();
+    auto  swapChain   = GetSwapChain();
     auto  image       = swapChain->GetCurrentImage();
     auto  imageView   = swapChain->GetCurrentImageView();
     auto &curPerFrame = m_PerFrameResources[ m_uCurFrame ];
@@ -306,8 +272,8 @@ void VoxelPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                               NULL );
     }
 
-    const uint32_t groupCountX = ( swapChain->GetExtent().width + 31 ) >> 5;
-    const uint32_t groupCountY = ( swapChain->GetExtent().height + 7 ) >> 3;
+    const u32 groupCountX = ( swapChain->GetExtent().width + 31 ) >> 5;
+    const u32 groupCountY = ( swapChain->GetExtent().height + 7 ) >> 3;
     vkCmdDispatch( cmdBuffer, groupCountX, groupCountY, 1 );
 
     VkImageMemoryBarrier presentBarrier = {};
@@ -358,9 +324,9 @@ void VoxelPipeline::Reset()
     m_pVoxelGrid->ForceUpload();
 }
 
-// --------------------------------------------------------------------------------------------------------------------
-UploadDescriptor VoxelPipeline::GetUniformUploadDescriptor( const shared_ptr<GPUStreamBuffer> &outBuffer,
-                                                            const EShaderResource             &sr )
+// Private // ---------------------------------------------------------------------------------------------------------
+UploadDescriptor VoxelPipeline::GetUniformUploadDescriptor( const SharedPtr<GPUStreamBuffer> &outBuffer,
+                                                            const EShaderResource            &sr )
 {
     VkDescriptorBufferInfo bufferInfo = {
         .buffer = outBuffer->GetBufferHandle(),
@@ -371,7 +337,7 @@ UploadDescriptor VoxelPipeline::GetUniformUploadDescriptor( const shared_ptr<GPU
     VkWriteDescriptorSet write = {};
     write.sType                = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     write.dstSet               = m_PerFrameResources[ m_uCurFrame ].DescSet;
-    write.dstBinding           = static_cast<uint32_t>( sr );
+    write.dstBinding           = static_cast<u32>( sr );
     write.descriptorCount      = 1;
     write.descriptorType       = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     write.pBufferInfo          = &bufferInfo;
@@ -395,10 +361,10 @@ void VoxelPipeline::LoadImage( VkImageView image )
     imageWrite.descriptorType       = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
     imageWrite.pImageInfo           = &imageInfo;
 
-    vkUpdateDescriptorSets( GetAdaterInternal()->GetAdapterHandle(), 1, &imageWrite, 0, NULL );
+    vkUpdateDescriptorSets( GetAdater()->GetAdapterHandle(), 1, &imageWrite, 0, NULL );
 }
 
-// Private // ----------------------------------------------------------------------------------------------------------
+// Impl // ------------------------------------------------------------------------------------------------------------
 VkDescriptorSetLayout VoxelPipeline::CreateDescriptorLayoutImpl()
 {
     array<VkDescriptorSetLayoutBinding, 5> bindings = {};
@@ -449,37 +415,64 @@ VkDescriptorSetLayout VoxelPipeline::CreateDescriptorLayoutImpl()
     VkDescriptorSetLayoutCreateInfo layoutCreateInfo = {};
     layoutCreateInfo.pNext                           = &bindingCreateInfo;
     layoutCreateInfo.sType                           = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutCreateInfo.bindingCount                    = static_cast<uint32_t>( bindings.size() );
+    layoutCreateInfo.bindingCount                    = static_cast<u32>( bindings.size() );
     layoutCreateInfo.pBindings                       = &bindings[ 0 ];
     layoutCreateInfo.flags                           = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
 
-    THROW_IF_FAILED( vkCreateDescriptorSetLayout( GetAdaterInternal()->GetAdapterHandle(),
-                                                  &layoutCreateInfo,
-                                                  NULL,
-                                                  &descriptorSetLayout ) );
+    THROW_IF_FAILED(
+        vkCreateDescriptorSetLayout( GetAdater()->GetAdapterHandle(), &layoutCreateInfo, NULL, &descriptorSetLayout ) );
 
     return descriptorSetLayout;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+void VoxelPipeline::CreatePipelineResourcesImpl( SharedPtr<CubeWorld> pWorld )
+{
+    m_uCurFrame  = 0;
+    m_pVoxelGrid = pWorld;
+
+    for ( u32 i = 0; i < Frame::MaxFramesInFlight; ++i )
+    {
+        m_PerFrameResources.push_back( {
+            .pVoxelBuffer = GetMemory()->ReserveGPUBuffer( pWorld->GetVoxelsSizeInBytes() ),
+            .pPositionsBuffer =
+                GetMemory()->ReserveGPUBuffer( pWorld->GetStoredObjects().GetPositions().capacity() * sizeof( Vec3 ) ),
+            .pRotationsBuffer =
+                GetMemory()->ReserveGPUBuffer( pWorld->GetStoredObjects().GetRotations().capacity() * sizeof( Vec3 ) ),
+            .pHalfSizesBuffer = GetMemory()->ReserveGPUBuffer(
+                ( /*FIXME: */ (Cubes &)pWorld->GetStoredObjects() ).GetHalfSizes().capacity() * sizeof( Vec3 ) ),
+            .pStageVoxelBuffer    = GetMemory()->ReserveStagingBuffer( pWorld->GetVoxelsSizeInBytes() ),
+            .pStagePositonsBuffer = GetMemory()->ReserveStagingBuffer(
+                pWorld->GetStoredObjects().GetPositions().capacity() * sizeof( Vec3 ) ),
+            .pStageRotationsBuffer = GetMemory()->ReserveStagingBuffer(
+                pWorld->GetStoredObjects().GetRotations().capacity() * sizeof( Vec3 ) ),
+            .pStageHalfSizesBuffer = GetMemory()->ReserveStagingBuffer(
+                ( /*FIXME: */ (Cubes &)pWorld->GetStoredObjects() ).GetHalfSizes().capacity() * sizeof( Vec3 ) ),
+            .uStorageBuffersFlags     = 0,
+            .uLastStorageBuffersFlags = 0,
+            .DescSet                  = CreateDescriptorSet(),
+        } );
+    }
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
 VkDescriptorPool VoxelPipeline::CreateDescriptorPoolImpl()
 {
     const vector<VkDescriptorPoolSize> poolSizes = {
-        { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, Frame::MAX_FRAMES_IN_FLIGHT * 1 },
-        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, Frame::MAX_FRAMES_IN_FLIGHT * 4 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, Frame::MaxFramesInFlight * 1 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, Frame::MaxFramesInFlight * 4 },
     };
 
     VkDescriptorPool descriptorPool;
 
     VkDescriptorPoolCreateInfo poolInfo = {};
     poolInfo.sType                      = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    poolInfo.maxSets                    = Frame::MAX_FRAMES_IN_FLIGHT;
-    poolInfo.poolSizeCount              = static_cast<uint32_t>( poolSizes.size() );
+    poolInfo.maxSets                    = Frame::MaxFramesInFlight;
+    poolInfo.poolSizeCount              = static_cast<u32>( poolSizes.size() );
     poolInfo.pPoolSizes                 = &poolSizes[ 0 ];
     poolInfo.flags                      = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
 
-    THROW_IF_FAILED(
-        vkCreateDescriptorPool( GetAdaterInternal()->GetAdapterHandle(), &poolInfo, NULL, &descriptorPool ) );
+    THROW_IF_FAILED( vkCreateDescriptorPool( GetAdater()->GetAdapterHandle(), &poolInfo, NULL, &descriptorPool ) );
 
     return descriptorPool;
 }
@@ -487,16 +480,16 @@ VkDescriptorPool VoxelPipeline::CreateDescriptorPoolImpl()
 // ---------------------------------------------------------------------------------------------------------------------
 VkDescriptorSet VoxelPipeline::CreateDescriptorSet()
 {
-    VkDescriptorSetLayout descLayout = GetDescriptorLayoutInternal();
+    VkDescriptorSetLayout descLayout = GetDescriptorLayout();
     VkDescriptorSet       descriptorSet;
 
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType                       = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool              = GetDescriptorPoolInternal();
+    allocInfo.descriptorPool              = GetDescriptorPool();
     allocInfo.descriptorSetCount          = 1;
     allocInfo.pSetLayouts                 = &descLayout;
 
-    THROW_IF_FAILED( vkAllocateDescriptorSets( GetAdaterInternal()->GetAdapterHandle(), &allocInfo, &descriptorSet ) );
+    THROW_IF_FAILED( vkAllocateDescriptorSets( GetAdater()->GetAdapterHandle(), &allocInfo, &descriptorSet ) );
 
     return descriptorSet;
 }
@@ -505,7 +498,7 @@ VkDescriptorSet VoxelPipeline::CreateDescriptorSet()
 VkPipelineLayout VoxelPipeline::CreatePipelineLayoutImpl()
 {
     VkPipelineLayout      pipelineLayout;
-    VkDescriptorSetLayout descLayout = GetDescriptorLayoutInternal();
+    VkDescriptorSetLayout descLayout = GetDescriptorLayout();
 
     VkPushConstantRange pushConstantRange = {
         .stageFlags = VK_SHADER_STAGE_COMPUTE_BIT,
@@ -523,8 +516,7 @@ VkPipelineLayout VoxelPipeline::CreatePipelineLayoutImpl()
         .pPushConstantRanges    = &pushConstantRange,
     };
 
-    THROW_IF_FAILED(
-        vkCreatePipelineLayout( GetAdaterInternal()->GetAdapterHandle(), &layoutInfo, NULL, &pipelineLayout ) );
+    THROW_IF_FAILED( vkCreatePipelineLayout( GetAdater()->GetAdapterHandle(), &layoutInfo, NULL, &pipelineLayout ) );
 
     return pipelineLayout;
 }
@@ -532,11 +524,11 @@ VkPipelineLayout VoxelPipeline::CreatePipelineLayoutImpl()
 // ---------------------------------------------------------------------------------------------------------------------
 VkPipeline VoxelPipeline::CreatePipelineImpl()
 {
-    const VkDevice device   = GetAdaterInternal()->GetAdapterHandle();
+    const VkDevice device   = GetAdater()->GetAdapterHandle();
     VkPipeline     pipeline = VK_NULL_HANDLE;
     m_ShaderModule =
         Shaders::LoadShader( ::B33::App::AppResources::Get().GetExecutablePathA() + "/../Assets/Shaders/Raycast.spv",
-                             GetAdaterInternal().get() );
+                             GetAdater().get() );
 
     VkPipelineShaderStageCreateInfo shaderStage = {};
     shaderStage.sType                           = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

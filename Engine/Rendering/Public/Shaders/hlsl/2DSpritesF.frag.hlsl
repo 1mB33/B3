@@ -1,10 +1,18 @@
+[[vk::binding(2, 0)]]
+Texture2D uTexture : register(t2, space0);
+
+[[vk::binding(3, 0)]]
+SamplerState uSampler : register(s3, space0);
+
 struct PSInput
 {
-    float4 Color : COLOR0;
+    float4 Position : SV_Position;
+    float2 UV       : TEXCOORD0;
+    float4 Color    : COLOR0;
 };
 
-float4 main( PSInput input ) : SV_Target0
+float4 main( PSInput input ) : SV_Target
 {
-    return input.Color;
+    float4 texColor = uTexture.Sample( uSampler, input.UV );
+    return texColor * input.Color;
 }
-

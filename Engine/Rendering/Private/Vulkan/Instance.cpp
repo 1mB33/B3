@@ -1,4 +1,4 @@
-#include "B33Rendering.hpp"
+#include "B33Rendering.h"
 
 #include "Vulkan/Instance.hpp"
 
@@ -15,7 +15,7 @@ Instance::Instance()
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-Instance::~Instance()
+Instance::~Instance() noexcept
 {
     if ( m_Instance != VK_NULL_HANDLE )
     {
@@ -86,7 +86,7 @@ VkInstance Instance::CreateInstance()
     VkValidationFeaturesEXT validationFeatures       = {};
     validationFeatures.sType                         = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
     validationFeatures.pNext                         = &debugCreateInfo;
-    validationFeatures.enabledValidationFeatureCount = static_cast<uint32_t>( enabledVaditationFeatures.size() );
+    validationFeatures.enabledValidationFeatureCount = static_cast<u32>( enabledVaditationFeatures.size() );
     validationFeatures.pEnabledValidationFeatures    = &enabledVaditationFeatures[ 0 ];
 
 #endif // !_B33_DEBUG
@@ -131,9 +131,9 @@ VkInstance Instance::CreateInstance()
         NULL,
 #endif
     createInfo.pApplicationInfo        = &appInfo;
-    createInfo.enabledLayerCount       = static_cast<uint32_t>( vpszValidationLayers.size() );
+    createInfo.enabledLayerCount       = static_cast<u32>( vpszValidationLayers.size() );
     createInfo.ppEnabledLayerNames     = !vpszValidationLayers.empty() ? &vpszValidationLayers[ 0 ] : nullptr;
-    createInfo.enabledExtensionCount   = static_cast<uint32_t>( vpszExtensions.size() );
+    createInfo.enabledExtensionCount   = static_cast<u32>( vpszExtensions.size() );
     createInfo.ppEnabledExtensionNames = !vpszExtensions.empty() ? &vpszExtensions[ 0 ] : nullptr;
 
     result = vkCreateInstance( &createInfo, NULL, &instance );

@@ -1,21 +1,23 @@
-#ifndef B33_WRAPPER_HARDWARE_H
-#define B33_WRAPPER_HARDWARE_H
+#if !defined( B33_WRAPPER_HARDWARE_HPP )
+#    define B33_WRAPPER_HARDWARE_HPP
 
-#include "Vulkan/Instance.hpp"
-#include <memory>
+#    include "Vulkan/Instance.hpp"
 
 namespace B33::Rendering
 {
 
 class HardwareWrapper
 {
+    template <typename T>
+    using SharedPtr = ::std::shared_ptr<T>;
+
   public:
     HardwareWrapper()
       : m_PhysicalDevice( nullptr )
     {
     }
 
-    ~HardwareWrapper()
+    ~HardwareWrapper() noexcept
     {
         B33_LOG( Core::Debug::Info, L"Destroying hardware" );
     }
@@ -37,7 +39,7 @@ class HardwareWrapper
     // Methods // -----------------------------------------------------------------------------------------------------
   public:
     template <class T>
-    void Initialize( ::std::shared_ptr<const ::B33::Rendering::Instance> pInstance, const T &hardware )
+    void Initialize( SharedPtr<const Instance> pInstance, const T &hardware )
     {
         B33_LOG( Core::Debug::Info, L"Initializing hardware" );
         m_pInstance = pInstance;
@@ -47,11 +49,10 @@ class HardwareWrapper
 
     // Internal // ----------------------------------------------------------------------------------------------------
   private:
-    ::std::shared_ptr<const ::B33::Rendering::Instance> m_pInstance = nullptr;
+    SharedPtr<const Instance> m_pInstance = nullptr;
 
     VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
 };
 
 } // namespace B33::Rendering
-
-#endif // !B33_WRAPPER_HARDWARE_H
+#endif // !B33_WRAPPER_HARDWARE_HPP

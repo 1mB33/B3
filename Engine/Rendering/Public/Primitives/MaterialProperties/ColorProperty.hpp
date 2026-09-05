@@ -1,5 +1,5 @@
-#ifndef B33_COLOR_PROPERTY_H
-#define B33_COLOR_PROPERTY_H
+#if !defined( B33_COLOR_PROPERTY_HPP )
+#    define B33_COLOR_PROPERTY_HPP
 
 namespace B33::Rendering
 {
@@ -7,6 +7,9 @@ namespace B33::Rendering
 // FIXME: Some compilers add one byte in the empty IMaterialProperties class
 class alignas( 8 ) ColorProperty // : public IMaterialProperties
 {
+    template <typename T>
+    using Vector = ::std::vector<T>;
+
   public:
     ColorProperty()
       : m_uColors( {} )
@@ -14,24 +17,24 @@ class alignas( 8 ) ColorProperty // : public IMaterialProperties
     }
 
   public:
-    void SetColor( ::uint32_t uColor, ::size_t uIndex )
+    void SetColor( u32 uColor, usize uIndex )
     {
         m_uColors[ uIndex ] = ( uColor & 0xFFFFFF00 ) | ( m_uColors[ uIndex ] & 0x000000FF );
     }
 
-    void SetAlpha( ::uint32_t uAlpha, ::size_t uIndex )
+    void SetAlpha( u32 uAlpha, usize uIndex )
     {
         m_uColors[ uIndex ] = ( uAlpha & 0x000000FF ) | ( m_uColors[ uIndex ] & 0xFFFFFF00 );
     }
 
-    void SetColorAndAlpha( ::uint32_t uHexValue, ::size_t uIndex )
+    void SetColorAndAlpha( u32 uHexValue, usize uIndex )
     {
         m_uColors[ uIndex ] = uHexValue;
     }
 
   private:
-    ::std::vector<::uint32_t> m_uColors;
+    Vector<u32> m_uColors;
 };
 
 } // namespace B33::Rendering
-#endif // !B33_COLOR_PROPERTY_H
+#endif // !B33_COLOR_PROPERTY_HPP

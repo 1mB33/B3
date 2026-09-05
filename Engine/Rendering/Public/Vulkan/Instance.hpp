@@ -1,7 +1,7 @@
-#ifndef B33_INSTANCE_H
-#define B33_INSTANCE_H
+#if !defined( B33_INSTANCE_HPP )
+#    define B33_INSTANCE_HPP
 
-#include "B33Rendering.hpp"
+#    include "B33Rendering.h"
 
 namespace B33::Rendering
 {
@@ -11,7 +11,7 @@ class Instance
   public:
     __B33_API Instance();
 
-    __B33_API ~Instance();
+    __B33_API ~Instance() noexcept;
 
   public:
     Instance( const Instance & ) noexcept            = delete;
@@ -33,10 +33,10 @@ class Instance
 
   private:
     ::VkInstance m_Instance = VK_NULL_HANDLE;
-#ifdef _B33_DEBUG
+#    ifdef _B33_DEBUG
     VkDebugUtilsMessengerEXT m_DebugExt = VK_NULL_HANDLE;
-#endif
+#    endif
 };
 
 } // namespace B33::Rendering
-#endif // !B33_INSTANCE_H
+#endif // !B33_INSTANCE_HPP

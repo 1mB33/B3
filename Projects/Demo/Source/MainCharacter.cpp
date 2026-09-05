@@ -1,5 +1,6 @@
 #include "MainCharacter.hpp"
 #include "MyGame.hpp"
+#include <B33Math.hpp>
 
 void PaperCharacter::Initialize()
 {

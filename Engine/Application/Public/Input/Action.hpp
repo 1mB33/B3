@@ -1,19 +1,16 @@
-#ifndef B33_ACTION_HPP
-#define B33_ACTION_HPP
+#if !defined( B33_ACTION_HPP )
+#    define B33_ACTION_HPP
 
-#include "B33Core.h"
-
-#include "Bind.h"
-#include "Input/UserInput.hpp"
+#    include "Bind.h"
 
 namespace B33::App
 {
 
 struct Action
 {
-    EAbBindType   Type;
-    AbAction      ButtonAction;
-    AbMouseAction MouseAction;
+    EB33BindType   Type;
+    B33Action      ButtonAction;
+    B33MouseAction MouseAction;
 };
 
 class ActionFactory
@@ -23,12 +20,12 @@ class ActionFactory
     static Action CreateKeyboardAction()
     {
         return {
-            .Type = EAbBindType::Keyboard,
+            .Type = EB33BindType::Keyboard,
             .ButtonAction =
                 +[]( const float fDelta, void *pThis )
                 {
                     ( static_cast<CLASS *>( pThis )->GetObject().Get().*ACTION )( fDelta, ARGS... );
-                    return ::AbActionType();
+                    return B33ActionType();
                 },
             .MouseAction = nullptr,
         };
@@ -38,13 +35,13 @@ class ActionFactory
     static Action CreateMouseAction()
     {
         return {
-            .Type         = EAbBindType::Mouse,
+            .Type         = EB33BindType::Mouse,
             .ButtonAction = nullptr,
             .MouseAction =
                 +[]( const float fDelta, void *pThis, int32_t fX, int32_t fY )
                 {
                     ( static_cast<CLASS *>( pThis )->GetObject().Get().*ACTION )( fDelta, fX, fY, ARGS... );
-                    return ::AbActionType();
+                    return B33ActionType();
                 },
         };
     }

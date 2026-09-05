@@ -1,4 +1,3 @@
-#include "B33Core.h"
 #include "B33System.hpp"
 #include "Events/EventHandle.hpp"
 
@@ -16,7 +15,7 @@ EventHandle::EventHandle( const EventHandle::SharedDispacherInstance pInstance,
 {
 }
 
-EventHandle::~EventHandle()
+EventHandle::~EventHandle() noexcept
 {
     if ( auto pLock = m_pInstance.lock() )
     {

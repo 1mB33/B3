@@ -1,18 +1,18 @@
-#ifndef B33_BIND_MAP_H
-#define B33_BIND_MAP_H
+#if !defined( B33_BIND_MAP_H )
+#    define B33_BIND_MAP_H
 
-#include "Input/Bind.h"
+#    include "Input/Bind.h"
 
 namespace B33::App
 {
 
-template <class Map>
+template <class MAP>
 class IBindMap
 {
   public:
-    IBindMap() = default;
+    IBindMap() noexcept = default;
 
-    ~IBindMap() = default;
+    ~IBindMap() noexcept = default;
 
   public:
     IBindMap( const IBindMap & ) noexcept            = default;
@@ -22,14 +22,14 @@ class IBindMap
     IBindMap &operator=( IBindMap && ) noexcept = default;
 
   public:
-    void BindAction( const AbInputBind &ib, void *pThis, AbAction a, AbMouseAction ma )
+    void BindAction( const B33InputBind &ib, void *pThis, B33Action a, B33MouseAction ma )
     {
-        static_cast<Map *>( this )->BindActionImpl( ib, pThis, a, ma );
+        static_cast<MAP *>( this )->BindActionImpl( ib, pThis, a, ma );
     }
 
-    void UnbindAction( const AbInputBind &ib, void *pThis )
+    void UnbindAction( const B33InputBind &ib, void *pThis )
     {
-        static_cast<Map *>( this )->UnbindActionImpl( ib, pThis );
+        static_cast<MAP *>( this )->UnbindActionImpl( ib, pThis );
     }
 };
 

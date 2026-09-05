@@ -1,7 +1,7 @@
-#ifndef B33_LOGGER_H
-#define B33_LOGGER_H
+#if !defined( B33_LOGGER_HPP )
+#    define B33_LOGGER_HPP
 
-#include <string>
+#    include "B33CoreMinimal.h"
 
 namespace B33::Core::Debug
 {
@@ -18,6 +18,16 @@ class Logger
 {
     using Clock          = ::std::chrono::system_clock;
     using ClockTimePoint = ::std::chrono::time_point<Clock>;
+    using String         = ::std::string;
+    using WString        = ::std::wstring;
+    using ABool          = ::std::atomic_bool;
+    using Thread         = ::std::thread;
+    using Mutex          = ::std::mutex;
+    using ConditionVar   = ::std::condition_variable;
+    template <typename T>
+    using Queue = ::std::queue<T>;
+    template <typename T, typename U>
+    using UMap = ::std::unordered_map<T, U>;
 
     struct LogStruct
     {
@@ -28,7 +38,7 @@ class Logger
         wchar_t       *pwszMessage;
     };
 
-    const ::uint32_t MAX_TRACE_MESSAGES = 15;
+    constexpr static inline u32 MaxTraceMessages = 15;
 
     __B33_API Logger();
 
@@ -39,7 +49,7 @@ class Logger
     Logger &operator=( Logger && )      = delete;
 
   public:
-    __B33_API static Logger &Get();
+    __B33_API static Logger &Get() noexcept;
 
     __B33_API ~Logger();
 
@@ -51,7 +61,7 @@ class Logger
      * @param pwszFmt Format for the message or message itself, written with `vswprintf` standard
      * @param ... Variables to be used in the format
      */
-    __B33_API void Log( const ESeverity sev, const wchar_t wszFmt[], ... );
+    __B33_API void Log( const ESeverity sev, const wchar_t wszFmt[], ... ) noexcept;
 
     /**
      * @brief Logs message to the file.
@@ -61,38 +71,38 @@ class Logger
      * @param pwszFmt Format for the message or message itself, written with `vswprintf` standard
      * @param ... Variables to be used in the format
      */
-    __B33_API void Log( const char szFile[], const ESeverity sev, const wchar_t wszFmt[], ... );
+    __B33_API void Log( const char szFile[], const ESeverity sev, const wchar_t wszFmt[], ... ) noexcept;
 
     __B33_API void Flush();
 
   private:
-    ::std::string CreateDatePreFix() const;
+    String CreateDatePreFix() const;
 
     const wchar_t *GetTag( const ESeverity sev ) const;
 
     const char *GetFileName( const char *szFile ) const;
 
-    const ::std::wstring Stringify( const LogStruct &ls ) const;
+    const WString Stringify( const LogStruct &ls ) const;
 
-    const ::std::wstring StringifyAndColorize( const LogStruct &ls ) const;
+    const WString StringifyAndColorize( const LogStruct &ls ) const;
 
     void WriteLoop();
 
-    ::std::wstring ColorizeWithSeverity( const ::std::wstring &wstrText, ESeverity sev ) const;
+    WString ColorizeWithSeverity( const WString &wstrText, ESeverity sev ) const;
 
   private:
-    ::std::mutex m_InstanceLock;
+    Mutex m_InstanceLock;
 
-    ::std::queue<LogStruct> m_MessageQueue;
-    ::std::string           m_strTargetPath;
-    ::std::string           m_strLogName;
+    Queue<LogStruct> m_MessageQueue;
+    String           m_strTargetPath;
+    String           m_strLogName;
 
-    ::std::atomic_bool        m_aIsWriteThreadWorking;
-    ::std::thread             m_tWriteThreadHandle;
-    ::std::condition_variable m_FlushCondition;
+    ABool        m_aIsWriteThreadWorking;
+    Thread       m_tWriteThreadHandle;
+    ConditionVar m_FlushCondition;
 
-    ::std::unordered_map<::std::wstring, ::uint32_t> m_Messages;
+    UMap<WString, u32> m_Messages;
 };
 
 } // namespace B33::Core::Debug
-#endif // !B33_LOGGER_H
+#endif // !B33_LOGGER_HPP

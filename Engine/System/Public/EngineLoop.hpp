@@ -1,11 +1,11 @@
-#ifndef B33_ENGINE_LOOP_H
-#define B33_ENGINE_LOOP_H
+#if !defined( B33_ENGINE_LOOP_H )
+#    define B33_ENGINE_LOOP_H
 
-#include "B33System.hpp"
-#include "IComponent.hpp"
-#include "ComponentsOrder.hpp"
-#include "ComponentBridge.hpp"
-#include "Synchronization/JobSystem.hpp"
+#    include <B33Core.h>
+#    include "IComponent.hpp"
+#    include "ComponentsOrder.hpp"
+#    include "ComponentBridge.hpp"
+#    include "Synchronization/JobSystem.hpp"
 
 namespace B33::System
 {
@@ -15,7 +15,11 @@ class EngineLoop
     friend class ComponentInstanceRegister;
     friend struct ComponentOrderRegister;
 
-    using ComponentsMap = ::std::map<::B33::System::EComponentType, ::std::vector<class ComponentAbstractBase *>>;
+    using StringView = ::std::string_view;
+    template <typename T>
+    using Vector             = ::std::vector<T>;
+    using ComponentsRegistry = ::std::unordered_map<::std::string_view, ComponentFactory>;
+    using ComponentsMap      = ::std::map<::B33::System::EComponentType, ::std::vector<class ComponentAbstractBase *>>;
 
   public:
     EngineLoop()
@@ -26,7 +30,7 @@ class EngineLoop
     {
     }
 
-    ~EngineLoop() = default;
+    ~EngineLoop() noexcept = default;
 
     EngineLoop( EngineLoop && )      = delete;
     EngineLoop( const EngineLoop & ) = delete;
@@ -58,16 +62,16 @@ class EngineLoop
     __B33_API void DestroyComponents();
 
   private:
-    __B33_API void AddComponentInternal( ::std::string_view componentName );
+    __B33_API void AddComponentInternal( StringView componentName );
 
   private:
-    static inline ::std::unordered_map<::std::string_view, ComponentFactory> m_ComponentRegistry      = {};
-    static inline ::std::vector<::std::string_view>                          m_ComponentOrderRegistry = {};
+    static inline ComponentsRegistry m_ComponentRegistry      = {};
+    static inline Vector<StringView> m_ComponentOrderRegistry = {};
 
     ComponentsMap   m_Components      = {};
     ComponentBridge m_ComponentBridge = {};
 
-    ::B33::Core::JobSystem m_JobSystem = {};
+    Core::JobSystem m_JobSystem = {};
 
 
     bool m_bInitialized = false;

@@ -1,4 +1,6 @@
 #include "MyGame.hpp"
+#include <B33Math.hpp>
+#include "Input/MouseButtonList.hpp"
 #include "Input/Bind.h"
 #include "Input/KeyList.hpp"
 #include "MainWindow.hpp"
@@ -21,74 +23,75 @@ void MyGame::Initialize( ::B33::System::ComponentBridge &bridge )
             lockedInput,
             {
                 { PaperController::UseActionMoveFront,
-                  AbInputBind { .Type     = Keyboard,
-                                .Keyboard = AbKeyboardBind { .KeyState = EAbOnState::Continuous,
-                                                             .KeyCode  = B33::App::B33_KEY_W } } },
+                  B33InputBind { .Type     = Keyboard,
+                                 .Keyboard = B33KeyboardBind { .KeyState = EB33OnState::Continuous,
+                                                              .KeyCode  = B33::App::B33_KEY_W } } },
                 { PaperController::UseActionMoveLeft,
-                  AbInputBind { .Type     = Keyboard,
-                                .Keyboard = AbKeyboardBind { .KeyState = EAbOnState::Continuous,
-                                                             .KeyCode  = B33::App::B33_KEY_A } } },
+                  B33InputBind { .Type     = Keyboard,
+                                 .Keyboard = B33KeyboardBind { .KeyState = EB33OnState::Continuous,
+                                                              .KeyCode  = B33::App::B33_KEY_A } } },
                 { PaperController::UseActionMoveRigth,
-                  AbInputBind { .Type     = Keyboard,
-                                .Keyboard = AbKeyboardBind { .KeyState = EAbOnState::Continuous,
-                                                             .KeyCode  = B33::App::B33_KEY_D } } },
+                  B33InputBind { .Type     = Keyboard,
+                                 .Keyboard = B33KeyboardBind { .KeyState = EB33OnState::Continuous,
+                                                              .KeyCode  = B33::App::B33_KEY_D } } },
                 { PaperController::UseActionMoveBack,
-                  AbInputBind { .Type     = Keyboard,
-                                .Keyboard = AbKeyboardBind { .KeyState = EAbOnState::Continuous,
-                                                             .KeyCode  = B33::App::B33_KEY_S } } },
+                  B33InputBind { .Type     = Keyboard,
+                                 .Keyboard = B33KeyboardBind { .KeyState = EB33OnState::Continuous,
+                                                              .KeyCode  = B33::App::B33_KEY_S } } },
                 { PaperController::UseActionMoveDown,
-                  AbInputBind { .Type     = Keyboard,
-                                .Keyboard = AbKeyboardBind { .KeyState = EAbOnState::Continuous,
-                                                             .KeyCode  = B33::App::B33_KEY_Q } } },
+                  B33InputBind { .Type     = Keyboard,
+                                 .Keyboard = B33KeyboardBind { .KeyState = EB33OnState::Continuous,
+                                                              .KeyCode  = B33::App::B33_KEY_Q } } },
                 { PaperController::UseActionMoveUp,
-                  AbInputBind { .Type     = Keyboard,
-                                .Keyboard = AbKeyboardBind { .KeyState = EAbOnState::Continuous,
-                                                             .KeyCode  = B33::App::B33_KEY_E } } },
+                  B33InputBind { .Type     = Keyboard,
+                                 .Keyboard = B33KeyboardBind { .KeyState = EB33OnState::Continuous,
+                                                              .KeyCode  = B33::App::B33_KEY_E } } },
                 { PaperController::UseActionWalk,
-                  AbInputBind { .Type     = Keyboard,
-                                .Keyboard = AbKeyboardBind { .KeyState = EAbOnState::Release,
-                                                             .KeyCode  = B33::App::B33_KEY_LEFTSHIFT } } },
+                  B33InputBind { .Type     = Keyboard,
+                                 .Keyboard = B33KeyboardBind { .KeyState = EB33OnState::Release,
+                                                              .KeyCode  = B33::App::B33_KEY_LEFTSHIFT } } },
                 { PaperController::UseActionSprint,
-                  AbInputBind { .Type     = Keyboard,
-                                .Keyboard = AbKeyboardBind { .KeyState = EAbOnState::Continuous,
-                                                             .KeyCode  = B33::App::B33_KEY_LEFTSHIFT } } },
+                  B33InputBind { .Type     = Keyboard,
+                                 .Keyboard = B33KeyboardBind { .KeyState = EB33OnState::Continuous,
+                                                              .KeyCode  = B33::App::B33_KEY_LEFTSHIFT } } },
                 { PaperController::UseActionPushLowForce,
-                  AbInputBind {
+                  B33InputBind {
                       .Type     = Keyboard,
-                      .Keyboard = AbKeyboardBind { .KeyState = EAbOnState::Press, .KeyCode = B33::App::B33_KEY_1 } } },
+                      .Keyboard = B33KeyboardBind { .KeyState = EB33OnState::Press, .KeyCode = B33::App::B33_KEY_1 } } },
                 { PaperController::UseActionPushMediumForce,
-                  AbInputBind {
+                  B33InputBind {
                       .Type     = Keyboard,
-                      .Keyboard = AbKeyboardBind { .KeyState = EAbOnState::Press, .KeyCode = B33::App::B33_KEY_2 } } },
+                      .Keyboard = B33KeyboardBind { .KeyState = EB33OnState::Press, .KeyCode = B33::App::B33_KEY_2 } } },
                 { PaperController::UseActionPushHighForce,
-                  AbInputBind {
+                  B33InputBind {
                       .Type     = Keyboard,
-                      .Keyboard = AbKeyboardBind { .KeyState = EAbOnState::Press, .KeyCode = B33::App::B33_KEY_3 } } },
-                { PaperController::UseActionMouse, AbInputBind { .Type = Mouse } },
+                      .Keyboard = B33KeyboardBind { .KeyState = EB33OnState::Press, .KeyCode = B33::App::B33_KEY_3 } } },
+                { PaperController::UseActionMouse, B33InputBind { .Type = Mouse } },
                 { PaperController::UseActionPlaceBlock,
-                  AbInputBind { .Type     = Keyboard,
-                                .Keyboard = AbKeyboardBind { .KeyState = EAbOnState::Press,
-                                                             .KeyCode  = B33::App::B33_KEY_SPACE } } },
+                  B33InputBind { .Type     = Keyboard,
+                                 .Keyboard = B33KeyboardBind { .KeyState = EB33OnState::Press,
+                                                              .KeyCode  = B33::App::B33_KEY_SPACE } } },
                 { PaperController::UseActionPlaceBlock,
-                  AbInputBind { .Type        = MouseButton,
-                                .MouseButton = AbMouseButtonBind { .ButtonState = EAbOnState::Press,
-                                                                   .ButtonCode  = B33::App::B33_LEFT_MOUSE_BUTTON } } },
+                  B33InputBind { .Type        = MouseButton,
+                                 .MouseButton = B33MouseButtonBind { .ButtonState = EB33OnState::Press,
+                                                                    .ButtonCode = B33::App::B33_LEFT_MOUSE_BUTTON } } },
                 { PaperController::UseActionRemoveBlock,
-                  AbInputBind { .Type        = MouseButton,
-                                .MouseButton = AbMouseButtonBind { .ButtonState = EAbOnState::Press,
-                                                                   .ButtonCode = B33::App::B33_RIGTH_MOUSE_BUTTON } } },
+                  B33InputBind { .Type = MouseButton,
+                                 .MouseButton =
+                                     B33MouseButtonBind { .ButtonState = EB33OnState::Press,
+                                                         .ButtonCode  = B33::App::B33_RIGTH_MOUSE_BUTTON } } },
                 { PaperController::UseActionRemoveBlock,
-                  AbInputBind {
+                  B33InputBind {
                       .Type     = Keyboard,
-                      .Keyboard = AbKeyboardBind { .KeyState = EAbOnState::Press, .KeyCode = B33::App::B33_KEY_X } } },
+                      .Keyboard = B33KeyboardBind { .KeyState = EB33OnState::Press, .KeyCode = B33::App::B33_KEY_X } } },
                 { PaperController::UseActionRotatePlacedTypeBackward,
-                  AbInputBind {
+                  B33InputBind {
                       .Type     = Keyboard,
-                      .Keyboard = AbKeyboardBind { .KeyState = EAbOnState::Press, .KeyCode = B33::App::B33_KEY_B } } },
+                      .Keyboard = B33KeyboardBind { .KeyState = EB33OnState::Press, .KeyCode = B33::App::B33_KEY_B } } },
                 { PaperController::UseActionRotatePlacedTypeForward,
-                  AbInputBind {
+                  B33InputBind {
                       .Type     = Keyboard,
-                      .Keyboard = AbKeyboardBind { .KeyState = EAbOnState::Press, .KeyCode = B33::App::B33_KEY_V } } },
+                      .Keyboard = B33KeyboardBind { .KeyState = EB33OnState::Press, .KeyCode = B33::App::B33_KEY_V } } },
 
             } );
     }

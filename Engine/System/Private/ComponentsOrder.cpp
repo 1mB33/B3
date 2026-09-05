@@ -8,7 +8,7 @@ namespace B33::System
 using namespace std;
 using namespace B33;
 
-ComponentOrderRegister ComponentOrderRegister::RegisterOrder( vector<string_view> order )
+ComponentOrderRegister ComponentOrderRegister::RegisterOrder( Vector<StringView> order )
 {
     EngineLoop::m_ComponentOrderRegistry = order;
     return ComponentOrderRegister();

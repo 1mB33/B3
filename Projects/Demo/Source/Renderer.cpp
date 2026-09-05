@@ -21,15 +21,14 @@ void Renderer::Initialize( ::B33::System::ComponentBridge &bridge )
             lockedInput,
             {
                 { RendererMasterController::UseActionSwitchDebugMode,
-                  AbInputBind {
-                      .Type     = Keyboard,
-                      .Keyboard = AbKeyboardBind { .KeyState = EAbOnState::Press, .KeyCode = B33::App::B33_KEY_Z } } },
+                  B33InputBind { .Type     = Keyboard,
+                                 .Keyboard = B33KeyboardBind { .KeyState = EB33OnState::Press,
+                                                               .KeyCode  = B33::App::B33_KEY_Z } } },
             } );
     }
 
-    m_RendererInstance.Initialize<Rendering::MinimalHardware, Rendering::GraphicsComputeAdapter>(
-        windowHandle->GetWindowInstance().GetWindowDesc() );
-
+    m_RendererInstance.ListenToWindow( windowHandle->GetWindowInstance().GetWindowDesc() );
+    m_RendererInstance.Initialize<Rendering::MinimalHardware, Rendering::GraphicsComputeAdapter>();
     m_RendererInstance.PushPipeline<::B33::Rendering::VoxelPipeline>( gameHandle->GetGameInstance().GetWorld() );
 }
 

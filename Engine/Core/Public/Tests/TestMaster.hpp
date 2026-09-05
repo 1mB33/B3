@@ -1,11 +1,14 @@
-#ifndef B3_TESTMASTER_HPP
-#define B3_TESTMASTER_HPP
+#if !defined( B3_TESTMASTER_HPP )
+#    define B3_TESTMASTER_HPP
 
 namespace B33::Core::Tests
 
 {
 class TestMaster
 {
+    template <typename T>
+    using Vector = ::std::vector<T>;
+
     __B33_API TestMaster();
 
     TestMaster( const TestMaster & ) = delete;
@@ -17,10 +20,10 @@ class TestMaster
   public:
     __B33_API static TestMaster &Get();
 
-    ~TestMaster() = default;
+    ~TestMaster() noexcept = default;
 
   public:
-    __B33_API void AddTest( void ( *pTest )(), const char *pszTestName, size_t uTestNameLen );
+    __B33_API void AddTest( void ( *pTest )(), const char *pszTestName, usize uTestNameLen );
 
     __B33_API void Run();
 
@@ -29,13 +32,13 @@ class TestMaster
     {
         void ( *pTest )();
         const char *pszTestName;
-        size_t      uTestNameLen;
+        usize       uTestNameLen;
         bool        bPassed;
     };
 
   private:
-    size_t              m_uTestAmount = -1;
-    ::std::vector<Test> m_pTestsBuf   = {};
+    usize        m_uTestAmount = -1;
+    Vector<Test> m_pTestsBuf   = {};
 };
 
 } // namespace B33::Core::Tests

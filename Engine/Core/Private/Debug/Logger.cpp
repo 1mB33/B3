@@ -4,9 +4,7 @@
 #include "TerminalColors.hpp"
 
 #include <cstdarg>
-#include <ctime>
 #include <iostream>
-#include <string>
 
 namespace B33::Core::Debug
 {
@@ -16,7 +14,7 @@ using namespace ::std::chrono;
 using namespace ::std::chrono_literals;
 using namespace ::B33::Core;
 
-// Logger // -----------------------------------------------------------------------------------------------------------
+// Constructors // ----------------------------------------------------------------------------------------------------
 Logger::Logger()
   : m_InstanceLock()
   , m_MessageQueue()
@@ -27,7 +25,7 @@ Logger::Logger()
   , m_Messages()
 {
     setlocale( LC_ALL, "" );
-    m_tWriteThreadHandle = thread( &Logger::WriteLoop, this );
+    m_tWriteThreadHandle = Thread( &Logger::WriteLoop, this );
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -39,48 +37,62 @@ Logger::~Logger()
 }
 
 // Public // ----------------------------------------------------------------------------------------------------------
-Logger &Logger::Get()
+Logger &Logger::Get() noexcept
 {
     static Logger instance;
     return instance;
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-void Logger::Log( const ESeverity sev, const wchar_t wszFmt[], ... )
+void Logger::Log( const ESeverity sev, const wchar_t wszFmt[], ... ) noexcept
 {
     const auto timeStamp   = Clock::now();
     wchar_t   *pwszMessage = new wchar_t[ B33_LONG_STRING ];
 
-    va_list args;
-    va_start( args, wszFmt );
-    vswprintf( pwszMessage, B33_LONG_STRING, wszFmt, args );
-    va_end( args );
+    try
+    {
+        va_list args;
+        va_start( args, wszFmt );
+        vswprintf( pwszMessage, B33_LONG_STRING, wszFmt, args );
+        va_end( args );
+        lock_guard<Mutex> lock( m_InstanceLock );
 
-    lock_guard<mutex> lock( m_InstanceLock );
-    m_MessageQueue.push(
-        { .TimeStamp = timeStamp, .Sev = sev, .pszFile = nullptr, .pwszFmt = wszFmt, .pwszMessage = pwszMessage } );
+        m_MessageQueue.push(
+            { .TimeStamp = timeStamp, .Sev = sev, .pszFile = nullptr, .pwszFmt = wszFmt, .pwszMessage = pwszMessage } );
+    }
+    catch ( const exception &e )
+    {
+        __B33_BEBUG_BREAK_POINT( e.what() );
+    }
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void Logger::Log( const char szFile[], const ESeverity sev, const wchar_t wszFmt[], ... )
+void Logger::Log( const char szFile[], const ESeverity sev, const wchar_t wszFmt[], ... ) noexcept
 {
     const auto timeStamp   = Clock::now();
     wchar_t   *pwszMessage = new wchar_t[ B33_LONG_STRING ];
 
-    va_list args;
-    va_start( args, wszFmt );
-    vswprintf( pwszMessage, B33_LONG_STRING, wszFmt, args );
-    va_end( args );
+    try
+    {
+        va_list args;
+        va_start( args, wszFmt );
+        vswprintf( pwszMessage, B33_LONG_STRING, wszFmt, args );
+        va_end( args );
 
-    lock_guard<mutex> lock( m_InstanceLock );
-    m_MessageQueue.push(
-        { .TimeStamp = timeStamp, .Sev = sev, .pszFile = szFile, .pwszFmt = wszFmt, .pwszMessage = pwszMessage } );
+        lock_guard<Mutex> lock( m_InstanceLock );
+        m_MessageQueue.push(
+            { .TimeStamp = timeStamp, .Sev = sev, .pszFile = szFile, .pwszFmt = wszFmt, .pwszMessage = pwszMessage } );
+    }
+    catch ( const exception &e )
+    {
+        __B33_BEBUG_BREAK_POINT( e.what() );
+    }
 }
 
 // -----------------------------------------------------------------------------------------------------------------
 void Logger::Flush()
 {
-    unique_lock<mutex> ul( m_InstanceLock );
+    unique_lock<Mutex> ul( m_InstanceLock );
     m_FlushCondition.wait( ul,
                            [ this ]()
                            {
@@ -89,7 +101,7 @@ void Logger::Flush()
 }
 
 // Private // ---------------------------------------------------------------------------------------------------------
-string Logger::CreateDatePreFix() const
+Logger::String Logger::CreateDatePreFix() const
 {
     stringstream prefix    = {};
     time_t       timeStamp = time( NULL );
@@ -134,7 +146,7 @@ const char *Logger::GetFileName( const char *szFile ) const
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-const wstring Logger::Stringify( const LogStruct &ls ) const
+const Logger::WString Logger::Stringify( const LogStruct &ls ) const
 {
     typedef duration<int, ratio_multiply<hours::period, ratio<21>>::type> Days;
 
@@ -162,7 +174,7 @@ const wstring Logger::Stringify( const LogStruct &ls ) const
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-const wstring Logger::StringifyAndColorize( const LogStruct &ls ) const
+const Logger::WString Logger::StringifyAndColorize( const LogStruct &ls ) const
 {
     typedef duration<int, ratio_multiply<hours::period, ratio<21>>::type> Days;
 
@@ -186,7 +198,7 @@ const wstring Logger::StringifyAndColorize( const LogStruct &ls ) const
     return ( wstringstream()
              << L'[' << setw( 2 ) << h.count() << ":" << min.count() << ":" << sec.count() << "." << setw( 3 )
              << milli.count() << L"][" << setw( 16 ) << ColorizeWithSeverity( GetTag( ls.Sev ), ls.Sev ) << L"]["
-             << ColorizeTerminal::Colorize( string( GetFileName( ls.pszFile ) ), EColors::BrigthBlack ).c_str()
+             << ColorizeTerminal::Colorize( string( GetFileName( ls.pszFile ) ), EColors::BrightBlack ).c_str()
              << L"]: " << ColorizeWithSeverity( ls.pwszMessage, ls.Sev ) )
         .str();
 }
@@ -194,7 +206,7 @@ const wstring Logger::StringifyAndColorize( const LogStruct &ls ) const
 // ---------------------------------------------------------------------------------------------------------------------
 void Logger::WriteLoop()
 {
-    string    outputPath;
+    String    outputPath;
     wofstream woFile;
 
     m_InstanceLock.lock();
@@ -233,30 +245,30 @@ void Logger::WriteLoop()
         {
             ++m_Messages[ stamp.pwszFmt ];
         }
-        if ( stamp.Sev == ESeverity::Trace && m_Messages[ stamp.pwszFmt ] > MAX_TRACE_MESSAGES )
+        if ( stamp.Sev == ESeverity::Trace && m_Messages[ stamp.pwszFmt ] > MaxTraceMessages )
         {
             delete[] stamp.pwszMessage;
             continue;
         }
 
-        wstring wstrStringified            = Stringify( stamp );
-        wstring wstrStringifiedAndColorful = StringifyAndColorize( stamp );
-        if ( stamp.Sev == ESeverity::Trace && m_Messages[ stamp.pwszFmt ] == MAX_TRACE_MESSAGES )
+        WString wstrStringified            = Stringify( stamp );
+        WString wstrStringifiedAndColorful = StringifyAndColorize( stamp );
+        if ( stamp.Sev == ESeverity::Trace && m_Messages[ stamp.pwszFmt ] == MaxTraceMessages )
         {
-            wstrStringified += ColorizeTerminal::Colorize(
-                L" [Message was logged " + to_wstring( MAX_TRACE_MESSAGES ) + L" times and won't be logged anymore]",
-                EColors::BrigthYellow );
+            wstrStringified += ColorizeTerminal::Colorize( L" [Message was logged " + to_wstring( MaxTraceMessages ) +
+                                                               L" times and won't be logged anymore]",
+                                                           EColors::BrightYellow );
             wstrStringifiedAndColorful += ColorizeTerminal::Colorize(
-                L" [Message was logged " + to_wstring( MAX_TRACE_MESSAGES ) + L" times and won't be logged anymore]",
-                EColors::BrigthYellow );
+                L" [Message was logged " + to_wstring( MaxTraceMessages ) + L" times and won't be logged anymore]",
+                EColors::BrightYellow );
         }
 
         wcout << wstrStringifiedAndColorful << endl;
 
-        #if defined( _MSVC )
+#if defined( _MSVC )
         OutputDebugString( wstrStringified.c_str() );
         OutputDebugString( L"\n" );
-        #endif
+#endif
 
         woFile.open( outputPath, ios::app );
         woFile << wstrStringified << endl;
@@ -267,18 +279,18 @@ void Logger::WriteLoop()
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-wstring Logger::ColorizeWithSeverity( const ::std::wstring &wstrText, ESeverity sev ) const
+Logger::WString Logger::ColorizeWithSeverity( const Logger::WString &wstrText, ESeverity sev ) const
 {
     switch ( sev )
     {
-        case B33::Core::Debug::ESeverity::Trace:
-            return ColorizeTerminal::Colorize( wstrText, EColors::BrigthBlack );
-        case B33::Core::Debug::ESeverity::Info:
-            return ColorizeTerminal::Colorize( wstrText, EColors::BrigthGreen );
-        case B33::Core::Debug::ESeverity::Warning:
-            return ColorizeTerminal::Colorize( wstrText, EColors::BrigthYellow );
-        case B33::Core::Debug::ESeverity::Error:
-            return ColorizeTerminal::Colorize( wstrText, EColors::BrigthRed );
+        case ESeverity::Trace:
+            return ColorizeTerminal::Colorize( wstrText, EColors::BrightBlack );
+        case ESeverity::Info:
+            return ColorizeTerminal::Colorize( wstrText, EColors::BrightGreen );
+        case ESeverity::Warning:
+            return ColorizeTerminal::Colorize( wstrText, EColors::BrightYellow );
+        case ESeverity::Error:
+            return ColorizeTerminal::Colorize( wstrText, EColors::BrightRed );
         default:
             return wstrText;
     };

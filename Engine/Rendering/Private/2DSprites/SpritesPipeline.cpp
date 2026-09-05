@@ -1,4 +1,4 @@
-#include "B33Rendering.hpp"
+#include "B33Rendering.h"
 
 #include "2DSprites/SpritesPipeline.hpp"
 #include "Vulkan/Buffers/ImgBuffer.hpp"
@@ -6,7 +6,6 @@
 #include "Vulkan/FrameResources.hpp"
 #include "Vulkan/SwapChain.hpp"
 #include "Vulkan/Utility.hpp"
-#include "vulkan/vulkan_core.h"
 
 namespace B33::Rendering
 {
@@ -29,64 +28,32 @@ const array<Vertex, 6> g_UnitQuadVertices = {
     Vertex( -1.f, 1.f ),
 };
 
-// ---------------------------------------------------------------------------------------------------------------------
-SpritesPipeline::~SpritesPipeline()
+// Constructors // ----------------------------------------------------------------------------------------------------
+SpritesPipeline::~SpritesPipeline() noexcept
 {
     if ( m_FragShader != VK_NULL_HANDLE )
     {
-        vkDestroyShaderModule( GetAdaterInternal()->GetAdapterHandle(), m_FragShader, NULL );
+        vkDestroyShaderModule( GetAdater()->GetAdapterHandle(), m_FragShader, NULL );
     }
 
     m_FragShader = VK_NULL_HANDLE;
 
     if ( m_VertexShader != VK_NULL_HANDLE )
     {
-        vkDestroyShaderModule( GetAdaterInternal()->GetAdapterHandle(), m_VertexShader, NULL );
+        vkDestroyShaderModule( GetAdater()->GetAdapterHandle(), m_VertexShader, NULL );
     }
 
     m_VertexShader = VK_NULL_HANDLE;
 }
 
 // Public // -----------------------------------------------------------------------------------------------------------
-void SpritesPipeline::CreatePipelineResourcesImpl()
-{
-    auto swapChain                    = GetSwapChainInternal();
-    auto extent                       = swapChain->GetExtent();
-    m_uCurFrame                       = 0;
-    constexpr size_t unitVerticesSize = sizeof( Vertex ) * g_UnitQuadVertices.size();
-    constexpr size_t instanceSize     = sizeof( SpriteData ) * MAX_SPRITES;
-
-    m_pStageQuadBuffer = GetMemoryInternal()->ReserveStagingBuffer( unitVerticesSize );
-    m_pQuadBuffer      = GetMemoryInternal()->ReserveVertexBuffer( unitVerticesSize );
-
-    GetMemoryInternal()->UploadToStreamBufferRaw( g_UnitQuadVertices.data(), unitVerticesSize, m_pStageQuadBuffer );
-
-    for ( uint32_t i = 0; i < Frame::MAX_FRAMES_IN_FLIGHT; ++i )
-    {
-        auto img = GetMemoryInternal()->ReserveImage( extent.width,
-                                                      extent.height,
-                                                      VK_FORMAT_D32_SFLOAT,
-                                                      VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT );
-        GetMemoryInternal()->ReserveImageView( img, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT );
-
-        m_PerFrameResources.push_back( {
-            .uLastUploadedGeneration = 0,
-            .SpriteInstances         = GetMemoryInternal()->ReserveGPUBuffer( instanceSize ),
-            .StageSpriteInstances    = GetMemoryInternal()->ReserveStagingBuffer( instanceSize ),
-            .DepthImg                = std::move( img ),
-            .DescSet                 = CreateDescriptorSet(),
-        } );
-    }
-}
-
-// --------------------------------------------------------------------------------------------------------------------
 void SpritesPipeline::Update()
 {
     auto &curFrame = m_PerFrameResources[ m_uCurFrame ];
 
     if ( m_bPendingUpload )
     {
-        GetMemoryInternal()->UploadToStreamBufferDescSet(
+        GetMemory()->UploadToStreamBufferDescSet(
             m_SpriteData.data(),
             m_SpriteData.size() * sizeof( SpriteData ),
             GetUniformUploadDescriptor( curFrame.StageSpriteInstances, EShaderResource::SpriteInstances ) );
@@ -101,7 +68,7 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                                       VkPipelineStageFlagBits lastStage,
                                       VkImageLayout           lastLayout )
 {
-    auto  swapChain = GetSwapChainInternal();
+    auto  swapChain = GetSwapChain();
     auto  image     = swapChain->GetCurrentImage();
     auto  imageView = swapChain->GetCurrentImageView();
     auto  extent    = swapChain->GetExtent();
@@ -143,6 +110,104 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
                               NULL );
         m_bPendingMeshUpload = false;
     }
+
+    if ( m_bPendingTextureUpload )
+    {
+        VkImageMemoryBarrier toTransferDst = {};
+        toTransferDst.sType                = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        toTransferDst.srcAccessMask        = 0;
+        toTransferDst.dstAccessMask        = VK_ACCESS_TRANSFER_WRITE_BIT;
+        toTransferDst.oldLayout            = VK_IMAGE_LAYOUT_UNDEFINED;
+        toTransferDst.newLayout            = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        toTransferDst.srcQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
+        toTransferDst.dstQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
+        toTransferDst.image                = m_pTexture.GetImage();
+        toTransferDst.subresourceRange     = VkImageSubresourceRange { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+
+        vkCmdPipelineBarrier( cmdBuffer,
+                              VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                              VK_PIPELINE_STAGE_TRANSFER_BIT,
+                              0,
+                              0,
+                              NULL,
+                              0,
+                              NULL,
+                              1,
+                              &toTransferDst );
+
+        VkBufferImageCopy copyRegion               = {};
+        copyRegion.imageSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
+        copyRegion.imageSubresource.mipLevel       = 0;
+        copyRegion.imageSubresource.baseArrayLayer = 0;
+        copyRegion.imageSubresource.layerCount     = 1;
+        copyRegion.imageExtent                     = { 256, 256, 1 };
+
+        vkCmdCopyBufferToImage( cmdBuffer,
+                                m_pStageTexture->GetBufferHandle(),
+                                m_pTexture.GetImage(),
+                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                1,
+                                &copyRegion );
+
+        VkImageMemoryBarrier toShaderRead = {};
+        toShaderRead.sType                = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        toShaderRead.srcAccessMask        = VK_ACCESS_TRANSFER_WRITE_BIT;
+        toShaderRead.dstAccessMask        = VK_ACCESS_SHADER_READ_BIT;
+        toShaderRead.oldLayout            = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        toShaderRead.newLayout            = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        toShaderRead.srcQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
+        toShaderRead.dstQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
+        toShaderRead.image                = m_pTexture.GetImage();
+        toShaderRead.subresourceRange     = VkImageSubresourceRange { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+
+        vkCmdPipelineBarrier( cmdBuffer,
+                              VK_PIPELINE_STAGE_TRANSFER_BIT,
+                              VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                              0,
+                              0,
+                              NULL,
+                              0,
+                              NULL,
+                              1,
+                              &toShaderRead );
+
+        m_bPendingTextureUpload = false;
+    }
+
+    if ( !curFrame.bInit )
+    {
+        VkDescriptorImageInfo imageInfo = {};
+        imageInfo.imageView             = m_pTexture.GetImageView();
+        imageInfo.imageLayout           = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        VkDescriptorImageInfo samplerInfo = {};
+        samplerInfo.sampler               = m_pTexture.GetSampler();
+
+        array<VkWriteDescriptorSet, 2> writes = {};
+
+        writes[ 0 ].sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        writes[ 0 ].dstSet          = curFrame.DescSet;
+        writes[ 0 ].dstBinding      = 2;
+        writes[ 0 ].descriptorCount = 1;
+        writes[ 0 ].descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+        writes[ 0 ].pImageInfo      = &imageInfo;
+
+        writes[ 1 ].sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        writes[ 1 ].dstSet          = curFrame.DescSet;
+        writes[ 1 ].dstBinding      = 3;
+        writes[ 1 ].descriptorCount = 1;
+        writes[ 1 ].descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER;
+        writes[ 1 ].pImageInfo      = &samplerInfo;
+
+        vkUpdateDescriptorSets( GetAdater()->GetAdapterHandle(),
+                                static_cast<u32>( writes.size() ),
+                                writes.data(),
+                                0,
+                                NULL );
+
+        curFrame.bInit = true;
+    }
+
 
     if ( curFrame.uLastUploadedGeneration != m_uLastUploadedGeneration )
     {
@@ -281,14 +346,13 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
     VkDeviceSize offsets[]       = { 0 };
     vkCmdBindVertexBuffers( cmdBuffer, 0, 1, vertexBuffers, offsets );
 
-    const uint32_t spriteCount =
-        static_cast<uint32_t>( min( m_SpriteData.size(), static_cast<size_t>( MAX_SPRITES ) ) );
+    const u32 spriteCount = static_cast<u32>( min( m_SpriteData.size(), static_cast<usize>( MaxSprites ) ) );
 
     B33_TRACE( L"Drawing %d sprites", spriteCount );
 
     if ( spriteCount > 0 )
     {
-        vkCmdDraw( cmdBuffer, static_cast<uint32_t>( g_UnitQuadVertices.size() ), spriteCount, 0, 0 );
+        vkCmdDraw( cmdBuffer, static_cast<u32>( g_UnitQuadVertices.size() ), spriteCount, 0, 0 );
     }
 
     vkCmdEndRendering( cmdBuffer );
@@ -327,25 +391,25 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
 // --------------------------------------------------------------------------------------------------------------------
 void SpritesPipeline::Reset()
 {
-    auto swapChain = GetSwapChainInternal();
+    auto swapChain = GetSwapChain();
     auto extent    = swapChain->GetExtent();
 
     for ( auto &resources : m_PerFrameResources )
     {
-        auto img = GetMemoryInternal()->ReserveImage( extent.width,
-                                                      extent.height,
-                                                      VK_FORMAT_D32_SFLOAT,
-                                                      VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT );
-        GetMemoryInternal()->ReserveImageView( img, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT );
+        auto img = GetMemory()->ReserveImage( extent.width,
+                                              extent.height,
+                                              VK_FORMAT_D32_SFLOAT,
+                                              VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT );
+        GetMemory()->ReserveImageView( img, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT );
 
         resources.DepthImg = std::move( img );
     }
 }
 
-// Private // ----------------------------------------------------------------------------------------------------------
+// Impl // ------------------------------------------------------------------------------------------------------------
 VkDescriptorSetLayout SpritesPipeline::CreateDescriptorLayoutImpl()
 {
-    array<VkDescriptorSetLayoutBinding, 1> bindings = {};
+    array<VkDescriptorSetLayoutBinding, 3> bindings = {};
     VkDescriptorSetLayout                  descriptorSetLayout;
 
     bindings[ 0 ]                 = {};
@@ -354,7 +418,19 @@ VkDescriptorSetLayout SpritesPipeline::CreateDescriptorLayoutImpl()
     bindings[ 0 ].descriptorCount = 1;
     bindings[ 0 ].stageFlags      = VK_SHADER_STAGE_VERTEX_BIT;
 
-    array<VkDescriptorBindingFlags, 1> bindingFlags = { VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT };
+    bindings[ 1 ]                 = {};
+    bindings[ 1 ].binding         = 2;
+    bindings[ 1 ].descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+    bindings[ 1 ].descriptorCount = 1;
+    bindings[ 1 ].stageFlags      = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    bindings[ 2 ]                 = {};
+    bindings[ 2 ].binding         = 3;
+    bindings[ 2 ].descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER;
+    bindings[ 2 ].descriptorCount = 1;
+    bindings[ 2 ].stageFlags      = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    array<VkDescriptorBindingFlags, 3> bindingFlags = { VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT, 0, 0 };
 
     VkDescriptorSetLayoutBindingFlagsCreateInfo bindingCreateInfo = {};
     bindingCreateInfo.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
@@ -368,52 +444,30 @@ VkDescriptorSetLayout SpritesPipeline::CreateDescriptorLayoutImpl()
     layoutCreateInfo.pBindings                       = bindings.data();
     layoutCreateInfo.flags                           = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
 
-    THROW_IF_FAILED( vkCreateDescriptorSetLayout( GetAdaterInternal()->GetAdapterHandle(),
-                                                  &layoutCreateInfo,
-                                                  NULL,
-                                                  &descriptorSetLayout ) );
+    THROW_IF_FAILED(
+        vkCreateDescriptorSetLayout( GetAdater()->GetAdapterHandle(), &layoutCreateInfo, NULL, &descriptorSetLayout ) );
 
     return descriptorSetLayout;
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-UploadDescriptor SpritesPipeline::GetUniformUploadDescriptor( const shared_ptr<GPUStreamBuffer> &outBuffer,
-                                                              const EShaderResource             &sr )
-{
-    VkDescriptorBufferInfo bufferInfo = {
-        .buffer = outBuffer->GetBufferHandle(),
-        .offset = 0,
-        .range  = VK_WHOLE_SIZE,
-    };
-
-    VkWriteDescriptorSet write = {};
-    write.sType                = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    write.dstSet               = m_PerFrameResources[ m_uCurFrame ].DescSet;
-    write.dstBinding           = static_cast<uint32_t>( sr );
-    write.descriptorCount      = 1;
-    write.descriptorType       = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    write.pBufferInfo          = &bufferInfo;
-
-    return UploadDescriptor( std::move( bufferInfo ), std::move( write ), EUploadType::StreamBuffer, outBuffer );
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
 VkDescriptorPool SpritesPipeline::CreateDescriptorPoolImpl()
 {
-    const array<VkDescriptorPoolSize, 1> poolSizes = {
-        VkDescriptorPoolSize( VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, Frame::MAX_FRAMES_IN_FLIGHT ),
+    const array<VkDescriptorPoolSize, 3> poolSizes = {
+        VkDescriptorPoolSize( VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, Frame::MaxFramesInFlight ),
+        VkDescriptorPoolSize( VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1 ),
+        VkDescriptorPoolSize( VK_DESCRIPTOR_TYPE_SAMPLER, 1 ),
     };
     VkDescriptorPool descriptorPool;
 
     VkDescriptorPoolCreateInfo poolInfo = {};
     poolInfo.sType                      = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    poolInfo.maxSets                    = Frame::MAX_FRAMES_IN_FLIGHT;
+    poolInfo.maxSets                    = Frame::MaxFramesInFlight;
     poolInfo.poolSizeCount              = poolSizes.size();
     poolInfo.pPoolSizes                 = poolSizes.data();
     poolInfo.flags                      = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
 
-    THROW_IF_FAILED(
-        vkCreateDescriptorPool( GetAdaterInternal()->GetAdapterHandle(), &poolInfo, NULL, &descriptorPool ) );
+    THROW_IF_FAILED( vkCreateDescriptorPool( GetAdater()->GetAdapterHandle(), &poolInfo, NULL, &descriptorPool ) );
 
     return descriptorPool;
 }
@@ -421,16 +475,16 @@ VkDescriptorPool SpritesPipeline::CreateDescriptorPoolImpl()
 // ---------------------------------------------------------------------------------------------------------------------
 VkDescriptorSet SpritesPipeline::CreateDescriptorSet()
 {
-    VkDescriptorSetLayout descLayout = GetDescriptorLayoutInternal();
+    VkDescriptorSetLayout descLayout = GetDescriptorLayout();
     VkDescriptorSet       descriptorSet;
 
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType                       = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool              = GetDescriptorPoolInternal();
+    allocInfo.descriptorPool              = GetDescriptorPool();
     allocInfo.descriptorSetCount          = 1;
     allocInfo.pSetLayouts                 = &descLayout;
 
-    THROW_IF_FAILED( vkAllocateDescriptorSets( GetAdaterInternal()->GetAdapterHandle(), &allocInfo, &descriptorSet ) );
+    THROW_IF_FAILED( vkAllocateDescriptorSets( GetAdater()->GetAdapterHandle(), &allocInfo, &descriptorSet ) );
 
     return descriptorSet;
 }
@@ -439,7 +493,7 @@ VkDescriptorSet SpritesPipeline::CreateDescriptorSet()
 VkPipelineLayout SpritesPipeline::CreatePipelineLayoutImpl()
 {
     VkPipelineLayout      pipelineLayout;
-    VkDescriptorSetLayout descLayout = GetDescriptorLayoutInternal();
+    VkDescriptorSetLayout descLayout = GetDescriptorLayout();
 
     VkPushConstantRange pushConstantRange = {
         .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
@@ -457,8 +511,7 @@ VkPipelineLayout SpritesPipeline::CreatePipelineLayoutImpl()
         .pPushConstantRanges    = &pushConstantRange,
     };
 
-    THROW_IF_FAILED(
-        vkCreatePipelineLayout( GetAdaterInternal()->GetAdapterHandle(), &layoutInfo, NULL, &pipelineLayout ) );
+    THROW_IF_FAILED( vkCreatePipelineLayout( GetAdater()->GetAdapterHandle(), &layoutInfo, NULL, &pipelineLayout ) );
 
     return pipelineLayout;
 }
@@ -466,15 +519,15 @@ VkPipelineLayout SpritesPipeline::CreatePipelineLayoutImpl()
 // ---------------------------------------------------------------------------------------------------------------------
 VkPipeline SpritesPipeline::CreatePipelineImpl()
 {
-    const VkDevice device   = GetAdaterInternal()->GetAdapterHandle();
+    const VkDevice device   = GetAdater()->GetAdapterHandle();
     VkPipeline     pipeline = VK_NULL_HANDLE;
     m_VertexShader =
         Shaders::LoadShader( ::B33::App::AppResources::Get().GetExecutablePathA() + "/../Assets/Shaders/2DSpritesV.spv",
-                             GetAdaterInternal().get() );
+                             GetAdater().get() );
 
     m_FragShader =
         Shaders::LoadShader( ::B33::App::AppResources::Get().GetExecutablePathA() + "/../Assets/Shaders/2DSpritesF.spv",
-                             GetAdaterInternal().get() );
+                             GetAdater().get() );
 
     array<VkPipelineShaderStageCreateInfo, 2> stages = {};
 
@@ -519,7 +572,7 @@ VkPipeline SpritesPipeline::CreatePipelineImpl()
     array<VkDynamicState, 2>         dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
     VkPipelineDynamicStateCreateInfo dynamicState  = {};
     dynamicState.sType                             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamicState.dynamicStateCount                 = static_cast<uint32_t>( dynamicStates.size() );
+    dynamicState.dynamicStateCount                 = static_cast<u32>( dynamicStates.size() );
     dynamicState.pDynamicStates                    = dynamicStates.data();
 
     VkPipelineRasterizationStateCreateInfo rasterizationState = {};
@@ -569,7 +622,7 @@ VkPipeline SpritesPipeline::CreatePipelineImpl()
     VkGraphicsPipelineCreateInfo pipelineInfo = {};
     pipelineInfo.sType                        = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     pipelineInfo.pNext                        = &renderingInfo;
-    pipelineInfo.stageCount                   = static_cast<uint32_t>( stages.size() );
+    pipelineInfo.stageCount                   = static_cast<u32>( stages.size() );
     pipelineInfo.pStages                      = stages.data();
     pipelineInfo.pVertexInputState            = &vertexInputState;
     pipelineInfo.pInputAssemblyState          = &inputAssemblyState;
@@ -584,6 +637,95 @@ VkPipeline SpritesPipeline::CreatePipelineImpl()
     THROW_IF_FAILED( vkCreateGraphicsPipelines( device, VK_NULL_HANDLE, 1, &pipelineInfo, NULL, &pipeline ) );
 
     return pipeline;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+void SpritesPipeline::CreatePipelineResourcesImpl()
+{
+    auto swapChain                   = GetSwapChain();
+    auto extent                      = swapChain->GetExtent();
+    m_uCurFrame                      = 0;
+    constexpr usize unitVerticesSize = sizeof( Vertex ) * g_UnitQuadVertices.size();
+    constexpr usize instanceSize     = sizeof( SpriteData ) * MaxSprites;
+    constexpr usize imgSize          = 4 * 256 * 256;
+
+    m_pTexture = GetMemory()->ReserveImage( 256,
+                                            256,
+                                            VK_FORMAT_R8G8B8A8_UNORM,
+                                            VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT );
+    VkSamplerCreateInfo sampler     = {};
+    sampler.sType                   = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    sampler.magFilter               = VK_FILTER_LINEAR;
+    sampler.minFilter               = VK_FILTER_LINEAR;
+    sampler.mipmapMode              = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    sampler.addressModeU            = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    sampler.addressModeV            = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    sampler.addressModeW            = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    sampler.mipLodBias              = 0.0f;
+    sampler.anisotropyEnable        = VK_FALSE;
+    sampler.maxAnisotropy           = 1.0f;
+    sampler.compareEnable           = VK_FALSE;
+    sampler.compareOp               = VK_COMPARE_OP_ALWAYS;
+    sampler.minLod                  = 0.0f;
+    sampler.maxLod                  = 0.0f;
+    sampler.borderColor             = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+    sampler.unnormalizedCoordinates = VK_FALSE;
+
+    GetMemory()->ReserveImageView( m_pTexture, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT );
+    GetMemory()->ReserveSampler( m_pTexture, sampler );
+    m_pStageTexture = GetMemory()->ReserveStagingBuffer( imgSize );
+
+    float pBuf[ imgSize ] = {};
+    for ( usize i = 0; i < imgSize; ++i )
+    {
+        pBuf[ i ] = i;
+    }
+
+
+    GetMemory()->UploadToBufferRaw( pBuf, imgSize, m_pStageTexture );
+    m_pStageQuadBuffer = GetMemory()->ReserveStagingBuffer( unitVerticesSize );
+    m_pQuadBuffer      = GetMemory()->ReserveVertexBuffer( unitVerticesSize );
+
+    GetMemory()->UploadToStreamBufferRaw( g_UnitQuadVertices.data(), unitVerticesSize, m_pStageQuadBuffer );
+
+    for ( u32 i = 0; i < Frame::MaxFramesInFlight; ++i )
+    {
+        auto img = GetMemory()->ReserveImage( extent.width,
+                                              extent.height,
+                                              VK_FORMAT_D32_SFLOAT,
+                                              VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT );
+        GetMemory()->ReserveImageView( img, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT );
+
+        m_PerFrameResources.push_back( {
+            .bInit                   = false,
+            .uLastUploadedGeneration = 0,
+            .SpriteInstances         = GetMemory()->ReserveGPUBuffer( instanceSize ),
+            .StageSpriteInstances    = GetMemory()->ReserveStagingBuffer( instanceSize ),
+            .DepthImg                = std::move( img ),
+            .DescSet                 = CreateDescriptorSet(),
+        } );
+    }
+}
+
+// Private // ---------------------------------------------------------------------------------------------------------
+UploadDescriptor SpritesPipeline::GetUniformUploadDescriptor( const SharedPtr<GPUStreamBuffer> &outBuffer,
+                                                              const EShaderResource            &sr )
+{
+    VkDescriptorBufferInfo bufferInfo = {
+        .buffer = outBuffer->GetBufferHandle(),
+        .offset = 0,
+        .range  = VK_WHOLE_SIZE,
+    };
+
+    VkWriteDescriptorSet write = {};
+    write.sType                = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write.dstSet               = m_PerFrameResources[ m_uCurFrame ].DescSet;
+    write.dstBinding           = static_cast<u32>( sr );
+    write.descriptorCount      = 1;
+    write.descriptorType       = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    write.pBufferInfo          = &bufferInfo;
+
+    return UploadDescriptor( std::move( bufferInfo ), std::move( write ), EUploadType::StreamBuffer, outBuffer );
 }
 
 } // namespace B33::Rendering

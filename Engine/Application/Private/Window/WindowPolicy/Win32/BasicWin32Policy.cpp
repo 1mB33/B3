@@ -166,10 +166,10 @@ void BasicWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM lParam )
                 return;
             }
 
-            AbInputStruct is = {};
-            m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::Input;
+            B33InputStruct is = {};
+            m_pWindowDesc->Data.LastEvent |= EB33WindowEvents::Input;
 
-            is.Event          = EAbInputEvents::AbKeyPress;
+            is.Event          = EB33InputEvents::B33KeyPress;
             is.Keyboard.KeyId = LOWORD( wKeyFlags );
 
             m_pWindowDesc->Data.InputStruct.push( is );
@@ -178,10 +178,10 @@ void BasicWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM lParam )
 
         case WM_KEYUP:
         {
-            AbInputStruct is = {};
-            m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::Input;
+            B33InputStruct is = {};
+            m_pWindowDesc->Data.LastEvent |= EB33WindowEvents::Input;
 
-            is.Event          = EAbInputEvents::AbKeyRelease;
+            is.Event          = EB33InputEvents::B33KeyRelease;
             is.Keyboard.KeyId = LOWORD( HIWORD( lParam ) );
 
             m_pWindowDesc->Data.InputStruct.push( is );
@@ -190,10 +190,10 @@ void BasicWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM lParam )
 
         case WM_LBUTTONDOWN:
         {
-            AbInputStruct is = {};
-            m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::Input;
+            B33InputStruct is = {};
+            m_pWindowDesc->Data.LastEvent |= EB33WindowEvents::Input;
 
-            is.Event             = EAbInputEvents::AbButtonPress;
+            is.Event             = EB33InputEvents::B33ButtonPress;
             is.MouseButton.KeyId = 1;
 
             m_pWindowDesc->Data.InputStruct.push( is );
@@ -202,10 +202,10 @@ void BasicWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM lParam )
 
         case WM_RBUTTONDOWN:
         {
-            AbInputStruct is = {};
-            m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::Input;
+            B33InputStruct is = {};
+            m_pWindowDesc->Data.LastEvent |= EB33WindowEvents::Input;
 
-            is.Event             = EAbInputEvents::AbButtonPress;
+            is.Event             = EB33InputEvents::B33ButtonPress;
             is.MouseButton.KeyId = 3;
 
             m_pWindowDesc->Data.InputStruct.push( is );
@@ -214,10 +214,10 @@ void BasicWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM lParam )
 
         case WM_MBUTTONDOWN:
         {
-            AbInputStruct is = {};
-            m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::Input;
+            B33InputStruct is = {};
+            m_pWindowDesc->Data.LastEvent |= EB33WindowEvents::Input;
 
-            is.Event             = EAbInputEvents::AbButtonPress;
+            is.Event             = EB33InputEvents::B33ButtonPress;
             is.MouseButton.KeyId = 2;
 
             m_pWindowDesc->Data.InputStruct.push( is );
@@ -226,10 +226,10 @@ void BasicWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM lParam )
 
         case WM_MOUSEMOVE:
         {
-            AbInputStruct is = {};
-            m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::Input;
+            B33InputStruct is = {};
+            m_pWindowDesc->Data.LastEvent |= EB33WindowEvents::Input;
 
-            is.Event        = EAbInputEvents::AbMotion;
+            is.Event        = EB33InputEvents::B33Motion;
             is.Mouse.MouseX = GET_X_LPARAM( lParam );
             is.Mouse.MouseY = GET_Y_LPARAM( lParam );
 
@@ -242,11 +242,11 @@ void BasicWin32WindowPolicy::OnUpdate( UINT uMsg, WPARAM wParam, LPARAM lParam )
         case WM_SIZE:
             m_pWindowDesc->Data.Width  = LOWORD( lParam );
             m_pWindowDesc->Data.Height = HIWORD( lParam );
-            m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::Resize;
+            m_pWindowDesc->Data.LastEvent |= EB33WindowEvents::Resize;
             break;
 
         case WM_CLOSE:
-            m_pWindowDesc->Data.LastEvent |= EAbWindowEvents::Destroy;
+            m_pWindowDesc->Data.LastEvent |= EB33WindowEvents::Destroy;
             break;
 
         default:

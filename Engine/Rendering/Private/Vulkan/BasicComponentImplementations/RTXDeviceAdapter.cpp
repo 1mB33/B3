@@ -1,4 +1,4 @@
-#include "B33Rendering.hpp"
+#include "B33Rendering.h"
 
 #include "Vulkan/BasicComponentImplementations/RTXDeviceAdapter.hpp"
 
@@ -45,7 +45,7 @@ void *RTXDeviceAdapter::GetFeaturesImpl() const
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-uint32_t RTXDeviceAdapter::GetQueueFlagsImpl() const
+u32 RTXDeviceAdapter::GetQueueFlagsImpl() const
 {
     return ::VK_QUEUE_COMPUTE_BIT | ::VK_QUEUE_GRAPHICS_BIT;
 }
