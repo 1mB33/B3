@@ -1,5 +1,5 @@
-#if !defined( B33_DEBUG_ASSERT_H )
-#    define B33_DEBUG_ASSERT_H
+#if !defined( B33_DEBUG_ASSERT_HPP )
+#    define B33_DEBUG_ASSERT_HPP
 
 #    include "B33CoreMinimal.h"
 #    include "Exception.hpp"
@@ -34,4 +34,4 @@ template <typename T>
 constexpr bool TypeIsAlwaysFalse = false;
 
 } // namespace B33::Core
-#endif // !B33_DEBUG_ASSERT_H
+#endif // !B33_DEBUG_ASSERT_HPP

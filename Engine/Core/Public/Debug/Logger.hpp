@@ -1,5 +1,5 @@
-#if !defined( B33_LOGGER_H )
-#    define B33_LOGGER_H
+#if !defined( B33_LOGGER_HPP )
+#    define B33_LOGGER_HPP
 
 #    include "B33CoreMinimal.h"
 
@@ -105,4 +105,4 @@ class Logger
 };
 
 } // namespace B33::Core::Debug
-#endif // !B33_LOGGER_H
+#endif // !B33_LOGGER_HPP

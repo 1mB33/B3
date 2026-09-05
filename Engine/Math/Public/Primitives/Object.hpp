@@ -1,8 +1,8 @@
-#if !defined(B33_OBJECT_H)
-#define B33_OBJECT_H
+#if !defined( B33_OBJECT_HPP )
+#    define B33_OBJECT_HPP
 
-#include "Rot.hpp"
-#include "Vec3.hpp"
+#    include "Rot.hpp"
+#    include "Vec3.hpp"
 
 namespace B33::Math
 {
@@ -19,11 +19,11 @@ class alignas( 16 ) WorldObject
     {
     }
 
-    ~WorldObject() = default;
+    ~WorldObject() noexcept = default;
 
   public:
-    WorldObject( WorldObject && )      = default;
-    WorldObject( const WorldObject & ) = default;
+    WorldObject( WorldObject && ) noexcept      = default;
+    WorldObject( const WorldObject & ) noexcept = default;
 
     WorldObject &operator=( const WorldObject & ) noexcept = default;
     WorldObject &operator=( WorldObject && ) noexcept      = default;
@@ -58,4 +58,4 @@ class alignas( 16 ) WorldObject
 };
 
 } // namespace B33::Math
-#endif // !B33_OBJECT_H
+#endif // !B33_OBJECT_HPP

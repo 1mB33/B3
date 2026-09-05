@@ -1,7 +1,7 @@
-#if !defined(B33_VEC3_H)
-#define B33_VEC3_H
+#if !defined( B33_VEC3_HPP )
+#    define B33_VEC3_HPP
 
-#include "B33Core.h"
+#    include <B33Core.h>
 
 namespace B33::Math
 {
@@ -9,10 +9,10 @@ namespace B33::Math
 // ---------------------------------------------------------------------------------------------------------------------
 struct alignas( 16 ) Vec3
 {
-    static constexpr size_t Size = 3;
+    static constexpr usize Size = 3;
 
   public:
-    Vec3() 
+    Vec3() noexcept
       : x( 0.f )
       , y( 0.f )
       , z( 0.f )
@@ -27,7 +27,7 @@ struct alignas( 16 ) Vec3
     }
 
     template <typename Vector>
-    explicit Vec3( Vector v )
+    explicit Vec3( Vector v ) noexcept
       : x( v.x )
       , y( v.y )
       , z( v.z )
@@ -51,15 +51,15 @@ struct alignas( 16 ) Vec3
 
   public:
     template <typename Vector>
-    static Vec3 ToVec( Vector v )
+    static Vec3 ToVec( Vector v ) noexcept
     {
         return Vec3( v.x, v.y, v.z );
     }
 
   public:
-    constexpr float &operator[]( size_t uIndex );
+    constexpr float &operator[]( usize uIndex );
 
-    constexpr float operator[]( size_t uIndex ) const;
+    constexpr float operator[]( usize uIndex ) const;
 
     inline bool operator==( const Vec3 &vB ) const;
 
@@ -69,7 +69,7 @@ struct alignas( 16 ) Vec3
 
     inline Vec3 operator+( const struct iVec3 &vB ) const;
 
-    inline Vec3 operator+( const uint32_t vB ) const;
+    inline Vec3 operator+( const u32 vB ) const;
 
     inline Vec3 operator-( const Vec3 &vB ) const;
 
@@ -81,31 +81,31 @@ struct alignas( 16 ) Vec3
 // ---------------------------------------------------------------------------------------------------------------------
 struct alignas( 16 ) iVec3
 {
-    static constexpr size_t Size = 3;
+    static constexpr usize Size = 3;
 
   public:
-    iVec3()
+    iVec3() noexcept
       : x( 0 )
       , y( 0 )
       , z( 0 )
     {
     }
 
-    explicit iVec3( int32_t x, int32_t y = 0, int32_t z = 0 )
+    explicit iVec3( i32 x, i32 y = 0, i32 z = 0 ) noexcept
       : x( x )
       , y( y )
       , z( z )
     {
     }
 
-    explicit iVec3( Vec3 v )
+    explicit iVec3( Vec3 v ) noexcept
       : x( v.x )
       , y( v.y )
       , z( v.z )
     {
     }
 
-    ~iVec3() = default;
+    ~iVec3() noexcept = default;
 
   public:
     iVec3( iVec3 && ) noexcept = default;
@@ -122,7 +122,7 @@ struct alignas( 16 ) iVec3
 
   public:
     template <typename Vector>
-    static iVec3 ToVec( Vector v )
+    static iVec3 ToVec( Vector v ) noexcept
     {
         return iVec3( v.x, v.y, v.z );
     }
@@ -133,7 +133,7 @@ struct alignas( 16 ) iVec3
         return this->x == other.x && this->y == other.y && this->z == other.z;
     }
 
-    constexpr int32_t operator[]( size_t uIndex ) const
+    constexpr i32 operator[]( usize uIndex ) const
     {
         B33_ASSERT( uIndex < Size );
 
@@ -148,7 +148,7 @@ struct alignas( 16 ) iVec3
         return z;
     }
 
-    constexpr int32_t &operator[]( size_t uIndex )
+    constexpr i32 &operator[]( usize uIndex )
     {
         B33_ASSERT( uIndex < Size );
 
@@ -167,8 +167,8 @@ struct alignas( 16 ) iVec3
 
     inline iVec3 operator-( const iVec3 &vB ) const;
 
-    inline iVec3 operator*( const uint32_t vB ) const;
+    inline iVec3 operator*( const u32 vB ) const;
 };
 
 } // namespace B33::Math
-#endif // !B33_VEC3_H
+#endif // !B33_VEC3_HPP

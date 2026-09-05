@@ -1,5 +1,5 @@
-#if !defined( B33_MOUSE_BUTTON_LIST_H )
-#    define B33_MOUSE_BUTTON_LIST_H
+#if !defined( B33_MOUSE_BUTTON_LIST_HPP )
+#    define B33_MOUSE_BUTTON_LIST_HPP
 
 #    include "Bind.h"
 
@@ -12,4 +12,4 @@ constexpr const B33KeyId B33_RIGTH_MOUSE_BUTTON  = 3;
 constexpr const B33KeyId B33_MOUSE_BUTTONS_COUNT = 4;
 
 } // namespace B33::App
-#endif // !B33_MOUSE_BUTTON_LIST_H
+#endif // !B33_MOUSE_BUTTON_LIST_HPP

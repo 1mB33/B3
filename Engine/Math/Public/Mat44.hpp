@@ -1,21 +1,23 @@
-#if !defined(B33_MAT4_H)
-#define B33_MAT4_H
+#if !defined( B33_MAT4_HPP )
+#    define B33_MAT4_HPP
+
+#    include <B33Core.h>
 
 namespace B33::Math
 {
 
 struct alignas( 16 ) Mat44
 {
-    static constexpr size_t Size = 16;
+    static constexpr usize Size = 16;
 
     float m[ Size ];
 
-    float &operator[]( size_t uIndex )
+    float &operator[]( usize uIndex )
     {
-        B33_ASSERT(uIndex < Size);
+        B33_ASSERT( uIndex < Size );
         return m[ uIndex ];
     }
 };
 
 } // namespace B33::Math
-#endif // !B33_MAT4_H
+#endif // !B33_MAT4_HPP

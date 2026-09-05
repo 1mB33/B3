@@ -1,5 +1,5 @@
-#if !defined( B33_EXCEPT_H )
-#    define B33_EXCEPT_H
+#if !defined( B33_EXCEPT_HPP )
+#    define B33_EXCEPT_HPP
 
 #    include "B33CoreMinimal.h"
 #    include <exception>
@@ -60,4 +60,4 @@ class __B33_API Exception : public ::std::exception
 };
 
 } // namespace B33::Core
-#endif // !B33_EXCEPT_H
+#endif // !B33_EXCEPT_HPP

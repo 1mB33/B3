@@ -1,7 +1,7 @@
-#if !defined(B33_WINDOW_EVENTS_H)
-#define B33_WINDOW_EVENTS_H
+#if !defined( B33_WINDOW_EVENTS_H )
+#    define B33_WINDOW_EVENTS_H
 
-#include "B33Core.h"
+#    include "B33Core.h"
 
 typedef u32 EB33WindowEventsFlags;
 

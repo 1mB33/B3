@@ -1,5 +1,5 @@
-#if !defined( B33_UNKNOWN_COLORS )
-#    define B33_UNKNOWN_COLORS
+#if !defined( B33_UNKNOWN_COLORS_HPP )
+#    define B33_UNKNOWN_COLORS_HPP
 
 #    include "B33CoreMinimal.h"
 #    include "Attributes.h"
@@ -21,7 +21,7 @@ class Unknown
             m_Index = IncreaseAndGetCounter();
     }
 
-    static UnknownIndex GetGlobalIndex() noexcept 
+    static UnknownIndex GetGlobalIndex() noexcept
     {
         return m_Index;
     }

@@ -1,14 +1,14 @@
-#if !defined(B33_VEC3_OPERATORS_H)
-#define B33_VEC3_OPERATORS_H
+#if !defined( B33_VEC3_OPERATORS_HPP )
+#    define B33_VEC3_OPERATORS_HPP
 
-#include "Operations.hpp"
-#include "Vec3.hpp"
+#    include "Operations.hpp"
+#    include "Vec3.hpp"
 
 namespace B33::Math
 {
 
 // --------------------------------------------------------------------------------------------------------------------
-constexpr float &Vec3::operator[]( size_t uIndex )
+constexpr float &Vec3::operator[]( usize uIndex )
 {
     B33_ASSERT( uIndex < Size );
 
@@ -24,7 +24,7 @@ constexpr float &Vec3::operator[]( size_t uIndex )
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-constexpr float Vec3::operator[]( size_t uIndex ) const
+constexpr float Vec3::operator[]( usize uIndex ) const
 {
     B33_ASSERT( uIndex < Size );
 
@@ -42,9 +42,11 @@ constexpr float Vec3::operator[]( size_t uIndex ) const
 // --------------------------------------------------------------------------------------------------------------------
 inline bool Vec3::operator==( const Vec3 &vB ) const
 {
+    using ::std::fabs;
+
     const float fEpsilon = 0.0001f;
-    return ( ::std::fabs( this->x - vB.x ) < fEpsilon && ::std::fabs( this->y - vB.y ) < fEpsilon &&
-             ::std::fabs( this->z - vB.z ) < fEpsilon )
+    return ( fabs( this->x - vB.x ) < fEpsilon && fabs( this->y - vB.y ) < fEpsilon &&
+             fabs( this->z - vB.z ) < fEpsilon )
                ? true
                : false;
 }
@@ -71,7 +73,7 @@ inline Vec3 Vec3::operator+( const iVec3 &vB ) const
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-inline Vec3 Vec3::operator+( const uint32_t vB ) const
+inline Vec3 Vec3::operator+( const u32 vB ) const
 {
     Vec3 n( *this );
     n = AddAssign( n, Vec3( vB, vB, vB ) );
@@ -114,11 +116,11 @@ inline iVec3 iVec3::operator-( const iVec3 &vB ) const
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-inline iVec3 iVec3::operator*( const uint32_t vB ) const
+inline iVec3 iVec3::operator*( const u32 vB ) const
 {
     iVec3 n( *this );
     return Multiply( n, iVec3( vB, vB, vB ) );
 }
 
 } // namespace B33::Math
-#endif // !B33_VEC3_OPERATORS_H
+#endif // !B33_VEC3_OPERATORS_HPP

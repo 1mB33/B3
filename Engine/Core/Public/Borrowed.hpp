@@ -1,6 +1,7 @@
-#include <exception>
 #if !defined( B33_BORROWED_HPP )
 #    define B33_BORROWED_HPP
+
+#    include "B33CoreMinimal.h"
 
 namespace B33::Core
 {

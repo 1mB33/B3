@@ -1,5 +1,5 @@
-#if !defined( B33_KEY_LIST_H )
-#    define B33_KEY_LIST_H
+#if !defined( B33_KEY_LIST_HPP )
+#    define B33_KEY_LIST_HPP
 
 #    include "Bind.h"
 
@@ -186,4 +186,4 @@ constexpr const B33KeyId B33_KEY_UPARROW       = 0x7E + 1;
 constexpr const B33KeyId B33_KEY_COUNT = 255;
 
 } // namespace B33::App
-#endif // !B33_KEY_LIST_H
+#endif // !B33_KEY_LIST_HPP

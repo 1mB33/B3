@@ -1,7 +1,7 @@
-#if !defined( B33_GAME_SYSTEM_POLICY_H )
-#    define B33_GAME_SYSTEM_POLICY_H
+#if !defined( B33_GAME_SYSTEM_POLICY_HPP )
+#    define B33_GAME_SYSTEM_POLICY_HPP
 
-#    include "B33App.h"
+#    include <B33Core.h>
 
 #    if defined( _WIN32 )
 #        include "Window/WindowPolicy/Win32/BorderlessGameWin32Policy.hpp"
@@ -26,4 +26,4 @@ typedef
         DefaultGameSystemWindowPolicy;
 
 } // namespace B33::App
-#endif // !B33_GAME_SYSTEM_POLICY_H
+#endif // !B33_GAME_SYSTEM_POLICY_HPP

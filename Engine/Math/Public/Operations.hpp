@@ -1,8 +1,8 @@
-#if !defined(B33_OPERATIONS_H)
-#define B33_OPERATIONS_H
+#if !defined( B33_OPERATIONS_HPP )
+#    define B33_OPERATIONS_HPP
 
-#include "Mat44.hpp"
-#include "Vec3.hpp"
+#    include "Mat44.hpp"
+#    include "Vec3.hpp"
 
 namespace B33::Math
 {
@@ -11,21 +11,21 @@ namespace B33::Math
 template <class Vector>
 Vector Normalize( const Vector &v )
 {
+    using ::std::sqrt;
+
     Vector result = Vector();
     float  mod    = 0.f;
     float  invMag;
 
-    for ( size_t i = 0; i < Vector::Size; ++i )
+    for ( usize i = 0; i < Vector::Size; ++i )
         mod += v[ i ] * v[ i ];
 
     if ( mod == 0.f )
-    {
         return result;
-    }
 
-    invMag = 1.f / ::std::sqrt( mod );
+    invMag = 1.f / sqrt( mod );
 
-    for ( size_t i = 0; i < Vector::Size; ++i )
+    for ( usize i = 0; i < Vector::Size; ++i )
         result[ i ] = v[ i ] * invMag;
 
     return result;
@@ -78,9 +78,12 @@ constexpr inline Vector RotateX( const Vector &, float )
 template <>
 inline Vec3 RotateX( const Vec3 &v, float angleRad )
 {
+    using ::std::cos;
+    using ::std::sin;
+
     Vec3  result;
-    float c = std::cos( angleRad );
-    float s = std::sin( angleRad );
+    float c = cos( angleRad );
+    float s = sin( angleRad );
 
     result.x = v.x;
     result.y = v.y * c - v.z * s;
@@ -101,9 +104,12 @@ constexpr inline Vector RotateY( const Vector &, float )
 template <>
 inline Vec3 RotateY( const Vec3 &v, float angleRad )
 {
+    using ::std::cos;
+    using ::std::sin;
+
     Vec3  result;
-    float c = std::cos( angleRad );
-    float s = std::sin( angleRad );
+    float c = cos( angleRad );
+    float s = sin( angleRad );
 
     result.x = v.x * c + v.z * s;
     result.y = v.y;
@@ -124,9 +130,12 @@ constexpr inline Vector RotateZ( const Vector &, float )
 template <>
 inline Vec3 RotateZ( const Vec3 &v, float angleRad )
 {
+    using ::std::cos;
+    using ::std::sin;
+
     Vec3  result;
-    float c = std::cos( angleRad );
-    float s = std::sin( angleRad );
+    float c = cos( angleRad );
+    float s = sin( angleRad );
 
     result.x = v.x * c - v.y * s;
     result.y = v.x * s + v.y * c;
@@ -262,6 +271,8 @@ inline iVec3 MultiplyScalar( const iVec3 &vA, const float vB )
 // ---------------------------------------------------------------------------------------------------------------------
 inline Mat44 PerspectiveProjection( float fFovY, float width, float height, float fNear, float fFar )
 {
+    using ::std::tan;
+
     const float fInvAspectRatio = height / width;
     const float fFocal          = 1.0f / tan( fFovY * 0.5f );
     const float rangeInv        = 1.0f / ( fFar - fNear );
@@ -288,4 +299,4 @@ inline Mat44 PerspectiveProjection( float fFovY, float width, float height, floa
 }
 
 } // namespace B33::Math
-#endif // !B33_OPERATIONS_H
+#endif // !B33_OPERATIONS_HPP

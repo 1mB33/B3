@@ -1,5 +1,5 @@
-#if !defined( B33_IBASEWINDOW_H )
-#    define B33_IBASEWINDOW_H
+#if !defined( B33_IBASEWINDOW_HPP )
+#    define B33_IBASEWINDOW_HPP
 
 #    include <B33Core.h>
 #    include "AppResources.hpp"
@@ -350,4 +350,4 @@ class IBaseWindow
 };
 
 } // namespace B33::App
-#endif // !B33_IBASEWINDOW_H
+#endif // !B33_IBASEWINDOW_HPP

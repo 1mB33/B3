@@ -1,7 +1,7 @@
-#if !defined(B33_VEC4_H)
-#define B33_VEC4_H
+#if !defined( B33_VEC4_HPP )
+#    define B33_VEC4_HPP
 
-#include "B33Core.h"
+#    include <B33Core.h>
 
 namespace B33::Math
 {
@@ -9,10 +9,10 @@ namespace B33::Math
 // ---------------------------------------------------------------------------------------------------------------------
 struct alignas( 16 ) Vec4
 {
-    static constexpr size_t Size = 4;
+    static constexpr usize Size = 4;
 
   public:
-    explicit Vec4( float x = 0, float y = 0, float z = 0, float w = 0 )
+    explicit Vec4( float x = 0, float y = 0, float z = 0, float w = 0 ) noexcept
       : x( x )
       , y( y )
       , z( z )
@@ -20,7 +20,7 @@ struct alignas( 16 ) Vec4
     {
     }
 
-    ~Vec4() = default;
+    ~Vec4() noexcept = default;
 
   public:
     Vec4( Vec4 && ) noexcept = default;
@@ -37,13 +37,13 @@ struct alignas( 16 ) Vec4
 
   public:
     template <typename Vector>
-    static Vec4 ToVec4( Vector v )
+    static Vec4 ToVec4( Vector v ) noexcept
     {
         return Vec4( v.x, v.y, v.z, 0.f );
     }
 
   public:
-    constexpr float operator[]( size_t uIndex ) const
+    constexpr float operator[]( usize uIndex ) const
     {
         B33_ASSERT( uIndex < Size );
 
@@ -62,7 +62,7 @@ struct alignas( 16 ) Vec4
         return w;
     }
 
-    constexpr float &operator[]( size_t uIndex )
+    constexpr float &operator[]( usize uIndex )
     {
         B33_ASSERT( uIndex < Size );
 
@@ -85,10 +85,10 @@ struct alignas( 16 ) Vec4
 // ---------------------------------------------------------------------------------------------------------------------
 struct alignas( 16 ) iVec4
 {
-    static constexpr size_t Size = 4;
+    static constexpr usize Size = 4;
 
   public:
-    explicit iVec4( int32_t x = 0, int32_t y = 0, int32_t z = 0, int32_t w = 0 )
+    explicit iVec4( i32 x = 0, i32 y = 0, i32 z = 0, i32 w = 0 ) noexcept
       : x( x )
       , y( y )
       , z( z )
@@ -96,7 +96,7 @@ struct alignas( 16 ) iVec4
     {
     }
 
-    ~iVec4() = default;
+    ~iVec4() noexcept = default;
 
   public:
     iVec4( iVec4 && ) noexcept = default;
@@ -106,20 +106,20 @@ struct alignas( 16 ) iVec4
     iVec4 &operator=( iVec4 && ) noexcept      = default;
 
   public:
-    int32_t x;
-    int32_t y;
-    int32_t z;
-    int32_t w;
+    i32 x;
+    i32 y;
+    i32 z;
+    i32 w;
 
   public:
     template <typename Vector>
-    static iVec4 ToiVec4( Vector v )
+    static iVec4 ToiVec4( Vector v ) noexcept
     {
         return iVec4( v.x, v.y, v.z, 0.f );
     }
 
   public:
-    constexpr int32_t operator[]( size_t uIndex ) const
+    constexpr i32 operator[]( usize uIndex ) const
     {
         B33_ASSERT( uIndex < Size );
 
@@ -138,7 +138,7 @@ struct alignas( 16 ) iVec4
         return w;
     }
 
-    constexpr int32_t &operator[]( size_t uIndex )
+    constexpr i32 &operator[]( usize uIndex )
     {
         B33_ASSERT( uIndex < Size );
 
@@ -159,4 +159,4 @@ struct alignas( 16 ) iVec4
 };
 
 } // namespace B33::Math
-#endif // !B33_VEC4_H
+#endif // !B33_VEC4_HPP

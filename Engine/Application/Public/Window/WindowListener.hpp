@@ -1,5 +1,5 @@
-#if !defined( B33_WINDOW_LISTENER_H )
-#    define B33_WINDOW_LISTENER_H
+#if !defined( B33_WINDOW_LISTENER_HPP )
+#    define B33_WINDOW_LISTENER_HPP
 
 #    include <B33Core.h>
 
@@ -68,4 +68,4 @@ class WindowListener
 };
 
 } // namespace B33::App
-#endif //! B33_WINDOW_LISTENER_H
+#endif //! B33_WINDOW_LISTENER_HPP

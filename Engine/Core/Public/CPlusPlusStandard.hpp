@@ -1,5 +1,5 @@
-#if !defined( B33_CSYSTEM_H )
-#    define B33_CSYSTEM_H
+#if !defined( B33_CSYSTEM_HPP )
+#    define B33_CSYSTEM_HPP
 
 #    include <algorithm>
 #    include <array>
@@ -23,4 +23,4 @@
 #    include <unordered_map>
 #    include <unordered_set>
 
-#endif // !B33_CSYSTEM_H
+#endif // !B33_CSYSTEM_HPP

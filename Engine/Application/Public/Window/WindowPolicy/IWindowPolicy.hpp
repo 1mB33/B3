@@ -1,5 +1,5 @@
-#if !defined( B33_IWINDOW_POLICY_H )
-#    define B33_IWINDOW_POLICY_H
+#if !defined( B33_IWINDOW_POLICY_HPP )
+#    define B33_IWINDOW_POLICY_HPP
 
 #    include "Unknown.hpp"
 #    include "Window/WindowDesc.hpp"
@@ -50,4 +50,4 @@ class IWindowPolicy
 };
 
 } // namespace B33::App
-#endif // !B33_IWINDOW_POLICY_H
+#endif // !B33_IWINDOW_POLICY_HPP

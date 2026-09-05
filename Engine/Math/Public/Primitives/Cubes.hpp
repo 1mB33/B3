@@ -1,15 +1,18 @@
-#if !defined(B33_CUBES_H)
-#define B33_CUBES_H
+#if !defined( B33_CUBES_HPP )
+#    define B33_CUBES_HPP
 
-#include "B33Math.hpp"
+#    include <B33Core.h>
 
-#include "Primitives/Objects.hpp"
+#    include "Primitives/Objects.hpp"
 
 namespace B33::Math
 {
 
 class Cubes : public WorldObjects
 {
+    template <typename T>
+    using Vector = ::std::vector<T>;
+
   public:
     Cubes()
       : WorldObjects()
@@ -19,26 +22,26 @@ class Cubes : public WorldObjects
     }
 
   public:
-    const ::std::vector<Vec3> &GetHalfSizes() const
+    const Vector<Vec3> &GetHalfSizes() const
     {
         return m_vHalfSizes;
     }
 
-    Vec3 GetHalfSize( ::size_t uIndex ) const
+    Vec3 GetHalfSize( usize uIndex ) const
     {
         return m_vHalfSizes[ uIndex ];
     }
 
   public:
-    void SetHalfSize( Vec3 halfSize, ::size_t uIndex )
+    void SetHalfSize( Vec3 halfSize, usize uIndex )
     {
         m_vHalfSizes[ uIndex ] = halfSize;
     }
 
   public:
-    virtual ::size_t AddObject() override
+    virtual usize AddObject() override
     {
-        ::size_t i = WorldObjects::AddObject();
+        usize i = WorldObjects::AddObject();
         m_vHalfSizes.push_back( Vec3() );
 
         B33_ASSERT( i == m_vHalfSizes.size() - 1 );
@@ -46,14 +49,14 @@ class Cubes : public WorldObjects
         return i;
     }
 
-    virtual void RemoveObject( ::size_t uIndex ) override
+    virtual void RemoveObject( usize uIndex ) override
     {
         WorldObjects::RemoveObject( uIndex );
     }
 
   private:
-    ::std::vector<Vec3> m_vHalfSizes;
+    Vector<Vec3> m_vHalfSizes;
 };
 
 } // namespace B33::Math
-#endif // !B33_CUBES_H
+#endif // !B33_CUBES_HPP

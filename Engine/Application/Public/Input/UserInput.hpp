@@ -1,5 +1,5 @@
-#if !defined( B33_USER_INPUT_H )
-#    define B33_USER_INPUT_H
+#if !defined( B33_USER_INPUT_HPP )
+#    define B33_USER_INPUT_HPP
 
 #    include "Input/Bind.h"
 #    include "Input/KeyList.hpp"
@@ -93,4 +93,4 @@ class UserInput : public WindowListener
 };
 
 } // namespace B33::App
-#endif // !B33_USER_INPUT_H
+#endif // !B33_USER_INPUT_HPP
