@@ -1,4 +1,4 @@
-# Table of content
+# Table of Contents
 ---
 - [About the project](#b3)
 - [About demo](#about-demo)
@@ -10,32 +10,66 @@
 
 # B3
 
-Project is part of [BEng Thesis "Design and implementation of a game engine using Vulkan technology"](https://github.com/1mB33/BachelorsThesis). 
-Engine is separated into several libraries. For demonstration purpose a Minecraft alike demo game was created.
+This project is part of the [BEng Thesis "Design and Implementation of a Game Engine Using Vulkan Technology"](https://github.com/1mB33/BachelorsThesis).
+The engine is separated into several modules.
+It implements a custom cross-platform window management system with runtime-switchable behavior.
+It also features a low-latency input system and a Vulkan-based renderer.
 
 ### Engine libraries:
-- Core (fundamental functionality, debugging tools, OS headers)
-- Application (windows managment, input managment, application managment)
-- Math (vector math, geometric primitives, matrices and vector implementations)
-- Rendering (vulkan C++ wrappers, rendering logic, shaders)
-- System (engine components relations, entry points for applications)
+Core:
+    - testing framework
+    - debugging tools (logger, assertions)
+    - exception definitions
+    - runnable scripts
+    - synchronization classes (time synchronization)
+    - compiler attribute macros
+    - unknown-class definition for indexing classes
+    - includes of OS, C, and C++ headers
+(an STL implementation will be introduced in the future)
+
+Application:
+    - window management abstraction layer over WinAPI, X11, and Cocoa, created using the policy pattern (strategy pattern)
+    - input management
+    - application status management, with exit condition declared via the AppStatus class
+
+Math:
+    - matrices and vector implementations
+    - C++ operators for vector math
+    - geometric primitives
+
+Rendering:
+    - Vulkan C++ wrappers
+    - renderer
+    - swapchain
+    - pipeline interface
+    - voxel raytracing pipeline
+    - sprite rendering pipeline
+    - shaders
+
+System:
+    - relations between engine components
+    - job system
+    - event system
+    - reflection system (class names only, with the ability to create objects by requesting them via class name)
+    - different entry points for the application per operating system
 
 ### Currently supported operating systems:
 - Windows
 - Linux
 - macOS (basic support through MoltenVK)
 
-For rendering, the default pipeline uses voxel traversal algorithm implementation based on
-'A Fast Voxel Traversal Algorithm for Ray Tracing'
-by John Amanatides and Andrew Woo (1987) and Blinn-Phong Reflection lighting.
+### Voxel raytracing pipeline
+For rendering, it uses a voxel traversal algorithm implementation based on
+"A Fast Voxel Traversal Algorithm for Ray Tracing"
+by John Amanatides and Andrew Woo (1987), and Blinn-Phong reflection lighting.
 
+The pipeline works entirely in a compute shader.
 
-Implements a custom cross-platform window management system with runtime switchable behavior.
-Features a low-latency input system and a fully custom Vulkan-based compute rendering pipeline.
 
 # About demo
 
-In demo we can play a simple minecraft lookalike game where you can place and remove blocks. Uses Jolt Physics to showcase the rendering pipeline and test performance.
+In demo we can play a simple minecraft lookalike game where you can place and remove blocks. 
+Uses Jolt Physics to showcase the project and test performance.
 
 
 # Demos physics showcase
