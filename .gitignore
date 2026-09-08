@@ -5,6 +5,11 @@ compile_commands.json
 Bin/
 Build/
 BuildDebug/
+BuildExamples/
+BuildTestsOnly/
+html/
+Projects/
+latex/
 out/
 Lib/
 
