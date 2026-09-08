@@ -80,7 +80,7 @@ class ComponentAbstractBase
 
     void DecreaseCount()
     {
-        m_UpdateCount.fetch_add( 1 );
+        m_UpdateCount.fetch_sub( 1 );
     }
 
     i32 GetCount()
