@@ -17,41 +17,41 @@ It also features a low-latency input system and a Vulkan-based renderer.
 
 ### Engine libraries:
 Core:
-    - testing framework
-    - debugging tools (logger, assertions)
-    - exception definitions
-    - runnable scripts
-    - synchronization classes (time synchronization)
-    - compiler attribute macros
-    - unknown-class definition for indexing classes
-    - includes of OS, C, and C++ headers
+- testing framework
+- debugging tools (logger, assertions)
+- exception definitions
+- runnable scripts
+- synchronization classes (time synchronization)
+- compiler attribute macros
+- unknown-class definition for indexing classes
+- includes of OS, C, and C++ headers
 (an STL implementation will be introduced in the future)
 
 Application:
-    - window management abstraction layer over WinAPI, X11, and Cocoa, created using the policy pattern (strategy pattern)
-    - input management
-    - application status management, with exit condition declared via the AppStatus class
+- window management abstraction layer over WinAPI, X11, and Cocoa, created using the policy pattern (strategy pattern)
+- input management
+- application status management, with exit condition declared via the AppStatus class
 
 Math:
-    - matrices and vector implementations
-    - C++ operators for vector math
-    - geometric primitives
+- matrices and vector implementations
+- C++ operators for vector math
+- geometric primitives
 
 Rendering:
-    - Vulkan C++ wrappers
-    - renderer
-    - swapchain
-    - pipeline interface
-    - voxel raytracing pipeline
-    - sprite rendering pipeline
-    - shaders
+- Vulkan C++ wrappers
+- renderer
+- swapchain
+- pipeline interface
+- voxel raytracing pipeline
+- sprite rendering pipeline
+- shaders
 
 System:
-    - relations between engine components
-    - job system
-    - event system
-    - reflection system (class names only, with the ability to create objects by requesting them via class name)
-    - different entry points for the application per operating system
+- relations between engine components
+- job system
+- event system
+- reflection system (class names only, with the ability to create objects by requesting them via class name)
+- different entry points for the application per operating system
 
 ### Currently supported operating systems:
 - Windows
