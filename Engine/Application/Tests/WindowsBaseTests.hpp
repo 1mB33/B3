@@ -6,7 +6,7 @@
 #    include "Window/WindowPolicy/BasicSystemPolicy.hpp"
 #    include "Window/WindowPolicy/BorderlessGameSystemPolicy.hpp"
 
-TEST( WindowsInstanceCreation )
+TEST( Windows_InstanceCreation )
 {
     B33::App::EmptyCanvas<true, ::B33::App::DefaultGameSystemWindowPolicy> window( L"Test", 1, 1 );
     window.Create();
@@ -18,7 +18,7 @@ TEST( WindowsInstanceCreation )
     B33_ASSERT( window.GetWindowDesc()->Data.bIsAlive == true );
 }
 
-TEST( WindowsBehaviorChange )
+TEST( Windows_BehaviorChange )
 {
     __B33_ATTRIBUTE_MIGHT_BE_UNUSED auto dgswp = ::B33::App::DefaultGameSystemWindowPolicy();
 
@@ -38,7 +38,7 @@ TEST( WindowsBehaviorChange )
     B33_ASSERT( typeid( window.GetPolicy() ) != typeid( dgswp ) );
 }
 
-TEST( WindowRecreateWindowBad )
+TEST( Windows_RecreateWindowBad )
 {
     B33::App::EmptyCanvas<true, ::B33::App::DefaultGameSystemWindowPolicy> window( L"Test", 1, 1 );
     window.Create();
@@ -55,7 +55,7 @@ TEST( WindowRecreateWindowBad )
     B33_ASSERT( window.GetWindowDesc()->Data.bIsAlive == true );
 }
 
-TEST( WindowRecreateWindowGood )
+TEST( Windows_RecreateWindowGood )
 {
     B33::App::EmptyCanvas<true, ::B33::App::DefaultGameSystemWindowPolicy> window( L"Test", 1, 1 );
     window.Create();
