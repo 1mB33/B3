@@ -129,8 +129,8 @@ class IBaseWindow
 
         lock_guard lg( m_pWindowDesc->mUpdated );
 
-        bool                                 bWasAlive  = this->m_pWindowDesc->Data.bIsAlive;
-        UniquePtr<DefaultSystemWindowPolicy> pNewPolicy = nullptr;
+        bool                    bWasAlive  = this->m_pWindowDesc->Data.bIsAlive;
+        UniquePtr<WindowPolicy> pNewPolicy = nullptr;
 
         // Create structs for new state and to keep the old state of WindowDesc
         WindowDesc oldDesc = {};
@@ -344,7 +344,7 @@ class IBaseWindow
     }
 
   private:
-    UniquePtr<DefaultSystemWindowPolicy> m_Policy;
+    UniquePtr<WindowPolicy> m_Policy;
 
     SharedPtr<WindowDesc> m_pWindowDesc;
 };
