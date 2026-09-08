@@ -107,7 +107,7 @@ class GroupMemory
                         "use GetValue<Index>() or wrap duplicate primitive types in distinct tag structs." );
 
         constexpr usize uIndex = TupleIndex<T, Tuple<PER_OBJECT...>>::value;
-        B33_ASSERT( entityId >= 0 && entityId < m_uItemsCount );
+        B33_ASSERT( entityId < m_uItemsCount );
 
         char *base = m_Data[ uIndex ].data();
 
@@ -135,7 +135,7 @@ class GroupMemory
 
         B33_ASSERT_MSG( ( Index < sizeof...( PER_OBJECT ) ), "Group: value index out of range" );
 
-        B33_ASSERT( entityId >= 0 && entityId < m_uItemsCount );
+        B33_ASSERT( entityId < m_uItemsCount );
 
         char *base = m_Data[ Index ].data();
 

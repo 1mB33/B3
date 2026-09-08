@@ -1,13 +1,11 @@
 #if !defined( B33_EVENT_DISPATCHER_TESTS_HPP )
 #    define B33_EVENT_DISPATCHER_TESTS_HPP
 
-#    include "B33Core.h"
-#    include "Tests/TestInstance.hpp"
-#    include "Events/EventDispatcher.hpp"
+#    include <Tests/TestInstance.hpp>
 #    include "Events/Event.hpp"
-#    include "Debug/Assert.hpp"
+#    include "Events/EventDispatcher.hpp"
 
-TEST( EventDispatcher )
+TEST( EventDispatcher_Register )
 {
     __B33_ATTRIBUTE_MIGHT_BE_UNUSED static int Count = 0;
 
@@ -20,11 +18,11 @@ TEST( EventDispatcher )
         }
     };
 
-    class SomeKindOfEvent : public B33::System::Event<SomeKindOfEvent>
+    class SomeKindOfEvent : public ::B33::System::Event<SomeKindOfEvent>
     {
     };
 
-    class AnotherEvent : public B33::System::Event<AnotherEvent>
+    class AnotherEvent : public ::B33::System::Event<AnotherEvent>
     {
     };
 
