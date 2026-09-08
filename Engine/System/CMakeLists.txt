@@ -4,12 +4,14 @@ SET(BEE_SYSTEM_SOURCE_OBJECTIVE_CPP
 SET(BEE_SYSTEM_SOURCE
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/IComponent.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/EngineLoop.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Private/JobSystem.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/ComponentsOrder.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/B33System.cpp"
 )
 SET(BEE_SYSTEM_HEADRES
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/IComponent.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/ComponentBridge.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/JobSystem.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/ComponentsOrder.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/EngineLoop.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/B33System.hpp"

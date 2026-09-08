@@ -1,11 +1,11 @@
 #ifndef B33_ENGINE_LOOP_H
 #define B33_ENGINE_LOOP_H
 
-#include "B33System.hpp"
+#include <B33Core.h>
 #include "IComponent.hpp"
 #include "ComponentsOrder.hpp"
 #include "ComponentBridge.hpp"
-#include "Synchronization/JobSystem.hpp"
+#include "JobSystem.hpp"
 
 namespace B33::System
 {
@@ -67,7 +67,7 @@ class EngineLoop
     ComponentsMap   m_Components      = {};
     ComponentBridge m_ComponentBridge = {};
 
-    ::B33::Core::JobSystem m_JobSystem = {};
+    JobSystem m_JobSystem = {};
 
 
     bool m_bInitialized = false;

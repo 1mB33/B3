@@ -4,7 +4,6 @@ SET(BEE_CORE_SOURCE
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Debug/Logger.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Synchronization/DeltaTime.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Synchronization/FpsLimiter.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/Private/Synchronization/JobSystem.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/TerminalColors.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Unknown.cpp"
 )
