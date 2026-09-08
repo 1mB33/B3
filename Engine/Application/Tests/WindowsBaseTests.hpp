@@ -1,13 +1,10 @@
 #if !defined( B33_EVENT_DISPATCHER_TESTS_HPP )
 #    define B33_EVENT_DISPATCHER_TESTS_HPP
 
-#    include "B33Core.h"
-#    include "Exception.hpp"
+#    include <Tests/TestInstance.hpp>
 #    include "EmptyCanvas.hpp"
 #    include "Window/WindowPolicy/BasicSystemPolicy.hpp"
 #    include "Window/WindowPolicy/BorderlessGameSystemPolicy.hpp"
-#    include "Tests/TestInstance.hpp"
-#    include "Debug/Assert.hpp"
 
 TEST( WindowsInstanceCreation )
 {

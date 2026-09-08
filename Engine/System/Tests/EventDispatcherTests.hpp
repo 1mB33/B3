@@ -1,11 +1,8 @@
 #if !defined( B33_EVENT_DISPATCHER_TESTS_HPP )
 #    define B33_EVENT_DISPATCHER_TESTS_HPP
 
-#    include "B33Core.h"
-#    include "Tests/TestInstance.hpp"
+#    include <Tests/TestInstance.hpp>
 #    include "Events/EventDispatcher.hpp"
-#    include "Events/Event.hpp"
-#    include "Debug/Assert.hpp"
 
 TEST( EventDispatcher )
 {
