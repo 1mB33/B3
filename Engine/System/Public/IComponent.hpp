@@ -75,12 +75,12 @@ class ComponentAbstractBase
   private:
     void IncreaseCount()
     {
-        m_UpdateCount.store( m_UpdateCount.load() + 1 );
+        m_UpdateCount.fetch_add( 1 );
     }
 
     void DecreaseCount()
     {
-        m_UpdateCount.store( m_UpdateCount.load() - 1 );
+        m_UpdateCount.fetch_add( 1 );
     }
 
     i32 GetCount()
