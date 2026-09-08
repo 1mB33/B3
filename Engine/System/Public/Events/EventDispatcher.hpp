@@ -13,13 +13,13 @@ class EventDispatcher
     using SharedDispacherInstance = ::std::shared_ptr<EventDispatcherInstance>;
 
     template <typename T>
-    constexpr decltype( auto ) Forward( T &arg ) noexcept
+    static constexpr decltype( auto ) Forward( T &arg ) noexcept
     {
         return ::std::forward<T>( arg );
     }
 
     template <typename T>
-    constexpr decltype( auto ) Forward( T &&arg ) noexcept
+    static constexpr decltype( auto ) Forward( T &&arg ) noexcept
     {
         return ::std::forward<T>( arg );
     }
