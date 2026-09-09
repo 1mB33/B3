@@ -65,10 +65,20 @@ by John Amanatides and Andrew Woo (1987), and Blinn-Phong reflection lighting.
 
 The pipeline works entirely in a compute shader.
 
+### Sprite pipeline
+Currently work in progress. Uses vertex and fragment shader.
+
+### Protypes:
+Project uses systems protypes that are available on my profile.
+- [Assets manager](https://github.com/1mB33/AssetsManager)
+- [Unknown](https://github.com/1mB33/Unknown)
+- [Component system](https://github.com/1mB33/ComponentSystem)
+- [Event handler](https://github.com/1mB33/EventHandler)
+
 
 # About demo
 
-In demo we can play a simple minecraft lookalike game where you can place and remove blocks. 
+In demo we can play a simple builder game where you can place and remove blocks. 
 Uses Jolt Physics to showcase the project and test performance.
 
 
