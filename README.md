@@ -23,9 +23,9 @@ Core:
 - runnable scripts
 - synchronization classes (time synchronization)
 - compiler attribute macros
-- unknown-class definition for indexing classes
+- unknown-class definition for global class indexing
 - includes of OS, C, and C++ headers
-(an STL implementation will be introduced in the future)
+(a custom STL implementation will be introduced in the future)
 
 Application:
 - window management abstraction layer over WinAPI, X11, and Cocoa, created using the policy pattern (strategy pattern)
@@ -58,28 +58,39 @@ System:
 - Linux
 - macOS (basic support through MoltenVK)
 
-### Voxel raytracing pipeline
+### Voxel ray tracing pipeline
 For rendering, it uses a voxel traversal algorithm implementation based on
 "A Fast Voxel Traversal Algorithm for Ray Tracing"
 by John Amanatides and Andrew Woo (1987), and Blinn-Phong reflection lighting.
 
 The pipeline works entirely in a compute shader.
 
+The technique was decided based on my knowledge of basic DDA algorithms
+and me dealing earlier with 2D ray casting in a project called [AsciiRaycaster](https://github.com/1mB33/AsciiRaycaster)
+and having some basic knowledge about direct image rendering.
+This seemed faster and more interesting to implement than learning Vulkan's Acceleration Structures
+and hardware ray tracing shader pipeline.
+The pipeline was supposed to stay in this form until a suggestion to implement external physics
+appeared. At this point I had to figure out how to switch from cubes of voxels to 
+some kind of independent structure. The idea was to start treating the voxels themselves as 
+an acceleration structure and that gave me the possibility to decouple geometric figures (in this case cubes) from
+the voxel grid.
+
 ### Sprite pipeline
 Currently work in progress. Uses vertex and fragment shader.
 
-### Protypes:
-Project uses systems protypes that are available on my profile.
+### Prototypes:
+The project uses system prototypes that are available on my profile.
 - [Assets manager](https://github.com/1mB33/AssetsManager)
-- [Unknown](https://github.com/1mB33/Unknown)
+- [Unknown-class definition for global class indexing](https://github.com/1mB33/Unknown)
 - [Component system](https://github.com/1mB33/ComponentSystem)
 - [Event handler](https://github.com/1mB33/EventHandler)
 
 
 # About demo
 
-In demo we can play a simple builder game where you can place and remove blocks. 
-Uses Jolt Physics to showcase the project and test performance.
+In the demo we can play a simple builder game where you can place and remove blocks. 
+The demo uses Jolt Physics to showcase the project and test performance.
 
 
 # Demos physics showcase
@@ -135,7 +146,7 @@ Build dependencies:
 
 ## Linux
 
-### Get necessary libraries and headers
+### Get the necessary libraries and headers
 
 ### Arch linux based systems
 ``` sh
@@ -162,21 +173,49 @@ Run project from a bin directory that is created in root directory of the projec
 
 ## Windows
 
-Download Vulkan SDK from a place like [LunarG](https://vulkan.lunarg.com/sdk/home).
-If you are using Visual Studio make sure to have CMake support installed.
+Download the Vulkan SDK from a place like [LunarG](https://vulkan.lunarg.com/sdk/home).
+If you are using Visual Studio, make sure to have CMake support installed.
 
 ### Visual Studio
 
-Open root directory of the project with Visual Studio. Wait for cmake to build. Select AtlBee project as a build target.
-Prefer release build.
+Clone the project through Visual Studio's 'Opening' dialog. Open the root directory of the project with Visual Studio. Wait for CMake to build. Select the demo project called 'AtlBee' as a build target.
+Prefer the release build.
 
 ### CMake
 
 ``` batch
+git clone --recurse-submodules -j8 https://github.com/1mb33/B3.git
+cd B3
 mkdir Build
 cd Build
 cmake .. -DCMAKE_BUILD_TYPE=Release
 cmake --build .
 ```
 
-Run project from a bin directory that is created in root directory of the project **Bin/TARGET_ARCH/BUILD_TYPE/**.
+Run the project from a bin directory that is created in root directory of the project **Bin/TARGET_ARCH/BUILD_TYPE/**.
+
+## macOS
+
+Get [MoltenVK](https://github.com/KhronosGroup/MoltenVK) for Vulkan support on MacOS.
+
+### With the brew package manager
+With the brew package manager you can get the needed tools to compile the project.
+For clang, download llvm package.
+```
+brew install llvm
+```
+For CMake, download cmake package.
+```
+brew install cmake
+```
+
+### Download and build the project
+
+``` sh
+git clone --recurse-submodules -j8 https://github.com/1mb33/B3.git &&
+cd B3 &&
+mkdir Build &&
+cd Build &&
+cmake .. -DCMAKE_BUILD_TYPE=Release &&
+cmake --build .
+```
