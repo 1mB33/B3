@@ -5,7 +5,7 @@
 #    include "IComponent.hpp"
 #    include "ComponentsOrder.hpp"
 #    include "ComponentBridge.hpp"
-#    include "Synchronization/JobSystem.hpp"
+#    include "JobSystem.hpp"
 
 namespace B33::System
 {
@@ -71,7 +71,7 @@ class EngineLoop
     ComponentsMap   m_Components      = {};
     ComponentBridge m_ComponentBridge = {};
 
-    Core::JobSystem m_JobSystem = {};
+    JobSystem m_JobSystem = {};
 
 
     bool m_bInitialized = false;

@@ -1,9 +1,9 @@
 #if !defined( B33_JOB_SYSTEM_HPP )
 #    define B33_JOB_SYSTEM_HPP
 
-#    include "B33Core.h"
+#    include <B33Core.h>
 
-namespace B33::Core
+namespace B33::System
 {
 
 class JobSystem

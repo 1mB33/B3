@@ -1,7 +1,7 @@
-#include "B33Core.h"
-#include "Synchronization/JobSystem.hpp"
+#include "B33System.hpp"
+#include "JobSystem.hpp"
 
-namespace B33::Core
+namespace B33::System
 {
 
 using namespace std;
@@ -157,4 +157,4 @@ void JobSystem::PushJobInternal( Job newJob )
     m_uHead = ( m_uHead + 1 ) % m_Threads.size();
 }
 
-}; // namespace B33::Core
+}; // namespace B33::System
