@@ -321,8 +321,9 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
 
     vkCmdBindPipeline( cmdBuffer, this->GetPipelineBindPoint(), this->GetPipelineHandle() );
 
-    VkViewport viewport = { 0.0f, 0.0f, float( extent.width ), float( extent.height ), 0.0f, 1.0f };
-    VkRect2D   scissor  = { { 0, 0 }, extent };
+    VkViewport viewport =
+        { 0.0f, 0.0f, static_cast<float>( extent.width ), static_cast<float>( extent.height ), 0.0f, 1.0f };
+    VkRect2D scissor = { { 0, 0 }, extent };
     vkCmdSetViewport( cmdBuffer, 0, 1, &viewport );
     vkCmdSetScissor( cmdBuffer, 0, 1, &scissor );
 

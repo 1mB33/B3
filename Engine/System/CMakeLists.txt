@@ -141,3 +141,86 @@ TARGET_LINK_LIBRARIES(B33System PUBLIC
 TARGET_PRECOMPILE_HEADERS(B33System PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/Public/B33System.hpp")
 
 TARGET_COMPILE_DEFINITIONS(B33System PRIVATE _BEAST_EXPORTS _UNICODE UNICODE)
+
+
+IF(CMAKE_BUILD_TYPE STREQUAL "TestsOnly")
+
+    PROJECT(RunEngineTests)
+
+    FILE(GLOB_RECURSE PRJT_SOURCE
+        "${CMAKE_CURRENT_SOURCE_DIR}/Private/EntryPoints/UniversalTestOnly/EntryPoint.cpp"
+    )
+
+    ADD_EXECUTABLE(RunEngineTests
+        "${PRJT_SOURCE}"
+    )
+    SET(B33_TARGET RunEngineTests)
+
+    SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin/${CMAKE_SYSTEM_PROCESSOR}/${CMAKE_BUILD_TYPE}/)
+
+    IF (MSVC)
+    
+        SET_TARGET_PROPERTIES(${B33_TARGET} PROPERTIES
+            WIN32_EXECUTABLE TRUE
+        )
+    
+        TARGET_COMPILE_OPTIONS(${B33_TARGET} PUBLIC "/permissive-")
+        TARGET_COMPILE_OPTIONS(${B33_TARGET} PUBLIC "/GR")
+    
+        IF (B33_DEBUG_BUILD STREQUAL "ON")
+
+            TARGET_COMPILE_OPTIONS(${B33_TARGET} PRIVATE "/Z7")
+            TARGET_COMPILE_OPTIONS(${B33_TARGET} PRIVATE "/Zi")
+            TARGET_COMPILE_OPTIONS(${B33_TARGET} PRIVATE "/ZI")
+
+        ELSE()
+
+            TARGET_COMPILE_OPTIONS(${B33_TARGET} PRIVATE "/O2")
+
+        ENDIF()
+    
+    ENDIF()
+    
+    IF (UNIX AND NOT APPLE)
+    
+        IF (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    
+            TARGET_COMPILE_OPTIONS(${B33_TARGET} PRIVATE "-g")
+    
+        ELSE()
+    
+            TARGET_COMPILE_OPTIONS(${B33_TARGET} PRIVATE "-O3")
+    
+        ENDIF()
+    
+    ENDIF()
+    
+    IF (APPLE)
+    
+        IF (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    
+            TARGET_COMPILE_OPTIONS(${B33_TARGET} PRIVATE "-g")
+    
+        ELSE()
+    
+            TARGET_COMPILE_OPTIONS(${B33_TARGET} PUBLIC "-O3")
+    
+        ENDIF()
+    
+    ENDIF()
+    
+    TARGET_COMPILE_DEFINITIONS(${B33_TARGET} PUBLIC ${B33_COMPILE_DEFINITIONS})
+    
+    TARGET_LINK_LIBRARIES(${B33_TARGET} PUBLIC
+        B33Core
+        B33App
+        B33Rendering
+        B33System
+        Jolt
+    )
+    
+    MESSAGE("Built project ${B33_TARGET}.")
+    MESSAGE("Build type ${CMAKE_BUILD_TYPE}.")
+    MESSAGE("Compile definitions ${B33_COMPILE_DEFINITIONS}.")
+
+ENDIF()
