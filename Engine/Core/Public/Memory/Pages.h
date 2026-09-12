@@ -63,7 +63,7 @@ inline void *RequestPage( void *pHint, usize uByteSize )
 // --------------------------------------------------------------------------------------------------------------------
 
 // DiscardPage // -----------------------------------------------------------------------------------------------------
-__B33_API inline void DiscardPage( void *pPage, usize uByteSize )
+inline void DiscardPage( void *pPage, usize uByteSize )
 #    if defined( _WIN32 )
 {
 }
@@ -77,7 +77,7 @@ __B33_API inline void DiscardPage( void *pPage, usize uByteSize )
 // --------------------------------------------------------------------------------------------------------------------
 
 // LockPage // -----------------------------------------------------------------------------------------------------
-__B33_API inline usize LockPage( void *pPage, usize uByteSize )
+inline usize LockPage( void *pPage, usize uByteSize )
 #    if defined( _WIN32 )
 {
 }
