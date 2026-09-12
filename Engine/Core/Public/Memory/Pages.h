@@ -85,7 +85,30 @@ inline usize LockPage( void *pPage, usize uByteSize )
 {
     int result;
 
-    result = munmap( pPage, uByteSize );
+    result = mlock( pPage, uByteSize );
+
+    if ( result == -1 )
+    {
+        return (usize)B33_PAGES_INTERNAL_ERROR;
+    }
+
+    return 0;
+}
+#    else
+#        error "System not supported"
+#    endif
+// --------------------------------------------------------------------------------------------------------------------
+
+// UnlockPage // -----------------------------------------------------------------------------------------------------
+inline usize UnlockPage( void *pPage, usize uByteSize )
+#    if defined( _WIN32 )
+{
+}
+#    elif defined( __linux__ ) || defined( __APPLE__ )
+{
+    int result;
+
+    result = munlock( pPage, uByteSize );
 
     if ( result == -1 )
     {
