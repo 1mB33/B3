@@ -18,19 +18,25 @@ class IAllocatorImpl
     IAllocatorImpl &operator=( const IAllocatorImpl & ) = default;
 
   public:
-    inline void Alloc( usize uByteLength )
+    inline usize GetUsedLength() const
     {
-        static_cast<ALLOCATOR *>( this )->AllocImpl( uByteLength );
+        return static_cast<const ALLOCATOR *>( this )->GetUsedLengthImpl();
     }
 
-    inline void Free( usize uByteLength )
+    inline usize GetAllocatedLength() const
     {
-        static_cast<ALLOCATOR *>( this )->FreeImpl( uByteLength );
+        return static_cast<const ALLOCATOR *>( this )->GetAllocatedLengthImpl();
     }
 
-    inline void Resize( usize uByteLength )
+  public:
+    inline void *Alloc( usize uByteLength, usize uAlignment )
     {
-        static_cast<ALLOCATOR *>( this )->ResizeImpl( uByteLength );
+        return static_cast<ALLOCATOR *>( this )->AllocImpl( uByteLength, uAlignment );
+    }
+
+    inline void Free( void *pMemory, usize uByteLength )
+    {
+        static_cast<ALLOCATOR *>( this )->FreeImpl( pMemory, uByteLength );
     }
 
     inline void Reset() noexcept

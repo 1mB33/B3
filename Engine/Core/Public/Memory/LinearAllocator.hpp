@@ -21,10 +21,14 @@ class LinearAllocatorImpl : public IAllocatorImpl<LinearAllocatorImpl>
     LinearAllocatorImpl &operator=( const LinearAllocatorImpl & ) = default;
 
   public:
-    __B33_API void AllocImpl( usize uByteLength );
-    __B33_API void FreeImpl( usize uByteLength );
-    __B33_API void ResizeImpl( usize uBlockLength );
-    __B33_API void ResetImpl() noexcept;
+    __B33_API usize GetUsedLengthImpl() const;
+
+    __B33_API usize GetAllocatedLengthImpl() const;
+
+  public:
+    __B33_API void *AllocImpl( usize uByteLength, usize uAlignment );
+    __B33_API void  FreeImpl( void *pMemory, usize uByteLength );
+    __B33_API void  ResetImpl() noexcept;
 
   private:
     void *m_pMemoryBlock  = nullptr;

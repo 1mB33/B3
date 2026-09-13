@@ -6,6 +6,7 @@
 namespace B33::Core
 {
 
+// --------------------------------------------------------------------------------------------------------------------
 LinearAllocatorImpl::LinearAllocatorImpl( usize uByteBlockSize )
   : m_pMemoryBlock( nullptr )
   , m_uMemoryLength( 0 )
@@ -24,10 +25,26 @@ LinearAllocatorImpl::LinearAllocatorImpl( usize uByteBlockSize )
     m_uMemoryLength = uByteBlockSize;
 }
 
-void LinearAllocatorImpl::AllocImpl( usize uByteLength )
+// --------------------------------------------------------------------------------------------------------------------
+usize LinearAllocatorImpl::GetUsedLengthImpl() const
 {
-    const usize uNewLenght = m_uEndOffset + uByteLength;
+    return m_uEndOffset;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+usize LinearAllocatorImpl::GetAllocatedLengthImpl() const
+{
+    return m_uMemoryLength;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+void *LinearAllocatorImpl::AllocImpl( usize uByteLength, usize uAlignment )
+{
+    const usize uPadding           = ( uAlignment - 1 ) - ( ( uByteLength + ( uAlignment - 1 ) ) & ( uAlignment - 1 ) );
+    const usize uAlignedByteLength = uByteLength + uPadding;
+    const usize uNewLenght         = m_uEndOffset + uAlignedByteLength;
     usize       uLockResult;
+    void       *pResult;
 
     if ( uNewLenght > m_uMemoryLength )
     {
@@ -41,13 +58,31 @@ void LinearAllocatorImpl::AllocImpl( usize uByteLength )
         throw B33_EXCEPT_NO_MORE_MEMORY();
     }
 
+    pResult      = reinterpret_cast<void *>( reinterpret_cast<usize>( m_pMemoryBlock ) + m_uEndOffset );
     m_uEndOffset = uNewLenght;
+    return pResult;
 }
 
-void LinearAllocatorImpl::FreeImpl( usize ) {}
+// --------------------------------------------------------------------------------------------------------------------
+void LinearAllocatorImpl::FreeImpl( void *, usize ) {}
 
-void LinearAllocatorImpl::ResizeImpl( usize ) {}
+// --------------------------------------------------------------------------------------------------------------------
+void LinearAllocatorImpl::ResetImpl() noexcept
+{
+    usize uUnlockResult;
+    usize uReleasePageResult;
 
-void LinearAllocatorImpl::ResetImpl() noexcept {}
+    uUnlockResult = UnlockPage( m_pMemoryBlock, m_uMemoryLength );
+    if ( B33_PAGES_HAS_ERROR( uUnlockResult ) )
+    {
+        B33_ERROR( L"Error on unlock %d, errno %d", uUnlockResult, errno );
+    }
+
+    uReleasePageResult = DiscardPage( m_pMemoryBlock, m_uMemoryLength );
+    if ( B33_PAGES_HAS_ERROR( uReleasePageResult ) )
+    {
+        B33_ERROR( L"Error on discard %d, errno %d", uReleasePageResult, errno );
+    }
+}
 
 } // namespace B33::Core
