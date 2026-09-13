@@ -23,9 +23,15 @@ class TestMaster
     ~TestMaster() noexcept = default;
 
   public:
+    usize GetTestAmount() const
+    {
+        return m_uTestAmount;
+    }
+
+  public:
     __B33_API void AddTest( void ( *pTest )(), const char *pszTestName, usize uTestNameLen );
 
-    __B33_API void Run();
+    __B33_API usize Run();
 
   private:
     struct Test
