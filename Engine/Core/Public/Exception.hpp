@@ -1,3 +1,4 @@
+#include <X11/X.h>
 #if !defined( B33_EXCEPT_HPP )
 #    define B33_EXCEPT_HPP
 
@@ -9,6 +10,7 @@ namespace B33::Core
 
 class __B33_API Exception : public ::std::exception
 {
+  public:
     static constexpr i32 InvalidLine = -1;
 
   public:
@@ -58,6 +60,33 @@ class __B33_API Exception : public ::std::exception
     const char *m_pszFileName;
     const usize m_uFileNameLen;
 };
+
+class NoMoreMemory : public Exception
+{
+  public:
+    explicit NoMoreMemory( i32         uLine        = Exception::InvalidLine,
+                           const char *szFileName   = nullptr,
+                           usize       uFileNameLen = 0 ) noexcept
+      : Exception( "Bad allocation, couldn't allocate memory",
+                   sizeof( "Bad allocation, couldn't allocate memory" ),
+                   uLine,
+                   szFileName,
+                   uFileNameLen )
+    {
+    }
+};
+
+class BadArgument : public Exception
+{
+  public:
+    explicit BadArgument( i32         uLine        = Exception::InvalidLine,
+                          const char *szFileName   = nullptr,
+                          usize       uFileNameLen = 0 ) noexcept
+      : Exception( "Provided invalid argument", sizeof( "Provided invalid argument" ), uLine, szFileName, uFileNameLen )
+    {
+    }
+};
+
 
 } // namespace B33::Core
 #endif // !B33_EXCEPT_HPP
