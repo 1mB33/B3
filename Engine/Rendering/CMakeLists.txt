@@ -34,6 +34,7 @@ SET(BEE_RENDERING_HEADRES
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Vulkan/Buffers/GPUBuffer.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Vulkan/Buffers/GPUStreamBuffer.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Vulkan/Buffers/ImgBuffer.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Vulkan/Buffers/IMemoryBuffer.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Vulkan/Memory/Memory.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Vulkan/Memory/UploadDescriptor.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Vulkan/Memory/MemoryUploadTracker.hpp"
