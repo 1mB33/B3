@@ -25,6 +25,7 @@ SET(BEE_CORE_HEADRES
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Attributes.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/B33Core.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Borrowed.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/TupleIndex.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Memory/Pages.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Memory/IAllocatorImpl.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Memory/LinearAllocator.hpp"

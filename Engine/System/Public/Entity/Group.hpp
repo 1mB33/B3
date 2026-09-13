@@ -2,6 +2,7 @@
 #    define B33_GROUP_HPP
 
 #    include <B33Core.h>
+#    include <TupleIndex.hpp>
 
 namespace B33::System
 {
@@ -10,9 +11,6 @@ namespace B33::System
 template <typename SHARED_DATA, size_t POOL_SIZE = 64, typename... PER_OBJECT>
 class GroupMemory
 {
-    template <typename... T>
-    using Tuple = ::std::tuple<T...>;
-
     template <typename T, typename U>
     static constexpr decltype( auto ) IsSame()
     {
@@ -21,21 +19,6 @@ class GroupMemory
 
     template <typename T, typename... Ts>
     static constexpr size_t CountOccurrences = ( 0 + ... + IsSame<T, Ts>() );
-
-    template <typename T, typename Tuple>
-    struct TupleIndex;
-
-    template <typename T, typename... Ts>
-    struct TupleIndex<T, Tuple<T, Ts...>>
-    {
-        static constexpr size_t value = 0;
-    };
-
-    template <typename T, typename U, typename... Ts>
-    struct TupleIndex<T, Tuple<U, Ts...>>
-    {
-        static constexpr size_t value = 1 + TupleIndex<T, Tuple<Ts...>>::value;
-    };
 
     struct Metadata
     {
@@ -106,7 +89,7 @@ class GroupMemory
                         "Group: T appears zero or multiple times in PER_OBJECT — "
                         "use GetValue<Index>() or wrap duplicate primitive types in distinct tag structs." );
 
-        constexpr usize uIndex = TupleIndex<T, Tuple<PER_OBJECT...>>::value;
+        constexpr usize uIndex = Core::TupleIndex<T, Core::Tuple<PER_OBJECT...>>::value;
         B33_ASSERT( entityId < m_uItemsCount );
 
         char *base = m_Data[ uIndex ].data();
@@ -121,7 +104,7 @@ class GroupMemory
                         "Group: T appears zero or multiple times in PER_OBJECT — "
                         "use GetValue<Index>() or wrap duplicate primitive types in distinct tag structs." );
 
-        constexpr usize uIndex = TupleIndex<T, Tuple<PER_OBJECT...>>::value;
+        constexpr usize uIndex = Core::TupleIndex<T, Core::Tuple<PER_OBJECT...>>::value;
 
         char *base = m_Data[ uIndex ].data();
 
@@ -131,7 +114,7 @@ class GroupMemory
     template <usize Index>
     auto &GetValue( usize entityId )
     {
-        using T = ::std::tuple_element_t<Index, Tuple<PER_OBJECT...>>;
+        using T = ::std::tuple_element_t<Index, Core::Tuple<PER_OBJECT...>>;
 
         B33_ASSERT_MSG( ( Index < sizeof...( PER_OBJECT ) ), "Group: value index out of range" );
 
