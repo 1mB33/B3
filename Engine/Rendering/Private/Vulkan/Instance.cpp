@@ -17,6 +17,13 @@ Instance::Instance()
 // ---------------------------------------------------------------------------------------------------------------------
 Instance::~Instance() noexcept
 {
+#if defined( _B33_DEBUG )
+    PFN_vkDestroyDebugUtilsMessengerEXT vkDestroyDebugUtilsMessengerEXT =
+        reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(
+            vkGetInstanceProcAddr( m_Instance, "vkDestroyDebugUtilsMessengerEXT" ) );
+    vkDestroyDebugUtilsMessengerEXT( m_Instance, m_DebugExt, nullptr );
+#endif
+
     if ( m_Instance != VK_NULL_HANDLE )
     {
         B33_LOG( B33::Core::Debug::Info, L"Destroying instance" );
@@ -145,11 +152,11 @@ VkInstance Instance::CreateInstance()
     }
 
 #ifdef _B33_DEBUG
-    PFN_vkCreateDebugUtilsMessengerEXT myvkCreateDebugUtilsMessengerEXT =
+    PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT =
         reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
             vkGetInstanceProcAddr( instance, "vkCreateDebugUtilsMessengerEXT" ) );
 
-    myvkCreateDebugUtilsMessengerEXT( instance, &debugCreateInfo, nullptr, &m_DebugExt );
+    vkCreateDebugUtilsMessengerEXT( instance, &debugCreateInfo, nullptr, &m_DebugExt );
 #endif
 
     return instance;

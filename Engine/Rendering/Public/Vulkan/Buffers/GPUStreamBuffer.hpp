@@ -6,18 +6,21 @@
 namespace B33::Rendering
 {
 
-class GPUStreamBuffer : public GPUBuffer
+class GPUStreamBuffer
+  : private GPUBuffer
+  , public IMemoryBuffer<GPUStreamBuffer>
 {
     template <typename T>
     using SharedPtr = ::std::shared_ptr<T>;
 
   public:
-    __B33_API GPUStreamBuffer();
+    __B33_API GPUStreamBuffer( const char *pszName = nullptr );
     __B33_API GPUStreamBuffer( SharedPtr<const AdapterWrapper> da,
                                ::VkDeviceMemory                deviceMemory,
                                ::VkBuffer                      buffer,
                                void *,
-                               usize sizeInBytes );
+                               usize       sizeInBytes,
+                               const char *pszName = nullptr );
 
     __B33_API ~GPUStreamBuffer() noexcept;
 
@@ -30,22 +33,40 @@ class GPUStreamBuffer : public GPUBuffer
 
     // Getters // -----------------------------------------------------------------------------------------------------
   public:
-    void *GetDataPointer() const
-    {
-        return m_pData;
-    }
+    using GPUBuffer::GetBufferHandle;
+    using GPUBuffer::GetMemoryHandle;
+    using GPUBuffer::GetSizeInBytes;
 
-    void **GetPtrToDataPointer()
+    __B33_API void *GetDataPointer() const;
+
+    __B33_API void **GetPtrToDataPointer();
+
+    __B33_API const char *GetName() const;
+
+    // Setters // -----------------------------------------------------------------------------------------------------
+  public:
+    inline void SetName( const char *pszName )
     {
-        return &m_pData;
+#    if defined( _B33_DEBUG )
+        m_pszName = pszName;
+#    endif
     }
 
     // Methods // -----------------------------------------------------------------------------------------------------
   public:
+    using IMemoryBuffer<GPUStreamBuffer>::Free;
+
     __B33_API void Reset();
+
+    __B33_API void FreeImpl() noexcept;
+
 
   private:
     void *m_pData = nullptr;
+
+#    if defined( _B33_DEBUG )
+    const char *m_pszName = nullptr;
+#    endif
 };
 
 } // namespace B33::Rendering
