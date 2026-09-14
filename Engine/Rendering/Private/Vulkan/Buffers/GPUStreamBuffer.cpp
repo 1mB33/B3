@@ -67,7 +67,10 @@ void **GPUStreamBuffer::GetPtrToDataPointer()
 // --------------------------------------------------------------------------------------------------------------------
 const char *GPUStreamBuffer::GetName() const
 {
+#if defined( _B33_DEBUG )
     return m_pszName;
+#endif
+    return nullptr;
 }
 
 // --------------------------------------------------------------------------------------------------------------------

@@ -90,7 +90,10 @@ ImgBuffer &ImgBuffer::operator=( ImgBuffer &&other ) noexcept
 // --------------------------------------------------------------------------------------------------------------------
 const char *ImgBuffer::GetName() const
 {
+#if defined( _B33_DEBUG )
     return m_pszName;
+#endif
+    return nullptr;
 }
 
 // --------------------------------------------------------------------------------------------------------------------

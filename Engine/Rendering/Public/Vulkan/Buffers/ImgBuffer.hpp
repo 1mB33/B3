@@ -41,6 +41,15 @@ class ImgBuffer : public IMemoryBuffer<ImgBuffer>
 
     __B33_API const char *GetName() const;
 
+    // Setters // -----------------------------------------------------------------------------------------------------
+  public:
+    inline void SetName( const char *pszName )
+    {
+#    if defined( _B33_DEBUG )
+        m_pszName = pszName;
+#    endif
+    }
+
   public:
     __B33_API ::VkImage DetachImage();
 
