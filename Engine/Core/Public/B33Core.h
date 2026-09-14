@@ -15,9 +15,9 @@ static const char szLogPostfix[] = "_AtlanticBeast.log";
 } // namespace B33::Core::Debug
 
 #        undef B33_EXCEPT
-#        define B33_EXCEPT( message )       ::B33::Core::Exception( message, __LINE__, __FILE__ )
-#        define B33_EXCEPT_NO_MORE_MEMORY() ::B33::Core::NoMoreMemory( __LINE__, __FILE__, sizeof( __FILE__ ) )
-#        define B33_EXCEPT_BAD_ARGUMENT()   ::B33::Core::BadArgument( __LINE__, __FILE__, sizeof( __FILE__ ) )
+#        define B33_EXCEPT( message )          ::B33::Core::Exception( message, __LINE__, __FILE__ )
+#        define B33_EXCEPT_NO_MORE_MEMORY()    ::B33::Core::NoMoreMemory( __LINE__, __FILE__, sizeof( __FILE__ ) )
+#        define B33_EXCEPT_BAD_ARGUMENT( ... ) ::B33::Core::BadArgument( __LINE__, __FILE__ __VA_OPT__(, ) __VA_ARGS__ )
 
 #        include "Debug/Assert.hpp"
 #        include "Debug/Logger.hpp"

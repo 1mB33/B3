@@ -79,6 +79,29 @@ class NoMoreMemory : public Exception
 class BadArgument : public Exception
 {
   public:
+    explicit BadArgument( const char *szMessage    = nullptr,
+                          usize       uMesLen      = 0,
+                          i32         uLine        = InvalidLine,
+                          const char *szFileName   = nullptr,
+                          usize       uFileNameLen = 0 ) noexcept
+      : Exception( szMessage, uMesLen, uLine, szFileName, uFileNameLen )
+    {
+    }
+
+    template <usize uMesLen, usize uFileNameLen>
+    constexpr BadArgument( i32 uLine                                   = 0,
+                           const char ( &pszFileName )[ uFileNameLen ] = nullptr,
+                           const char ( &pszMessage )[ uMesLen ]       = "" ) noexcept
+      : BadArgument( pszMessage, uMesLen, uLine, pszFileName, uFileNameLen )
+    {
+    }
+
+    template <usize uFileNameLen>
+    constexpr BadArgument( i32 uLine = 0, const char ( &pszFileName )[ uFileNameLen ] = nullptr ) noexcept
+      : BadArgument( nullptr, 0, uLine, pszFileName, uFileNameLen )
+    {
+    }
+
     explicit BadArgument( i32         uLine        = Exception::InvalidLine,
                           const char *szFileName   = nullptr,
                           usize       uFileNameLen = 0 ) noexcept
