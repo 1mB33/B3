@@ -10,7 +10,7 @@
 namespace B33::Core::Debug
 {
 
-static const char szLogPostfix[] = "_AtlanticBeast.log";
+static const char szLogPostfix[] = "_B3.log";
 
 } // namespace B33::Core::Debug
 
