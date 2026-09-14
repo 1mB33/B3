@@ -17,8 +17,8 @@ class LinearAllocatorImpl : public IAllocatorImpl<LinearAllocatorImpl>
   public:
     LinearAllocatorImpl( LinearAllocatorImpl && )                 = default;
     LinearAllocatorImpl &operator=( LinearAllocatorImpl && )      = default;
-    LinearAllocatorImpl( const LinearAllocatorImpl & )            = default;
-    LinearAllocatorImpl &operator=( const LinearAllocatorImpl & ) = default;
+    LinearAllocatorImpl( const LinearAllocatorImpl & )            = delete;
+    LinearAllocatorImpl &operator=( const LinearAllocatorImpl & ) = delete;
 
   public:
     __B33_API usize GetUsedLengthImpl() const;
@@ -53,8 +53,8 @@ class LinearAllocator : public LinearAllocatorImpl
   public:
     LinearAllocator( LinearAllocator && )                 = default;
     LinearAllocator &operator=( LinearAllocator && )      = default;
-    LinearAllocator( const LinearAllocator & )            = default;
-    LinearAllocator &operator=( const LinearAllocator & ) = default;
+    LinearAllocator( const LinearAllocator & )            = delete;
+    LinearAllocator &operator=( const LinearAllocator & ) = delete;
 
   public:
     inline const char *GetName() const
