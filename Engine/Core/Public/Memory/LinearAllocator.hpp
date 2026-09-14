@@ -12,7 +12,7 @@ class LinearAllocatorImpl : public IAllocatorImpl<LinearAllocatorImpl>
   public:
     LinearAllocatorImpl() = delete;
     explicit LinearAllocatorImpl( usize uByteBlockSize );
-    ~LinearAllocatorImpl() noexcept = default;
+    ~LinearAllocatorImpl() noexcept;
 
   public:
     LinearAllocatorImpl( LinearAllocatorImpl && )                 = default;

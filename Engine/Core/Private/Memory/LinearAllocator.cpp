@@ -26,6 +26,12 @@ LinearAllocatorImpl::LinearAllocatorImpl( usize uByteBlockSize )
 }
 
 // --------------------------------------------------------------------------------------------------------------------
+LinearAllocatorImpl::~LinearAllocatorImpl() noexcept
+{
+    Reset();
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 usize LinearAllocatorImpl::GetUsedLengthImpl() const
 {
     return m_uEndOffset;
