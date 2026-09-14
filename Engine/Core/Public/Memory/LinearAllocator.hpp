@@ -36,10 +36,18 @@ class LinearAllocatorImpl : public IAllocatorImpl<LinearAllocatorImpl>
     usize m_uEndOffset    = -1;
 };
 
-class LinearAllocator
+template <usize POOL_SIZE>
+class LinearAllocator : public LinearAllocatorImpl
 {
   public:
-    LinearAllocator()           = default;
+    LinearAllocator( const char *pszName = nullptr )
+      : LinearAllocatorImpl( POOL_SIZE )
+#    if defined( _B33_DEBUG )
+      , m_pszName( pszName )
+#    endif
+    {
+    }
+
     ~LinearAllocator() noexcept = default;
 
   public:
@@ -48,7 +56,28 @@ class LinearAllocator
     LinearAllocator( const LinearAllocator & )            = default;
     LinearAllocator &operator=( const LinearAllocator & ) = default;
 
+  public:
+    inline const char *GetName() const
+    {
+#    if defined( _B33_DEBUG )
+        return m_pszName;
+#    endif
+        return nullptr;
+    }
+
+    // Setters // -----------------------------------------------------------------------------------------------------
+  public:
+    inline void SetName( const char *pszName )
+    {
+#    if defined( _B33_DEBUG )
+        m_pszName = pszName;
+#    endif
+    }
+
   private:
+#    if defined( _B33_DEBUG )
+    const char *m_pszName = nullptr;
+#    endif
 };
 
 } // namespace B33::Core
