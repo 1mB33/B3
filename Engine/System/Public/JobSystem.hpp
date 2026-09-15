@@ -101,8 +101,8 @@ class JobSystem
     {
         Thread       ThreadHandle;
         Mutex        LocalMutex;
-        ABool        IsWorking;
-        ABool        IsFree;
+        bool         IsWorking;
+        bool         IsFree;
         ConditionVar Condition;
         Job          CurrentJob;
     };
@@ -112,8 +112,8 @@ class JobSystem
 
     static void JobProcessorLoop( Mutex        &mutex,
                                   ConditionVar &condition,
-                                  ABool        &IsWorking,
-                                  ABool        &IsFree,
+                                  bool         &IsWorking,
+                                  bool         &IsFree,
 #    if defined( _B33_DEBUG )
                                   ABool &IsError,
 #    endif
@@ -125,6 +125,6 @@ class JobSystem
     ABool                m_IsError = false;
 };
 
-} // namespace B33::Core
+} // namespace B33::System
 
 #endif // !B33_JOB_SYSTEM_HPP

@@ -9,39 +9,46 @@ using namespace B33;
 
 void JobSystem::JobProcessorLoop( Mutex        &mutex,
                                   ConditionVar &condition,
-                                  ABool        &IsWorking,
-                                  ABool        &IsFree,
+                                  bool         &IsWorking,
+                                  bool         &IsFree,
 #if defined( _B33_DEBUG )
                                   ABool &IsError,
 #endif
                                   Job &currentJob )
 {
+    Job executedJob;
+
 #if defined( _B33_DEBUG )
     try
     {
 #endif
-        IsFree.store( true );
         while ( 1 )
         {
-            unique_lock ul( mutex );
-            condition.wait( ul,
-                            [ & ]
-                            {
-                                return !IsFree.load() || !IsWorking.load();
-                            } );
-
-            if ( currentJob.Runnable != nullptr )
             {
-                currentJob.Runnable->Call();
-                delete currentJob.Runnable;
-                currentJob.Runnable = nullptr;
+                unique_lock ul( mutex );
+                condition.wait( ul,
+                                [ & ]
+                                {
+                                    return !IsFree || !IsWorking;
+                                } );
+                if ( !IsWorking )
+                {
+                    return;
+                }
+                executedJob.Runnable = currentJob.Runnable;
+                currentJob.Runnable  = nullptr;
             }
-            if ( !IsWorking.load() )
+            if ( executedJob.Runnable != nullptr )
             {
-                return;
+                executedJob.Runnable->Call();
+                delete executedJob.Runnable;
+                executedJob.Runnable = nullptr;
             }
-            IsFree.store( true );
-            condition.notify_all();
+            {
+                unique_lock ul( mutex );
+                IsFree = true;
+            }
+            condition.notify_one();
         }
 #if defined( _B33_DEBUG )
     }
@@ -54,24 +61,25 @@ void JobSystem::JobProcessorLoop( Mutex        &mutex,
     {
         B33_ERROR( L"On job processor, job %p failed, thread id %d", currentJob.Runnable, this_thread::get_id() );
     }
-    IsError.store( true );
-    IsFree.store( true );
-    IsWorking.store( false );
+    IsError.store( true, memory_order_relaxed );
+    IsFree    = true;
+    IsWorking = false;
     condition.notify_all();
     B33_ERROR( L"Exiting on job processor, thread id %d", this_thread::get_id() );
 #endif
 }
 
 JobSystem::JobSystem()
-  : m_Threads( Thread::hardware_concurrency() - 2 )
+  : m_Threads( max( Thread::hardware_concurrency(), 1u ) )
   , m_uHead( 0 )
   , m_IsError( false )
 {
+    B33_TRACE( L"JobSystem::JobSystem(): Job processors count %d", m_Threads.size() );
     for ( auto &t : m_Threads )
     {
         B33_TRACE( L"JobSystem::JobSystem(): Starting one of job processors" );
-        t.IsFree.store( true );
-        t.IsWorking.store( true );
+        t.IsFree       = true;
+        t.IsWorking    = true;
         t.CurrentJob   = { nullptr };
         t.ThreadHandle = Thread( &JobSystem::JobProcessorLoop,
                                  ref( t.LocalMutex ),
@@ -90,13 +98,16 @@ JobSystem::~JobSystem()
     for ( auto &t : m_Threads )
     {
         B33_TRACE( L"JobSystem::~JobSystem(): Stopping one of job processors: %d", t.ThreadHandle.get_id() );
-        if ( m_IsError.load() )
+        if ( m_IsError.load( memory_order_acquire ) )
         {
             t.ThreadHandle.~thread();
         }
         else if ( t.ThreadHandle.joinable() )
         {
-            t.IsWorking.store( false );
+            {
+                unique_lock ul( t.LocalMutex );
+                t.IsWorking = false;
+            }
             t.Condition.notify_all();
             t.ThreadHandle.join();
         }
@@ -108,18 +119,15 @@ void JobSystem::BlockAndWait()
 {
     for ( auto &t : m_Threads )
     {
-        if ( !t.IsFree.load() )
-        {
-            unique_lock ul( t.LocalMutex );
-            t.Condition.wait( ul,
-                              [ & ]()
-                              {
-                                  return t.IsFree.load();
-                              } );
-        }
+        unique_lock ul( t.LocalMutex );
+        t.Condition.wait( ul,
+                          [ & ]()
+                          {
+                              return t.IsFree;
+                          } );
     }
 #if defined( _B33_DEBUG )
-    if ( m_IsError.load() )
+    if ( m_IsError.load( memory_order_acquire ) )
     {
         B33_ERROR( L"On job processor, error detected" );
         throw B33_EXCEPT( "Job system internal error" );
@@ -130,7 +138,7 @@ void JobSystem::BlockAndWait()
 void JobSystem::PushJobInternal( Job newJob )
 {
 #if defined( _B33_DEBUG )
-    if ( m_IsError.load() )
+    if ( m_IsError.load( memory_order_acquire ) )
     {
         B33_ERROR( L"On job processor, error detected" );
         throw B33_EXCEPT( "Job system internal error" );
@@ -139,20 +147,18 @@ void JobSystem::PushJobInternal( Job newJob )
 
     auto &headThread = m_Threads[ m_uHead ];
 
-    if ( !headThread.IsFree.load() )
     {
         unique_lock ul( headThread.LocalMutex );
         headThread.Condition.wait( ul,
                                    [ & ]()
                                    {
-                                       return headThread.IsFree.load();
+                                       return headThread.IsFree;
                                    } );
+        B33_TRACE( L"Pushing new job to the processors %p", headThread.CurrentJob.Runnable );
+        headThread.CurrentJob = std::move( newJob );
+        headThread.IsFree     = false;
+        headThread.Condition.notify_one();
     }
-
-    headThread.CurrentJob = std::move( newJob );
-    B33_TRACE( L"Pushing new job to the processors %p", headThread.CurrentJob.Runnable );
-    headThread.IsFree.store( false );
-    headThread.Condition.notify_all();
 
     m_uHead = ( m_uHead + 1 ) % m_Threads.size();
 }
