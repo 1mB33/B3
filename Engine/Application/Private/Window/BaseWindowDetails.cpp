@@ -1,4 +1,5 @@
 #include "B33App.h"
+#include "B33Core.h"
 
 #include "Window/IBaseWindow.hpp"
 
@@ -10,7 +11,7 @@ using namespace std;
 struct DisplayCount
 {
     ::Display *DisplayPtr;
-    size_t     Count;
+    i32        Count;
 };
 
 // Statics // ----------------------------------------------------------------------------------------------------------
@@ -31,9 +32,10 @@ static unordered_map<string, DisplayCount> Displays = {};
 
     auto &mapped = Displays[ pszDisplayName ];
 
-    if ( mapped.Count == 0 )
+    if ( mapped.Count <= 0 )
     {
         mapped.DisplayPtr = XOpenDisplay( pszDisplayName );
+        mapped.Count      = 0;
     }
 
     ++mapped.Count;
@@ -55,11 +57,19 @@ void AbAskToCloseDisplayLinux( const char *pszDisplayName )
 
     auto &mapped = Displays[ pszDisplayName ];
 
-    --mapped.Count;
-
     if ( mapped.Count == 0 )
     {
+        B33_ERROR( L"Closing closed display" );
+        return;
+    }
+
+    --mapped.Count;
+
+    if ( mapped.Count <= 0 && mapped.DisplayPtr )
+    {
         XCloseDisplay( mapped.DisplayPtr );
+        mapped.DisplayPtr = NULL;
+        mapped.Count      = 0;
     }
 }
 
