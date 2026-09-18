@@ -1,10 +1,6 @@
 import sys
 
 
-def PrintHelpMessage():
-    pass
-
-
 def ValidateSystem():
     pass
 
@@ -14,6 +10,6 @@ def CreateBuildResources():
 
 
 if __name__ == "__main__":
+    print("Build managment script called")
     if (len(sys.argv) <= 1):
-        PrintHelpMessage()
         exit()
