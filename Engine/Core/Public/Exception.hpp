@@ -1,4 +1,3 @@
-#include <X11/X.h>
 #if !defined( B33_EXCEPT_HPP )
 #    define B33_EXCEPT_HPP
 
