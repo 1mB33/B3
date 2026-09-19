@@ -67,6 +67,7 @@ inline void *RequestPage( void *pHint, usize uByteSize )
 inline usize DiscardPage( void *pPage, usize uByteSize )
 #    if defined( _WIN32 )
 {
+    return 0;
 }
 #    elif defined( __linux__ ) || defined( __APPLE__ )
 {
@@ -91,6 +92,7 @@ inline usize DiscardPage( void *pPage, usize uByteSize )
 inline usize LockPage( void *pPage, usize uByteSize )
 #    if defined( _WIN32 )
 {
+    return 0;
 }
 #    elif defined( __linux__ ) || defined( __APPLE__ )
 {
@@ -115,6 +117,7 @@ inline usize LockPage( void *pPage, usize uByteSize )
 inline usize UnlockPage( void *pPage, usize uByteSize )
 #    if defined( _WIN32 )
 {
+    return 0;
 }
 #    elif defined( __linux__ ) || defined( __APPLE__ )
 {
