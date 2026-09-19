@@ -16,6 +16,14 @@ printHelp()
     echo ""
     echo ""
     echo "The scripts defaults to debug build type."
+    echo ""
+    echo ""
+    echo "Build switches:"
+    echo ""
+    echo "  -r :  release build type"
+    echo "  -d :  debug build type"
+    echo "  -v :  verbose mode"
+    echo ""
 }
 
 for dep in "${dependencies[@]}"
