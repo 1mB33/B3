@@ -65,6 +65,7 @@ IF (MSVC)
 
     TARGET_COMPILE_OPTIONS(B33Rendering PUBLIC "/permissive-")
     TARGET_COMPILE_OPTIONS(B33Rendering PUBLIC "/GR")
+    TARGET_COMPILE_OPTIONS(B33Rendering PUBLIC "/Zc:preprocessor")
 
     IF (B33_DEBUG_BUILD STREQUAL "ON")
 
