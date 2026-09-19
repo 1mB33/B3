@@ -1,7 +1,7 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 CMD_NOT_FOUND_RESULT=127
-dependencies=("cmake" "python --help" "make")
+dependencies=("cmake" "python3 --help" "make")
 root_file="./Scripts/Win32/CopyDLLPerProject.ps1"
 is_invalid=False
 
