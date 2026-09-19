@@ -89,11 +89,9 @@ struct WindowDesc
 template <class U>
 WindowDesc CreateWindowDesc( U &&wstrName, i32 width = 1200, i32 height = 700 )
 {
-    using ::std::forward;
-
     WindowDesc wd = {};
 
-    wd.Data.Name          = forward<U>( wstrName );
+    wd.Data.Name          = ::std::forward<U>( wstrName );
     wd.Data.pwszClassName = NULL;
     wd.Data.Width         = width;
     wd.Data.Height        = height;
