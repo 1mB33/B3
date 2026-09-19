@@ -45,8 +45,6 @@ void KeysMap::UnbindActionImpl( const B33InputBind &ib, void __B33_ATTRIBUTE_MIG
 // Public // ----------------------------------------------------------------------------------------------------------
 void KeysMap::PlayAction( const float fDelta, B33KeyId keyCode ) noexcept
 {
-    B33_ASSERT( keyCode > B33_INVALID_KEY && keyCode < B33_KEY_COUNT );
-
     const auto &playableAction = m_vKeys[ keyCode ];
 
     if ( playableAction.This )

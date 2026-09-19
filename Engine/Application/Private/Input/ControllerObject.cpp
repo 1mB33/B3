@@ -40,7 +40,6 @@ void ControllerObject::SignObject( WeakPtr<UserInput> pUserInput ) noexcept
     // We can be signed by only one UserInput
     if ( !m_pUserInput.expired() )
     {
-        B33_ASSERT( m_pUserInput.lock().get() == pUserInput.lock().get() );
         B33_WARNING( L"ControllerObject can be signed only by one UserInput." );
         return;
     }
