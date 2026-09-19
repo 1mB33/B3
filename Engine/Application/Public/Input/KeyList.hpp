@@ -178,10 +178,10 @@ constexpr const B33KeyId B33_KEY_END           = 0x77 + 1;
 constexpr const B33KeyId B33_KEY_F2            = 0x78 + 1;
 constexpr const B33KeyId B33_KEY_PAGEDOWN      = 0x79 + 1;
 constexpr const B33KeyId B33_KEY_F1            = 0x7A + 1;
-constexpr const B33KeyId B33_KEY_LEFTARROW     = 0x7B + 1;
-constexpr const B33KeyId B33_KEY_RIGHTARROW    = 0x7C + 1;
-constexpr const B33KeyId B33_KEY_DOWNARROW     = 0x7D + 1;
-constexpr const B33KeyId B33_KEY_UPARROW       = 0x7E + 1;
+constexpr const B33KeyId B33_KEY_LEFT          = 0x7B + 1;
+constexpr const B33KeyId B33_KEY_RIGHT         = 0x7C + 1;
+constexpr const B33KeyId B33_KEY_DOWN          = 0x7D + 1;
+constexpr const B33KeyId B33_KEY_UP            = 0x7E + 1;
 #    endif
 constexpr const B33KeyId B33_KEY_COUNT = 255;
 
