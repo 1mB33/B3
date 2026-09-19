@@ -55,7 +55,7 @@ if [[ "$is_invalid" == True ]]; then
     
 fi
 
-python ./Scripts/BuildManagment.py "$@"
+python3 ./Scripts/BuildManagment.py "$@"
 
 result=$?
 if [[ "$result" != "0" ]]; then
