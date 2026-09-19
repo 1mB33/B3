@@ -4,7 +4,7 @@
 #    include "B33CoreMinimal.h"
 #    include "Exception.hpp"
 
-#    ifdef _B33_DEBUG
+#    if defined( _B33_DEBUG ) || defined( _B33_TESTS )
 #        define B33_ASSERT( expr )                                                                                     \
             do                                                                                                         \
             {                                                                                                          \

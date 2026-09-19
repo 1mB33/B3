@@ -41,7 +41,7 @@ class GPUBuffer : public IMemoryBuffer<GPUBuffer>
 
     // Setters // -----------------------------------------------------------------------------------------------------
   public:
-    inline void SetName( const char *pszName )
+    inline void SetName( __B33_ATTRIBUTE_MIGHT_BE_UNUSED const char *pszName )
     {
 #    if defined( _B33_DEBUG )
         m_pszName = pszName;
