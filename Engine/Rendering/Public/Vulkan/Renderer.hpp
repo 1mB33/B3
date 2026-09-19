@@ -90,7 +90,7 @@ class Renderer : public App::WindowListener
     {
         auto pipeline = new PIPE_LINE();
 
-        pipeline->Initialize( m_pDeviceAdapter, m_pMemory, m_pSwapChain.get(), *pipeline );
+        pipeline->Initialize( m_pDeviceAdapter, &m_pMemory, m_pSwapChain.get(), *pipeline );
         pipeline->CreatePipelineResources( args... );
 
         m_PipelineMap[ PIPE_LINE::GetGlobalIndex() ] = pipeline;
@@ -105,10 +105,7 @@ class Renderer : public App::WindowListener
 
     ::VkCommandBuffer CreateCommandBuffer( SharedPtr<const AdapterWrapper> da, ::VkCommandPool cmdPool );
 
-    FramesArray CreateFrameResources( const SharedPtr<const AdapterWrapper> &da,
-                                      const SharedPtr<Memory>               &memory,
-                                      ::VkCommandPool                        cmdPool,
-                                      usize                                  uFrames );
+    FramesArray CreateFrameResources( const SharedPtr<const AdapterWrapper> &da, ::VkCommandPool cmdPool );
 
     void CreateRenederSyncResources( const SharedPtr<const AdapterWrapper> &da,
                                      const Swapchain                       *sc,
@@ -125,7 +122,7 @@ class Renderer : public App::WindowListener
     SharedPtr<HardwareWrapper> m_pHardware      = nullptr;
     SharedPtr<AdapterWrapper>  m_pDeviceAdapter = nullptr;
     UniquePtr<Swapchain>       m_pSwapChain     = nullptr;
-    SharedPtr<Memory>          m_pMemory        = nullptr;
+    Memory                     m_pMemory        = {};
 
     UnorderedMap<::B33::Core::UnknownIndex, PipelineWrapper *> m_PipelineMap = {};
     Vector<PipelineWrapper *>                                  m_vPipelines  = {};

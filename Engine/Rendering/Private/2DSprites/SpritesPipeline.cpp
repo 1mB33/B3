@@ -121,7 +121,7 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
         toTransferDst.newLayout            = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
         toTransferDst.srcQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
         toTransferDst.dstQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
-        toTransferDst.image                = m_pTexture.GetImage();
+        toTransferDst.image                = m_pTexture->GetImage();
         toTransferDst.subresourceRange     = VkImageSubresourceRange { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 
         vkCmdPipelineBarrier( cmdBuffer,
@@ -144,7 +144,7 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
 
         vkCmdCopyBufferToImage( cmdBuffer,
                                 m_pStageTexture->GetBufferHandle(),
-                                m_pTexture.GetImage(),
+                                m_pTexture->GetImage(),
                                 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                 1,
                                 &copyRegion );
@@ -157,7 +157,7 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
         toShaderRead.newLayout            = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         toShaderRead.srcQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
         toShaderRead.dstQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
-        toShaderRead.image                = m_pTexture.GetImage();
+        toShaderRead.image                = m_pTexture->GetImage();
         toShaderRead.subresourceRange     = VkImageSubresourceRange { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 
         vkCmdPipelineBarrier( cmdBuffer,
@@ -177,11 +177,11 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
     if ( !curFrame.bInit )
     {
         VkDescriptorImageInfo imageInfo = {};
-        imageInfo.imageView             = m_pTexture.GetImageView();
+        imageInfo.imageView             = m_pTexture->GetImageView();
         imageInfo.imageLayout           = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkDescriptorImageInfo samplerInfo = {};
-        samplerInfo.sampler               = m_pTexture.GetSampler();
+        samplerInfo.sampler               = m_pTexture->GetSampler();
 
         array<VkWriteDescriptorSet, 2> writes = {};
 
@@ -275,7 +275,7 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
 
     VkRenderingAttachmentInfo depthAttachment = {};
     depthAttachment.sType                     = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-    depthAttachment.imageView                 = curFrame.DepthImg.GetImageView();
+    depthAttachment.imageView                 = curFrame.DepthImg->GetImageView();
     depthAttachment.imageLayout               = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     depthAttachment.resolveMode               = VK_RESOLVE_MODE_NONE;
     depthAttachment.loadOp                    = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -291,7 +291,7 @@ void SpritesPipeline::RecordCommands( VkCommandBuffer        &cmdBuffer,
     toDepthAttachment.newLayout           = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     toDepthAttachment.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     toDepthAttachment.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    toDepthAttachment.image               = curFrame.DepthImg.GetImage();
+    toDepthAttachment.image               = curFrame.DepthImg->GetImage();
     toDepthAttachment.subresourceRange    = VkImageSubresourceRange { VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1 };
 
     VkImageMemoryBarrier attachmentBarriers[] = { toColorAttachment, toDepthAttachment };
@@ -401,7 +401,7 @@ void SpritesPipeline::Reset()
                                               extent.height,
                                               VK_FORMAT_D32_SFLOAT,
                                               VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT );
-        GetMemory()->ReserveImageView( img, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT );
+        GetMemory()->ReserveImageView( *img.get(), VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT );
 
         resources.DepthImg = std::move( img );
     }
@@ -672,8 +672,8 @@ void SpritesPipeline::CreatePipelineResourcesImpl()
     sampler.borderColor             = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
     sampler.unnormalizedCoordinates = VK_FALSE;
 
-    GetMemory()->ReserveImageView( m_pTexture, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT );
-    GetMemory()->ReserveSampler( m_pTexture, sampler );
+    GetMemory()->ReserveImageView( *m_pTexture.get(), VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT );
+    GetMemory()->ReserveSampler( *m_pTexture.get(), sampler );
     m_pStageTexture = GetMemory()->ReserveStagingBuffer( imgSize );
 
     float pBuf[ imgSize ] = {};
@@ -684,7 +684,7 @@ void SpritesPipeline::CreatePipelineResourcesImpl()
 
 
     GetMemory()->UploadToBufferRaw( pBuf, imgSize, m_pStageTexture );
-    m_pStageQuadBuffer = GetMemory()->ReserveStagingBuffer( unitVerticesSize );
+    m_pStageQuadBuffer = GetMemory()->ReserveStreamStagingBuffer( unitVerticesSize );
     m_pQuadBuffer      = GetMemory()->ReserveVertexBuffer( unitVerticesSize );
 
     GetMemory()->UploadToStreamBufferRaw( g_UnitQuadVertices.data(), unitVerticesSize, m_pStageQuadBuffer );
@@ -695,13 +695,13 @@ void SpritesPipeline::CreatePipelineResourcesImpl()
                                               extent.height,
                                               VK_FORMAT_D32_SFLOAT,
                                               VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT );
-        GetMemory()->ReserveImageView( img, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT );
+        GetMemory()->ReserveImageView( *img.get(), VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT );
 
         m_PerFrameResources.push_back( {
             .bInit                   = false,
             .uLastUploadedGeneration = 0,
             .SpriteInstances         = GetMemory()->ReserveGPUBuffer( instanceSize ),
-            .StageSpriteInstances    = GetMemory()->ReserveStagingBuffer( instanceSize ),
+            .StageSpriteInstances    = GetMemory()->ReserveStreamStagingBuffer( instanceSize ),
             .DepthImg                = std::move( img ),
             .DescSet                 = CreateDescriptorSet(),
         } );
@@ -709,8 +709,8 @@ void SpritesPipeline::CreatePipelineResourcesImpl()
 }
 
 // Private // ---------------------------------------------------------------------------------------------------------
-UploadDescriptor SpritesPipeline::GetUniformUploadDescriptor( const SharedPtr<GPUStreamBuffer> &outBuffer,
-                                                              const EShaderResource            &sr )
+UploadDescriptor<GPUStreamBuffer>
+SpritesPipeline::GetUniformUploadDescriptor( const SharedPtr<GPUStreamBuffer> &outBuffer, const EShaderResource &sr )
 {
     VkDescriptorBufferInfo bufferInfo = {
         .buffer = outBuffer->GetBufferHandle(),
@@ -726,7 +726,10 @@ UploadDescriptor SpritesPipeline::GetUniformUploadDescriptor( const SharedPtr<GP
     write.descriptorType       = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     write.pBufferInfo          = &bufferInfo;
 
-    return UploadDescriptor( std::move( bufferInfo ), std::move( write ), EUploadType::StreamBuffer, outBuffer );
+    return UploadDescriptor<GPUStreamBuffer>( std::move( bufferInfo ),
+                                              std::move( write ),
+                                              EUploadType::StreamBuffer,
+                                              outBuffer );
 }
 
 } // namespace B33::Rendering

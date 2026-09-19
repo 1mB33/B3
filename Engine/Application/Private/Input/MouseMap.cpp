@@ -43,8 +43,6 @@ void MouseMap::PlayAction( const float fDelta, int32_t fX, int32_t fY ) noexcept
 {
     for ( const auto &bind : m_vMouseBinds )
     {
-        B33_ASSERT( bind.pThis );
-
         bind.Action( fDelta, bind.pThis, fX, fY );
     }
 }

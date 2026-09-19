@@ -11,15 +11,17 @@ int main( int, char *[] )
     using ::B33::Core::Debug::Logger;
     using ::B33::Core::Tests::TestMaster;
 
-    Logger::Get().Log( Info, L"---------------------------------------------" );
-    Logger::Get().Log( Info, L"Starting B33..." );
-#if defined( _B33_ONLY_TESTS )
-    TestMaster::Get().Run();
+    usize uPassedTests;
 
-    Logger::Get().Log( Info, L"Closing B33..." );
+    Logger::Get().Log( Info, L"---------------------------------------------" );
+    Logger::Get().Log( Info, L"Running tests..." );
+
+    uPassedTests = TestMaster::Get().Run();
+
+    Logger::Get().Log( Info, L"Tests finished..." );
     Logger::Get().Flush();
-    return 0;
-#endif // defined (_B33_ONLY_TESTS)
+
+    return ( uPassedTests != TestMaster::Get().GetTestAmount() );
 }
 
 #endif // !B33_ENTRY_POINT_HPP

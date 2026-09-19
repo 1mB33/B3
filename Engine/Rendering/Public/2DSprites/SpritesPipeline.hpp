@@ -118,12 +118,12 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
     __B33_API ::VkDescriptorPool CreateDescriptorPoolImpl();
 
   private:
-    UploadDescriptor GetUniformUploadDescriptor( const SharedPtr<GPUStreamBuffer> &outBuffer,
-                                                 const EShaderResource            &sr );
+    UploadDescriptor<GPUStreamBuffer> GetUniformUploadDescriptor( const SharedPtr<GPUStreamBuffer> &outBuffer,
+                                                                  const EShaderResource            &sr );
 
   private:
     SpritesPushConstants       m_Vpc = {};
-    ImgBuffer                  m_pTexture;
+    SharedPtr<ImgBuffer>       m_pTexture;
     SharedPtr<GPUBuffer>       m_pStageTexture;
     SharedPtr<GPUBuffer>       m_pQuadBuffer;
     SharedPtr<GPUStreamBuffer> m_pStageQuadBuffer;
@@ -134,7 +134,7 @@ class SpritesPipeline : public IPipeline<SpritesPipeline>
         u64                        uLastUploadedGeneration;
         SharedPtr<GPUBuffer>       SpriteInstances;
         SharedPtr<GPUStreamBuffer> StageSpriteInstances;
-        ImgBuffer                  DepthImg;
+        SharedPtr<ImgBuffer>       DepthImg;
         ::VkDescriptorSet          DescSet = VK_NULL_HANDLE;
     };
 

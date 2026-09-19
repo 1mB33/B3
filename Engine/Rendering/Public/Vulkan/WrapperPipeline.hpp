@@ -66,7 +66,7 @@ class PipelineWrapper
   public:
     template <class T>
     void Initialize( WeakPtr<const AdapterWrapper> pDeviceAdapter,
-                     WeakPtr<Memory>               pMemory,
+                     Memory                       *pMemory,
                      const Swapchain              *pSwapChain,
                      T                            &pPipeline )
     {
@@ -147,12 +147,9 @@ class PipelineWrapper
         throw B33_EXCEPT( "Cannot lock resources in the PipelineWrapper" );
     }
 
-    SharedPtr<Memory> GetMemory() const
+    Memory *GetMemory() const
     {
-        if ( auto result = m_pMemory.lock() )
-            return result;
-
-        throw B33_EXCEPT( "Cannot lock resources in the PipelineWrapper" );
+        return m_pMemory;
     }
 
     const Swapchain *GetSwapChain() const
@@ -172,7 +169,7 @@ class PipelineWrapper
 
   private:
     WeakPtr<const AdapterWrapper> m_pDeviceAdapter = {};
-    WeakPtr<Memory>               m_pMemory        = {};
+    Memory                       *m_pMemory        = {};
     const Swapchain              *m_pSwapChain     = {};
 
     usize           m_uPushConstantsByteSize = 0;

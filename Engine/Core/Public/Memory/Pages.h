@@ -52,6 +52,7 @@ inline void *RequestPage( void *pHint, usize uByteSize )
 
     if ( pResult == MAP_FAILED )
     {
+        // TODO: add some basic checks for errno
         return B33_PAGES_INTERNAL_ERROR;
     }
 
@@ -63,13 +64,24 @@ inline void *RequestPage( void *pHint, usize uByteSize )
 // --------------------------------------------------------------------------------------------------------------------
 
 // DiscardPage // -----------------------------------------------------------------------------------------------------
-inline void DiscardPage( void *pPage, usize uByteSize )
+inline usize DiscardPage( void *pPage, usize uByteSize )
 #    if defined( _WIN32 )
 {
+    return 0;
 }
 #    elif defined( __linux__ ) || defined( __APPLE__ )
 {
-    munmap( pPage, uByteSize );
+    int uResult;
+
+    uResult = munmap( pPage, uByteSize );
+
+    if ( uResult == -1 )
+    {
+        // TODO: add some basic checks for errno
+        return (usize)B33_PAGES_INTERNAL_ERROR;
+    }
+
+    return 0;
 }
 #    else
 #        error "System not supported"
@@ -80,6 +92,7 @@ inline void DiscardPage( void *pPage, usize uByteSize )
 inline usize LockPage( void *pPage, usize uByteSize )
 #    if defined( _WIN32 )
 {
+    return 0;
 }
 #    elif defined( __linux__ ) || defined( __APPLE__ )
 {
@@ -89,6 +102,7 @@ inline usize LockPage( void *pPage, usize uByteSize )
 
     if ( result == -1 )
     {
+        // TODO: add some basic checks for errno
         return (usize)B33_PAGES_INTERNAL_ERROR;
     }
 
@@ -103,6 +117,7 @@ inline usize LockPage( void *pPage, usize uByteSize )
 inline usize UnlockPage( void *pPage, usize uByteSize )
 #    if defined( _WIN32 )
 {
+    return 0;
 }
 #    elif defined( __linux__ ) || defined( __APPLE__ )
 {
@@ -112,6 +127,7 @@ inline usize UnlockPage( void *pPage, usize uByteSize )
 
     if ( result == -1 )
     {
+        // TODO: add some basic checks for errno
         return (usize)B33_PAGES_INTERNAL_ERROR;
     }
 

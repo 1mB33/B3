@@ -9,6 +9,7 @@ namespace B33::Core
 
 class __B33_API Exception : public ::std::exception
 {
+  public:
     static constexpr i32 InvalidLine = -1;
 
   public:
@@ -58,6 +59,56 @@ class __B33_API Exception : public ::std::exception
     const char *m_pszFileName;
     const usize m_uFileNameLen;
 };
+
+class NoMoreMemory : public Exception
+{
+  public:
+    explicit NoMoreMemory( i32         uLine        = Exception::InvalidLine,
+                           const char *szFileName   = nullptr,
+                           usize       uFileNameLen = 0 ) noexcept
+      : Exception( "Bad allocation, couldn't allocate memory",
+                   sizeof( "Bad allocation, couldn't allocate memory" ),
+                   uLine,
+                   szFileName,
+                   uFileNameLen )
+    {
+    }
+};
+
+class BadArgument : public Exception
+{
+  public:
+    explicit BadArgument( const char *szMessage    = nullptr,
+                          usize       uMesLen      = 0,
+                          i32         uLine        = InvalidLine,
+                          const char *szFileName   = nullptr,
+                          usize       uFileNameLen = 0 ) noexcept
+      : Exception( szMessage, uMesLen, uLine, szFileName, uFileNameLen )
+    {
+    }
+
+    template <usize uMesLen, usize uFileNameLen>
+    constexpr BadArgument( i32 uLine                                   = 0,
+                           const char ( &pszFileName )[ uFileNameLen ] = nullptr,
+                           const char ( &pszMessage )[ uMesLen ]       = "" ) noexcept
+      : BadArgument( pszMessage, uMesLen, uLine, pszFileName, uFileNameLen )
+    {
+    }
+
+    template <usize uFileNameLen>
+    constexpr BadArgument( i32 uLine = 0, const char ( &pszFileName )[ uFileNameLen ] = nullptr ) noexcept
+      : BadArgument( nullptr, 0, uLine, pszFileName, uFileNameLen )
+    {
+    }
+
+    explicit BadArgument( i32         uLine        = Exception::InvalidLine,
+                          const char *szFileName   = nullptr,
+                          usize       uFileNameLen = 0 ) noexcept
+      : Exception( "Provided invalid argument", sizeof( "Provided invalid argument" ), uLine, szFileName, uFileNameLen )
+    {
+    }
+};
+
 
 } // namespace B33::Core
 #endif // !B33_EXCEPT_HPP

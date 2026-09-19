@@ -26,11 +26,11 @@ void TestMaster::AddTest( void ( *pTest )(), const char *pszTestName, usize uTes
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-void TestMaster::Run()
+usize TestMaster::Run()
 {
     Debug::Logger::Get().Log( Debug::Info, L"Starting tests..." );
 
-    u32 uTestsPassed = 0;
+    usize uTestsPassed = 0;
     for ( usize i = 0; i < m_uTestAmount; ++i )
     {
         try
@@ -64,6 +64,8 @@ void TestMaster::Run()
     // }
 
     Debug::Logger::Get().Log( Debug::Info, L"Passed tests %d out of %d", uTestsPassed, m_uTestAmount );
+
+    return uTestsPassed;
 }
 
 } // namespace B33::Core::Tests

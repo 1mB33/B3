@@ -34,6 +34,7 @@ SET(BEE_RENDERING_HEADRES
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Vulkan/Buffers/GPUBuffer.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Vulkan/Buffers/GPUStreamBuffer.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Vulkan/Buffers/ImgBuffer.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Vulkan/Buffers/IMemoryBuffer.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Vulkan/Memory/Memory.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Vulkan/Memory/UploadDescriptor.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Vulkan/Memory/MemoryUploadTracker.hpp"
@@ -64,6 +65,7 @@ IF (MSVC)
 
     TARGET_COMPILE_OPTIONS(B33Rendering PUBLIC "/permissive-")
     TARGET_COMPILE_OPTIONS(B33Rendering PUBLIC "/GR")
+    TARGET_COMPILE_OPTIONS(B33Rendering PUBLIC "/Zc:preprocessor")
 
     IF (B33_DEBUG_BUILD STREQUAL "ON")
 

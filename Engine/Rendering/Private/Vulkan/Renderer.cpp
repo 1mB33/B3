@@ -19,7 +19,7 @@ Renderer::Renderer()
   , m_pHardware( nullptr )
   , m_pDeviceAdapter( nullptr )
   , m_pSwapChain( nullptr )
-  , m_pMemory( nullptr )
+  , m_pMemory()
   , m_PipelineMap()
   , m_vPipelines()
   , m_CommandPool( VK_NULL_HANDLE )
@@ -38,7 +38,7 @@ Renderer::~Renderer() noexcept
 // ---------------------------------------------------------------------------------------------------------------------
 void Renderer::InitializeInternal()
 {
-    m_pMemory = make_shared<Memory>( m_pHardware, m_pDeviceAdapter );
+    m_pMemory = Memory( m_pHardware, m_pDeviceAdapter );
 
     B33_TRACE( L"Initializing command pool" );
     m_CommandPool = CreateCommandPool( static_pointer_cast<AdapterWrapper>( m_pDeviceAdapter ),
@@ -166,9 +166,9 @@ void Renderer::Destroy() noexcept
 
     m_PipelineMap.clear();
     m_vPipelines.clear();
+    m_pMemory.Reset();
 
     m_CommandPool    = VK_NULL_HANDLE;
-    m_pMemory        = nullptr;
     m_pSwapChain     = nullptr;
     m_pDeviceAdapter = nullptr;
     m_pHardware      = nullptr;
@@ -211,10 +211,7 @@ VkCommandBuffer Renderer::CreateCommandBuffer( __B33_ATTRIBUTE_MIGHT_BE_UNUSED S
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-Renderer::FramesArray Renderer::CreateFrameResources( const SharedPtr<const AdapterWrapper> &da,
-                                                      __B33_ATTRIBUTE_MIGHT_BE_UNUSED const SharedPtr<Memory> &memory,
-                                                      VkCommandPool                                            cmdPool,
-                                                      __B33_ATTRIBUTE_MIGHT_BE_UNUSED usize                    uFrames )
+Renderer::FramesArray Renderer::CreateFrameResources( const SharedPtr<const AdapterWrapper> &da, VkCommandPool cmdPool )
 {
     VkDevice    device = da->GetAdapterHandle();
     FramesArray result;
@@ -330,8 +327,7 @@ void Renderer::RecreateSwapChain()
 
     CreateRenederSyncResources( m_pDeviceAdapter, m_pSwapChain.get(), m_vRenderFinished );
 
-    m_vFrames = make_unique<FramesArray>(
-        CreateFrameResources( m_pDeviceAdapter, m_pMemory, m_CommandPool, Frame::MaxFramesInFlight ) );
+    m_vFrames       = make_unique<FramesArray>( CreateFrameResources( m_pDeviceAdapter, m_CommandPool ) );
     m_uCurrentFrame = 0;
 
 

@@ -31,18 +31,6 @@ class EmptyCanvas : public ::B33::App::IBaseWindow<EmptyCanvas<bManualInputUpdat
     friend class IBaseWindow<EmptyCanvas<bManualInputUpdate>, GamePolicy>;
 
     template <typename T>
-    constexpr decltype( auto ) MakeShared()
-    {
-        return ::std::make_shared<T>();
-    }
-
-    template <typename T, typename U>
-    constexpr decltype( auto ) MakeShared( U &&arg )
-    {
-        return ::std::make_shared<T>( Forward<U>( arg ) );
-    }
-
-    template <typename T>
     constexpr decltype( auto ) Forward( T &arg ) noexcept
     {
         return ::std::forward<T>( arg );
@@ -52,6 +40,18 @@ class EmptyCanvas : public ::B33::App::IBaseWindow<EmptyCanvas<bManualInputUpdat
     constexpr decltype( auto ) Forward( T &&arg ) noexcept
     {
         return ::std::forward<T>( arg );
+    }
+
+    template <typename T>
+    constexpr decltype( auto ) MakeShared()
+    {
+        return ::std::make_shared<T>();
+    }
+
+    template <typename T, typename U>
+    constexpr decltype( auto ) MakeShared( U &&arg )
+    {
+        return ::std::make_shared<T>( Forward<U>( arg ) );
     }
 
   public:

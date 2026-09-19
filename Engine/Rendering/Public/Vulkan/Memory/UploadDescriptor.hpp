@@ -12,6 +12,7 @@ enum EUploadType
     StreamBuffer,
 };
 
+template <class BUFFER_T>
 struct UploadDescriptor
 {
     template <typename T>
@@ -45,17 +46,51 @@ struct UploadDescriptor
     ~UploadDescriptor() = default;
 
   public:
-    __B33_API                   UploadDescriptor( const UploadDescriptor &other ) noexcept;
-    __B33_API UploadDescriptor &operator=( const UploadDescriptor &other ) noexcept;
+    UploadDescriptor( const UploadDescriptor &other ) noexcept
+      : BufferInfo( other.BufferInfo )
+      , Write( other.Write )
+      , Type( other.Type )
+    {
+        Write.pBufferInfo = &BufferInfo;
+        Buffer            = other.Buffer;
+    }
 
-    __B33_API                   UploadDescriptor( UploadDescriptor &&other ) noexcept;
-    __B33_API UploadDescriptor &operator=( UploadDescriptor &&other ) noexcept;
+    UploadDescriptor &operator=( const UploadDescriptor &other ) noexcept
+    {
+        BufferInfo        = other.BufferInfo;
+        Write             = other.Write;
+        Type              = other.Type;
+        Write.pBufferInfo = &BufferInfo;
+        Buffer            = other.Buffer;
+
+        return *this;
+    }
+
+    UploadDescriptor( UploadDescriptor &&other ) noexcept
+      : BufferInfo( std::move( other.BufferInfo ) )
+      , Write( std::move( other.Write ) )
+      , Type( other.Type )
+    {
+        Write.pBufferInfo = &BufferInfo;
+        Buffer            = std::move( other.Buffer );
+    }
+
+    UploadDescriptor &operator=( UploadDescriptor &&other ) noexcept
+    {
+        BufferInfo        = std::move( other.BufferInfo );
+        Write             = std::move( other.Write );
+        Type              = std::move( other.Type );
+        Write.pBufferInfo = &BufferInfo;
+        Buffer            = other.Buffer;
+
+        return *this;
+    }
 
   public:
     ::VkDescriptorBufferInfo BufferInfo;
     ::VkWriteDescriptorSet   Write;
     EUploadType              Type;
-    SharedPtr<GPUBuffer>     Buffer;
+    SharedPtr<BUFFER_T>      Buffer;
 };
 
 } // namespace B33::Rendering

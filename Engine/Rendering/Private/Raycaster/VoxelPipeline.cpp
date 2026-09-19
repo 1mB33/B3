@@ -325,8 +325,8 @@ void VoxelPipeline::Reset()
 }
 
 // Private // ---------------------------------------------------------------------------------------------------------
-UploadDescriptor VoxelPipeline::GetUniformUploadDescriptor( const SharedPtr<GPUStreamBuffer> &outBuffer,
-                                                            const EShaderResource            &sr )
+UploadDescriptor<GPUStreamBuffer>
+VoxelPipeline::GetUniformUploadDescriptor( const SharedPtr<GPUStreamBuffer> &outBuffer, const EShaderResource &sr )
 {
     VkDescriptorBufferInfo bufferInfo = {
         .buffer = outBuffer->GetBufferHandle(),
@@ -342,7 +342,10 @@ UploadDescriptor VoxelPipeline::GetUniformUploadDescriptor( const SharedPtr<GPUS
     write.descriptorType       = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     write.pBufferInfo          = &bufferInfo;
 
-    return UploadDescriptor( std::move( bufferInfo ), std::move( write ), EUploadType::StreamBuffer, outBuffer );
+    return UploadDescriptor<GPUStreamBuffer>( std::move( bufferInfo ),
+                                              std::move( write ),
+                                              EUploadType::StreamBuffer,
+                                              outBuffer );
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -441,12 +444,12 @@ void VoxelPipeline::CreatePipelineResourcesImpl( SharedPtr<CubeWorld> pWorld )
                 GetMemory()->ReserveGPUBuffer( pWorld->GetStoredObjects().GetRotations().capacity() * sizeof( Vec3 ) ),
             .pHalfSizesBuffer = GetMemory()->ReserveGPUBuffer(
                 ( /*FIXME: */ (Cubes &)pWorld->GetStoredObjects() ).GetHalfSizes().capacity() * sizeof( Vec3 ) ),
-            .pStageVoxelBuffer    = GetMemory()->ReserveStagingBuffer( pWorld->GetVoxelsSizeInBytes() ),
-            .pStagePositonsBuffer = GetMemory()->ReserveStagingBuffer(
+            .pStageVoxelBuffer    = GetMemory()->ReserveStreamStagingBuffer( pWorld->GetVoxelsSizeInBytes() ),
+            .pStagePositonsBuffer = GetMemory()->ReserveStreamStagingBuffer(
                 pWorld->GetStoredObjects().GetPositions().capacity() * sizeof( Vec3 ) ),
-            .pStageRotationsBuffer = GetMemory()->ReserveStagingBuffer(
+            .pStageRotationsBuffer = GetMemory()->ReserveStreamStagingBuffer(
                 pWorld->GetStoredObjects().GetRotations().capacity() * sizeof( Vec3 ) ),
-            .pStageHalfSizesBuffer = GetMemory()->ReserveStagingBuffer(
+            .pStageHalfSizesBuffer = GetMemory()->ReserveStreamStagingBuffer(
                 ( /*FIXME: */ (Cubes &)pWorld->GetStoredObjects() ).GetHalfSizes().capacity() * sizeof( Vec3 ) ),
             .uStorageBuffersFlags     = 0,
             .uLastStorageBuffersFlags = 0,

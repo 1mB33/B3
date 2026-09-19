@@ -4,6 +4,7 @@ SET(BEE_CORE_SOURCE
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Debug/Logger.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Synchronization/DeltaTime.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Synchronization/FpsLimiter.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Private/Memory/LinearAllocator.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/TerminalColors.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Unknown.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Private/Tests/TestInstance.cpp"
@@ -24,7 +25,9 @@ SET(BEE_CORE_HEADRES
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Attributes.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/B33Core.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Borrowed.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/TupleIndex.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Memory/Pages.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Public/Memory/IAllocatorImpl.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Memory/LinearAllocator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Synchronization/FpsLimiter.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Public/Synchronization/DeltaTime.hpp"
@@ -66,8 +69,9 @@ ENDIF()
 
 IF (MSVC)
 
-    TARGET_COMPILE_OPTIONS(B33Core PRIVATE "/permissive-")
-    TARGET_COMPILE_OPTIONS(B33Core PRIVATE "/GR")
+    TARGET_COMPILE_OPTIONS(B33Core PUBLIC "/permissive-")
+    TARGET_COMPILE_OPTIONS(B33Core PUBLIC "/GR")
+    TARGET_COMPILE_OPTIONS(B33Core PUBLIC "/Zc:preprocessor")
 
     IF (B33_DEBUG_BUILD STREQUAL "ON")
 

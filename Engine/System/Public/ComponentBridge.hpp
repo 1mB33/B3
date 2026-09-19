@@ -7,47 +7,6 @@
 namespace B33::System
 {
 
-template <class COMPONENT>
-class BorrowedComponent
-{
-  public:
-    BorrowedComponent( COMPONENT &component )
-      : m_Component( component )
-    {
-        m_Component.Lock();
-    }
-
-    ~BorrowedComponent() noexcept
-    {
-        using ::std::exception;
-
-        try
-        {
-            m_Component.Unlock();
-        }
-        catch ( const exception &e )
-        {
-            __B33_BEBUG_BREAK_POINT( e.what() )
-        }
-    }
-
-  public:
-    BorrowedComponent( BorrowedComponent<COMPONENT> && )            = default;
-    BorrowedComponent &operator=( BorrowedComponent<COMPONENT> && ) = default;
-
-    BorrowedComponent( const BorrowedComponent<COMPONENT> & )            = delete;
-    BorrowedComponent &operator=( const BorrowedComponent<COMPONENT> & ) = delete;
-
-  public:
-    COMPONENT *operator->()
-    {
-        return &m_Component;
-    }
-
-  private:
-    COMPONENT &m_Component;
-};
-
 class ComponentBridge
 {
     friend class EngineLoop;

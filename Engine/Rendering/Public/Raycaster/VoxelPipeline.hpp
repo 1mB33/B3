@@ -72,8 +72,8 @@ class VoxelPipeline : public IPipeline<VoxelPipeline>
     __B33_API ::VkDescriptorPool CreateDescriptorPoolImpl();
 
   private:
-    UploadDescriptor GetUniformUploadDescriptor( const SharedPtr<GPUStreamBuffer> &outBuffer,
-                                                 const EShaderResource            &sr );
+    UploadDescriptor<GPUStreamBuffer> GetUniformUploadDescriptor( const SharedPtr<GPUStreamBuffer> &outBuffer,
+                                                                  const EShaderResource            &sr );
 
     void LoadImage( VkImageView image );
 
