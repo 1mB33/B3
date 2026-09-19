@@ -40,7 +40,7 @@ template <usize POOL_SIZE>
 class LinearAllocator : public LinearAllocatorImpl
 {
   public:
-    LinearAllocator( const char *pszName = nullptr )
+    LinearAllocator( __B33_ATTRIBUTE_MIGHT_BE_UNUSED const char *pszName = nullptr )
       : LinearAllocatorImpl( POOL_SIZE )
 #    if defined( _B33_DEBUG )
       , m_pszName( pszName )
@@ -67,7 +67,7 @@ class LinearAllocator : public LinearAllocatorImpl
 
     // Setters // -----------------------------------------------------------------------------------------------------
   public:
-    inline void SetName( const char *pszName )
+    inline void SetName( __B33_ATTRIBUTE_MIGHT_BE_UNUSED const char *pszName )
     {
 #    if defined( _B33_DEBUG )
         m_pszName = pszName;
