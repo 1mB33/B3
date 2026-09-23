@@ -6,7 +6,7 @@ import shutil
 
 g_IsVerbose=False
 g_RunFlag=0
-g_ProjectBuildName="All"
+g_ProjectBuildName=""
 g_ProjectBuildDir=""
 g_Indention=2
 g_GenerateCmd="cmake"
@@ -32,11 +32,13 @@ def ParseSwitches(switches: str):
     global g_GenerateCmd
     global g_IsVerbose
 
+    # Turn verbose ASAP
     if switches.find('v') != -1: 
         g_IsVerbose = True
 
     if not re.match(r"^\-.+", switches):
-        VerbosePrint("Invalid switches format: ", switches)
+        print("Invalid switches format: ", switches)
+        exit(1)
 
     switches = switches[1:]
 
@@ -65,15 +67,24 @@ def ParseSwitches(switches: str):
 
 def AppendRunFlag(switch: str):
     global g_RunFlag
+    global g_ProjectBuildName
 
     VerbosePrint("Parsing switch: " + switch)
 
     match switch.lower():
         case "--all":
             VerbosePrint("F_BUILD_ALL")
+            if g_RunFlag & (F_BUILD_TESTS):
+                print("Cannot specify more then one argument of build type")
+                exit(1)
+            g_ProjectBuildName = "All"
             g_RunFlag = g_RunFlag | F_BUILD_ALL;
         case "--tests":
             VerbosePrint("F_BUILD_TESTS")
+            if g_RunFlag & (F_BUILD_ALL):
+                print("Cannot specify more then one argument of build type")
+                exit(1)
+            g_ProjectBuildName = "EngineTests"
             g_RunFlag = g_RunFlag | F_BUILD_TESTS;
         case _:
             ParseSwitches(switch)
@@ -95,13 +106,10 @@ def CreateBuildResources():
     global g_Indention
 
     g_ProjectBuildDir = "./Build/" + g_ProjectBuildName + "/"
-    if g_RunFlag & F_BUILD_TESTS:
-        g_ProjectBuildDir = g_ProjectBuildDir + 'Tests/'
-        g_Indention += 1
     if g_RunFlag & F_BUILD_RELEASE:
         g_ProjectBuildDir = g_ProjectBuildDir + 'Release/'
         g_Indention += 1
-    if g_RunFlag & F_BUILD_DEBUG:
+    else:
         g_ProjectBuildDir = g_ProjectBuildDir + 'Debug/'
         g_Indention += 1
 
@@ -111,6 +119,13 @@ def CreateBuildResources():
 
     if not os.path.exists(g_ProjectBuildDir):
         os.makedirs(g_ProjectBuildDir)
+
+
+    if g_RunFlag & F_BUILD_ALL:
+        pass
+    elif g_RunFlag & F_BUILD_TESTS:
+        g_GenerateCmd = g_GenerateCmd + " -DB33_ONLY_TESTS=ON"
+
 
     indention = ""
     for i in range(0, g_Indention):

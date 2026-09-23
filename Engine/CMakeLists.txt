@@ -11,7 +11,6 @@ OPTION(B33_RUN_TESTS "Run tests before starting the main loop")
 OPTION(B33_ONLY_TESTS "Run only tests")
 OPTION(B33_DEBUG_BUILD "Enables debug build")
 
-
 IF(NOT TARGET_ARCH OR TARGET_ARCH STREQUAL "")
 
     SET(TARGET_ARCH "unknown")
