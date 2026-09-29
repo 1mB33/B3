@@ -31,6 +31,13 @@ struct alignas( 16 ) Vec2
     {
     }
 
+#    if defined( _B33_SSE )
+    explicit Vec2( __m64 xy ) noexcept
+      : xy( xy )
+    {
+    }
+#    endif
+
     ~Vec2() noexcept = default;
 
   public:
@@ -41,8 +48,17 @@ struct alignas( 16 ) Vec2
     Vec2 &operator=( Vec2 && ) noexcept      = default;
 
   public:
-    float x;
-    float y;
+    union
+    {
+        struct alignas( 16 )
+        {
+            float x;
+            float y;
+        };
+#    if defined( _B33_SSE )
+        __m64 xy;
+#    endif
+    };
 
   public:
     template <typename Vector>
@@ -76,6 +92,13 @@ struct alignas( 16 ) iVec2
     {
     }
 
+#    if defined( _B33_SSE )
+    explicit iVec2( __m64 xy ) noexcept
+      : xy( xy )
+    {
+    }
+#    endif
+
     ~iVec2() noexcept = default;
 
   public:
@@ -86,8 +109,17 @@ struct alignas( 16 ) iVec2
     iVec2 &operator=( iVec2 && ) noexcept      = default;
 
   public:
-    i32 x;
-    i32 y;
+    union
+    {
+        struct alignas( 16 )
+        {
+            i32 x;
+            i32 y;
+        };
+#    if defined( _B33_SSE )
+        __m64 xy;
+#    endif
+    };
 
   public:
     template <typename Vector>
