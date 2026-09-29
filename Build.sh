@@ -23,6 +23,9 @@ printHelp()
     echo "  -r :  release build type"
     echo "  -d :  debug build type"
     echo "  -v :  verbose mode"
+    echo "  --no-sse-math :  disables Intel SSE in math module"
+    echo "  --force-sse :  forces enable Intel SSE in math module"
+    echo "  -c --clean :  removes cached build files"
     echo ""
 }
 

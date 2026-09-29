@@ -27,6 +27,9 @@ F_BUILD_TESTS=0x02
 F_BUILD_DEBUG=0x04
 F_BUILD_RELEASE=0x08
 F_BUILD_VERBOSE=0x10
+F_BUILD_NO_SSE=0x20
+F_BUILD_SSE=0x40
+F_BUILD_CLEAN=0x80
 def ParseSwitches(switches: str):
     global g_RunFlag
     global g_GenerateCmd
@@ -62,11 +65,15 @@ def ParseSwitches(switches: str):
             case 'v':
                 VerbosePrint("F_BUILD_VERBOSE")
                 g_RunFlag = g_RunFlag | F_BUILD_VERBOSE
+            case 'c':
+                VerbosePrint("F_BUILD_CLEAN")
+                g_RunFlag = g_RunFlag | F_BUILD_CLEAN;
     pass
 
 
 def AppendRunFlag(switch: str):
     global g_RunFlag
+    global g_GenerateCmd
     global g_ProjectBuildName
 
     VerbosePrint("Parsing switch: " + switch)
@@ -86,6 +93,17 @@ def AppendRunFlag(switch: str):
                 exit(1)
             g_ProjectBuildName = "EngineTests"
             g_RunFlag = g_RunFlag | F_BUILD_TESTS;
+        case "--no-sse":
+            VerbosePrint("F_BUILD_NO_SSE")
+            g_GenerateCmd = g_GenerateCmd + " -DB33_SSE_MATH=OFF"
+            g_RunFlag = g_RunFlag | F_BUILD_NO_SSE;
+        case "--force-sse":
+            VerbosePrint("F_BUILD_SSE")
+            g_GenerateCmd = g_GenerateCmd + " -DB33_SSE_MATH=ON"
+            g_RunFlag = g_RunFlag | F_BUILD_SSE;
+        case "--clean":
+            VerbosePrint("F_BUILD_CLEAN")
+            g_RunFlag = g_RunFlag | F_BUILD_CLEAN;
         case _:
             ParseSwitches(switch)
 
@@ -116,6 +134,10 @@ def CreateBuildResources():
     VerbosePrint("CMake dir: " + g_ProjectBuildDir)
 
     ValidateSystem()
+
+    if g_RunFlag & F_BUILD_CLEAN:
+        if os.path.exists(g_ProjectBuildDir):
+            shutil.rmtree(g_ProjectBuildDir)
 
     if not os.path.exists(g_ProjectBuildDir):
         os.makedirs(g_ProjectBuildDir)
