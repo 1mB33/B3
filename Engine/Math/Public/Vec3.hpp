@@ -2,6 +2,10 @@
 #    define B33_VEC3_HPP
 
 #    include <B33Core.h>
+#    if defined( _B33_SSE )
+#        include <xmmintrin.h>
+#        include <tmmintrin.h>
+#    endif
 
 namespace B33::Math
 {
@@ -26,6 +30,13 @@ struct alignas( 16 ) Vec3
     {
     }
 
+#    if defined( _B33_SSE )
+    explicit Vec3( __m128 xyz ) noexcept
+      : xyz( xyz )
+    {
+    }
+#    endif
+
     template <typename Vector>
     explicit Vec3( Vector v ) noexcept
       : x( v.x )
@@ -44,10 +55,20 @@ struct alignas( 16 ) Vec3
     Vec3 &operator=( Vec3 && ) noexcept      = default;
 
   public:
-    float x;
-    float y;
-    float z;
-    float _Padding;
+    union
+    {
+        struct alignas( 16 )
+        {
+            float x;
+            float y;
+            float z;
+            float _Padding;
+        };
+#    if defined( _B33_SSE )
+        __m128 xyz;
+#    endif
+    };
+
 
   public:
     template <typename Vector>
@@ -105,6 +126,13 @@ struct alignas( 16 ) iVec3
     {
     }
 
+#    if defined( _B33_SSE )
+    explicit iVec3( __m128i xyz ) noexcept
+      : xyz( xyz )
+    {
+    }
+#    endif
+
     ~iVec3() noexcept = default;
 
   public:
@@ -115,10 +143,19 @@ struct alignas( 16 ) iVec3
     iVec3 &operator=( iVec3 && ) noexcept      = default;
 
   public:
-    int32_t x;
-    int32_t y;
-    int32_t z;
-    int32_t _Padding;
+    union
+    {
+        struct alignas( 16 )
+        {
+            i32 x;
+            i32 y;
+            i32 z;
+            i32 _Padding;
+        };
+#    if defined( _B33_SSE )
+        __m128i xyz;
+#    endif
+    };
 
   public:
     template <typename Vector>
@@ -133,35 +170,9 @@ struct alignas( 16 ) iVec3
         return this->x == other.x && this->y == other.y && this->z == other.z;
     }
 
-    constexpr i32 operator[]( usize uIndex ) const
-    {
-        B33_ASSERT( uIndex < Size );
+    constexpr i32 operator[]( usize uIndex ) const;
 
-        if ( uIndex == 0 )
-        {
-            return x;
-        }
-        if ( uIndex == 1 )
-        {
-            return y;
-        }
-        return z;
-    }
-
-    constexpr i32 &operator[]( usize uIndex )
-    {
-        B33_ASSERT( uIndex < Size );
-
-        if ( uIndex == 0 )
-        {
-            return x;
-        }
-        if ( uIndex == 1 )
-        {
-            return y;
-        }
-        return z;
-    }
+    constexpr i32 &operator[]( usize uIndex );
 
     inline iVec3 operator+( const Vec3 &vB ) const;
 

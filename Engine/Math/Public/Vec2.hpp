@@ -86,8 +86,8 @@ struct alignas( 16 ) iVec2
     iVec2 &operator=( iVec2 && ) noexcept      = default;
 
   public:
-    int32_t x;
-    int32_t y;
+    i32 x;
+    i32 y;
 
   public:
     template <typename Vector>
