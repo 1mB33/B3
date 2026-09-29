@@ -18,10 +18,12 @@ struct alignas( 16 ) Mat44
     {
         float m[ Size ];
 
+#    if defined( _B33_SSE )
         struct
         {
             __m128 row[ Size / 4 ];
         };
+#    endif
     };
 
     float &operator[]( usize uIndex )
