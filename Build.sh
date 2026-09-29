@@ -10,9 +10,9 @@ printHelp()
     echo "Help manual"
     echo ""
     echo "      command:"
-    echo "          $0 [build-switches] --All"
-    echo "          $0 [build-switches] --Tests"
-    echo "          $0 [build-switches] --Project <project-name>"
+    echo "          $0 [build-switches] --all"
+    echo "          $0 [build-switches] --tests"
+    echo "          $0 [build-switches] --project <project-name>"
     echo ""
     echo ""
     echo "The scripts defaults to debug build type."
@@ -23,6 +23,9 @@ printHelp()
     echo "  -r :  release build type"
     echo "  -d :  debug build type"
     echo "  -v :  verbose mode"
+    echo "  --no-sse-math :  disables Intel SSE in math module"
+    echo "  --force-sse :  forces enable Intel SSE in math module"
+    echo "  -c --clean :  removes cached build files"
     echo ""
 }
 

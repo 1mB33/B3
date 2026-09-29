@@ -1,6 +1,11 @@
 #if !defined( B33_VEC3_OPERATORS_HPP )
 #    define B33_VEC3_OPERATORS_HPP
 
+#    if defined( _B33_SSE )
+#        include <tmmintrin.h>
+#        include <smmintrin.h>
+#    endif
+
 #    include "Operations.hpp"
 #    include "Vec3.hpp"
 
@@ -12,15 +17,7 @@ constexpr float &Vec3::operator[]( usize uIndex )
 {
     B33_ASSERT( uIndex < Size );
 
-    if ( uIndex == 0 )
-    {
-        return x;
-    }
-    if ( uIndex == 1 )
-    {
-        return y;
-    }
-    return z;
+    return ( &x )[ uIndex ];
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -28,15 +25,7 @@ constexpr float Vec3::operator[]( usize uIndex ) const
 {
     B33_ASSERT( uIndex < Size );
 
-    if ( uIndex == 0 )
-    {
-        return x;
-    }
-    if ( uIndex == 1 )
-    {
-        return y;
-    }
-    return z;
+    return ( &x )[ uIndex ];
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -99,6 +88,22 @@ inline Vec3 Vec3::operator*( const float vB ) const
 {
     Vec3 n( *this );
     return MultiplyScalar( n, vB );
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+constexpr i32 &iVec3::operator[]( usize uIndex )
+{
+    B33_ASSERT( uIndex < Size );
+
+    return ( &x )[ uIndex ];
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+constexpr i32 iVec3::operator[]( usize uIndex ) const
+{
+    B33_ASSERT( uIndex < Size );
+
+    return ( &x )[ uIndex ];
 }
 
 // --------------------------------------------------------------------------------------------------------------------

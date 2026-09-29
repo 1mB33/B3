@@ -20,6 +20,13 @@ struct alignas( 16 ) Vec4
     {
     }
 
+#    if defined( _B33_SSE )
+    explicit Vec4( __m128 xyzw ) noexcept
+      : xyzw( xyzw )
+    {
+    }
+#    endif
+
     ~Vec4() noexcept = default;
 
   public:
@@ -30,10 +37,19 @@ struct alignas( 16 ) Vec4
     Vec4 &operator=( Vec4 && ) noexcept      = default;
 
   public:
-    float x;
-    float y;
-    float z;
-    float w;
+    union
+    {
+        struct alignas( 16 )
+        {
+            float x;
+            float y;
+            float z;
+            float w;
+        };
+#    if defined( _B33_SSE )
+        __m128 xyzw;
+#    endif
+    };
 
   public:
     template <typename Vector>
@@ -47,38 +63,14 @@ struct alignas( 16 ) Vec4
     {
         B33_ASSERT( uIndex < Size );
 
-        if ( uIndex == 0 )
-        {
-            return x;
-        }
-        if ( uIndex == 1 )
-        {
-            return y;
-        }
-        if ( uIndex == 2 )
-        {
-            return z;
-        }
-        return w;
+        return ( &x )[ uIndex ];
     }
 
     constexpr float &operator[]( usize uIndex )
     {
         B33_ASSERT( uIndex < Size );
 
-        if ( uIndex == 0 )
-        {
-            return x;
-        }
-        if ( uIndex == 1 )
-        {
-            return y;
-        }
-        if ( uIndex == 2 )
-        {
-            return z;
-        }
-        return w;
+        return ( &x )[ uIndex ];
     }
 };
 
@@ -96,6 +88,13 @@ struct alignas( 16 ) iVec4
     {
     }
 
+#    if defined( _B33_SSE )
+    explicit iVec4( __m128 xyzw ) noexcept
+      : xyzw( xyzw )
+    {
+    }
+#    endif
+
     ~iVec4() noexcept = default;
 
   public:
@@ -106,10 +105,19 @@ struct alignas( 16 ) iVec4
     iVec4 &operator=( iVec4 && ) noexcept      = default;
 
   public:
-    i32 x;
-    i32 y;
-    i32 z;
-    i32 w;
+    union
+    {
+        struct alignas( 16 )
+        {
+            i32 x;
+            i32 y;
+            i32 z;
+            i32 w;
+        };
+#    if defined( _B33_SSE )
+        __m128 xyzw;
+#    endif
+    };
 
   public:
     template <typename Vector>
@@ -123,38 +131,14 @@ struct alignas( 16 ) iVec4
     {
         B33_ASSERT( uIndex < Size );
 
-        if ( uIndex == 0 )
-        {
-            return x;
-        }
-        if ( uIndex == 1 )
-        {
-            return y;
-        }
-        if ( uIndex == 2 )
-        {
-            return z;
-        }
-        return w;
+        return ( &x )[ uIndex ];
     }
 
     constexpr i32 &operator[]( usize uIndex )
     {
         B33_ASSERT( uIndex < Size );
 
-        if ( uIndex == 0 )
-        {
-            return x;
-        }
-        if ( uIndex == 1 )
-        {
-            return y;
-        }
-        if ( uIndex == 2 )
-        {
-            return z;
-        }
-        return w;
+        return ( &x )[ uIndex ];
     }
 };
 

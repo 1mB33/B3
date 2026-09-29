@@ -1,6 +1,11 @@
 #if !defined( B33_OPERATIONS_HPP )
 #    define B33_OPERATIONS_HPP
 
+#    if defined( _B33_SSE )
+#        include <xmmintrin.h>
+#        include <smmintrin.h>
+#    endif
+
 #    include "Mat44.hpp"
 #    include "Vec3.hpp"
 
@@ -156,6 +161,11 @@ inline Vector &AddAssign( Vector &, const Vector & )
 template <>
 inline Vec3 &AddAssign( Vec3 &vA, const Vec3 &vB )
 {
+#    if defined( _B33_SSE )
+    vA.xyz = _mm_add_ps( vA.xyz, vB.xyz );
+    return vA;
+#    endif
+
     vA.x += vB.x;
     vA.y += vB.y;
     vA.z += vB.z;
@@ -166,6 +176,11 @@ inline Vec3 &AddAssign( Vec3 &vA, const Vec3 &vB )
 template <>
 inline iVec3 &AddAssign( iVec3 &vA, const iVec3 &vB )
 {
+#    if defined( _B33_SSE )
+    vA.xyz = _mm_add_epi32( vA.xyz, vB.xyz );
+    return vA;
+#    endif
+
     vA.x += vB.x;
     vA.y += vB.y;
     vA.z += vB.z;
@@ -184,6 +199,11 @@ inline Vector &SubtractAssign( Vector &, const Vector & )
 template <>
 inline Vec3 &SubtractAssign( Vec3 &vA, const Vec3 &vB )
 {
+#    if defined( _B33_SSE )
+    vA.xyz = _mm_sub_ps( vA.xyz, vB.xyz );
+    return vA;
+#    endif
+
     vA.x -= vB.x;
     vA.y -= vB.y;
     vA.z -= vB.z;
@@ -194,6 +214,11 @@ inline Vec3 &SubtractAssign( Vec3 &vA, const Vec3 &vB )
 template <>
 inline iVec3 &SubtractAssign( iVec3 &vA, const iVec3 &vB )
 {
+#    if defined( _B33_SSE )
+    vA.xyz = _mm_sub_epi32( vA.xyz, vB.xyz );
+    return vA;
+#    endif
+
     vA.x -= vB.x;
     vA.y -= vB.y;
     vA.z -= vB.z;
@@ -212,6 +237,11 @@ inline Vector Multiply( const Vector &, const Vector & )
 template <>
 inline Vec3 Multiply( const Vec3 &vA, const Vec3 &vB )
 {
+#    if defined( _B33_SSE )
+    __m128 result = _mm_mul_ps( vA.xyz, vB.xyz );
+    return Vec3( result );
+#    endif
+
     Vec3 r;
 
     r.x = vA.x * vB.x;
@@ -225,6 +255,11 @@ inline Vec3 Multiply( const Vec3 &vA, const Vec3 &vB )
 template <>
 inline iVec3 Multiply( const iVec3 &vA, const iVec3 &vB )
 {
+#    if defined( _B33_SSE )
+    __m128i xyz = _mm_mul_epi32( vA.xyz, vB.xyz );
+    return iVec3( xyz );
+#    endif
+
     iVec3 r;
 
     r.x = vA.x * vB.x;
