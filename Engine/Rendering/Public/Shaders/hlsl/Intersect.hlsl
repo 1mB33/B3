@@ -22,13 +22,8 @@ bool IntersectRayAABB( in const float3 ro,
 // --------------------------------------------------------------------------------------------------------------------
 float3 CubeNormal( in const float3 p, in const float3 halfSize )
 {
-    float3 bias = abs( abs( p ) - halfSize );
-
-    if ( bias.x < bias.y && bias.x < bias.z )
-        return float3( sign( p.x ), 0.0, 0.0 );
-    if ( bias.y < bias.x && bias.y < bias.z )
-        return float3( 0.0, sign( p.y ), 0.0 );
-    return float3( 0.0, 0.0, sign( p.z ) );
+    const float bias = 1.000001;
+    return trunc( p / abs( halfSize ) * bias );
 }
 
 // --------------------------------------------------------------------------------------------------------------------
