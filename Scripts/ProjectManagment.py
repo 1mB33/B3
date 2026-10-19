@@ -65,6 +65,13 @@ def ConstructProjectPath():
     VerbosePrint("g_ProjectPath: " + g_ProjectPath)
 
 
+def AppendMainToProjectCMake():
+    pass
+
+def CreateProjectCMake():
+    pass
+
+
 def CreateProject():
     global g_ProjectName
     global g_ProjectPath
@@ -89,5 +96,7 @@ if __name__ == "__main__":
 
     if (g_RunFlag & F_PROJECT_CREATE):
         CreateProject()
+        CreateProjectCMake()
+        AppendMainToProjectCMake()
     
     exit(0)
