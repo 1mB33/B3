@@ -76,6 +76,8 @@ def CreateProject():
         exit(1)
 
     os.makedirs(g_ProjectPath)
+    os.makedirs(g_ProjectPath + "/Assets")
+    os.makedirs(g_ProjectPath + "/Source")
     print("Created new project in path: ", g_ProjectPath)
 
 
