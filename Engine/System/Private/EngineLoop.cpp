@@ -87,7 +87,7 @@ void EngineLoop::DestroyComponents()
 {
     m_JobSystem.BlockAndWait();
 
-    for ( ComponentsMap::reverse_iterator it = m_Components.rbegin(); it != m_Components.rend(); ++it )
+    for ( ComponentsMap::iterator it = m_Components.begin(); it != m_Components.end(); ++it )
     {
         auto [ componentType, componentVector ] = *it;
 
