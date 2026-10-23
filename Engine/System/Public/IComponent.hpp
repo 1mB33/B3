@@ -10,8 +10,8 @@ namespace B33::System
 enum EComponentType
 {
     Async           = 1,
-    Default         = Async << 1,
-    AsyncUpdateOnly = Default << 1,
+    AsyncUpdateOnly = Async << 1,
+    Default         = AsyncUpdateOnly << 1,
 };
 
 class ComponentAbstractBase;
