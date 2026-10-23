@@ -50,7 +50,7 @@ System:
 - relations between engine components
 - job system
 - event system
-- reflection system (class names only, with the ability to create objects by requesting them via class name)
+- class registry system
 - different entry points for the application per operating system
 
 ### Currently supported operating systems:
